@@ -1,0 +1,370 @@
+{
+  "name": "nodejs-tutorial-test",
+  "version": "1.0.0",
+  "description": "Comprehensive testing infrastructure for Node.js tutorial project supporting dual testing frameworks (Jest/Mocha), cross-platform validation, security testing, performance benchmarking, and production deployment testing",
+  "type": "module",
+  "private": true,
+  "main": "test.js",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "keywords": [
+    "testing",
+    "jest",
+    "mocha",
+    "supertest",
+    "nodejs",
+    "express",
+    "security-testing",
+    "performance-testing",
+    "cross-platform-testing",
+    "pm2-testing",
+    "helmet-testing",
+    "flask-compatibility"
+  ],
+  "scripts": {
+    "test": "node test.js",
+    "test:jest": "jest --config=jest.config.js",
+    "test:mocha": "mocha --config=.mocharc.json",
+    "test:both": "npm run test:jest && npm run test:mocha",
+    "test:unit": "jest --testMatch='**/unit/**/*.test.js' --config=jest.config.js",
+    "test:integration": "jest --testMatch='**/integration/**/*.test.js' --config=jest.config.js",
+    "test:e2e": "jest --testMatch='**/e2e/**/*.test.js' --config=jest.config.js",
+    "test:performance": "jest --testMatch='**/performance/**/*.test.js' --config=jest.config.js",
+    "test:security": "jest --testMatch='**/security/**/*.test.js' --config=jest.config.js",
+    "test:coverage": "node coverage.js",
+    "test:coverage:jest": "jest --coverage --config=jest.config.js",
+    "test:coverage:mocha": "c8 --config=.c8rc.json npm run test:mocha",
+    "coverage:report": "c8 report --reporter=html --reporter=text --reporter=json --reporter=lcov",
+    "test:watch": "jest --watch --config=jest.config.js",
+    "test:watch:unit": "jest --watch --testMatch='**/unit/**/*.test.js' --config=jest.config.js",
+    "test:debug": "node --inspect-brk test.js",
+    "test:ci": "jest --ci --coverage --watchAll=false --config=jest.config.js",
+    "test:ci:mocha": "c8 --reporter=lcov npm run test:mocha",
+    "test:parallel": "jest --maxWorkers=50% --config=jest.config.js",
+    "test:cross-platform": "npm run test:jest -- --testMatch='**/cross-platform/**/*.test.js'",
+    "test:flask-compatibility": "npm run test:mocha -- --grep 'Flask'",
+    "test:pm2": "npm run test:jest -- --testMatch='**/pm2/**/*.test.js'",
+    "test:helmet": "npm run test:jest -- --testMatch='**/security/helmet/**/*.test.js'",
+    "test:load": "npm run test:jest -- --testMatch='**/performance/load/**/*.test.js'",
+    "test:stress": "npm run test:jest -- --testMatch='**/performance/stress/**/*.test.js'",
+    "test:benchmark": "npm run test:jest -- --testMatch='**/performance/benchmark/**/*.test.js'",
+    "test:validate": "npm run test:coverage && npm run test:security && npm run test:performance",
+    "test:production": "NODE_ENV=production npm run test:ci",
+    "test:development": "NODE_ENV=development npm run test:watch",
+    "lint:tests": "eslint test/**/*.js --config=.eslintrc.test.json",
+    "format:tests": "prettier --write test/**/*.js",
+    "clean:coverage": "rimraf coverage",
+    "clean:logs": "rimraf logs/*.log",
+    "clean:artifacts": "npm run clean:coverage && npm run clean:logs",
+    "pretest": "npm run clean:artifacts",
+    "posttest": "npm run coverage:report",
+    "audit:security": "npm audit --audit-level=moderate",
+    "audit:licenses": "license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC'",
+    "docs:coverage": "open coverage/lcov-report/index.html",
+    "docs:test": "jsdoc test/**/*.js -d docs/test",
+    "health:check": "node health-check.js",
+    "setup:test-env": "node setup.js",
+    "teardown:test-env": "node teardown.js"
+  },
+  "dependencies": {
+    "jest": "^29.7.0",
+    "mocha": "^11.0.0",
+    "chai": "^5.1.1",
+    "chai-http": "^5.1.1",
+    "sinon": "^19.0.2",
+    "sinon-chai": "^4.0.0",
+    "supertest": "^7.0.0",
+    "c8": "^10.1.2",
+    "@faker-js/faker": "^9.2.0",
+    "cross-spawn": "^7.0.3",
+    "esmock": "^2.6.9",
+    "@jest/globals": "^29.7.0",
+    "@jest/types": "^29.6.3",
+    "jest-junit": "^16.0.0",
+    "jest-watch-typeahead": "^2.2.2",
+    "nyc": "^17.1.0",
+    "axios": "^1.6.8",
+    "deep-equal": "^2.2.3",
+    "uuid": "^9.0.1",
+    "glob": "^11.0.0",
+    "rimraf": "^5.0.10",
+    "chalk": "^5.3.0",
+    "debug": "^4.3.7",
+    "expect": "^29.7.0",
+    "artillery": "^2.0.20",
+    "autocannon": "^7.15.0",
+    "@clinic/doctor": "^9.2.0",
+    "faker": "^6.6.6",
+    "nodemon": "^3.1.7",
+    "pm2": "^5.4.2",
+    "helmet": "^8.1.0",
+    "express": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^7.4.1",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "csurf": "^1.11.0",
+    "async": "^3.2.6",
+    "psutil": "^5.9.8",
+    "bleach": "^6.1.0",
+    "email-validator": "^2.1.2",
+    "validators": "^0.22.0",
+    "jsonschema": "^4.23.0",
+    "wtforms": "^3.1.2",
+    "cerberus": "^1.3.5",
+    "flask-talisman": "^1.1.0",
+    "flask-cors": "^4.0.1",
+    "flask-limiter": "^3.8.0",
+    "werkzeug": "^3.1.3",
+    "deepdiff": "^6.7.1",
+    "pytest-mock": "^3.14.0",
+    "responses": "^0.25.3",
+    "freezegun": "^1.5.1",
+    "factory-boy": "^3.3.1",
+    "watchdog": "^4.0.2",
+    "coverage": "^7.6.1",
+    "black": "^23.12.1",
+    "flake8": "^6.1.0",
+    "mypy": "^1.11.2",
+    "isort": "^5.13.2",
+    "bandit": "^1.7.10",
+    "safety": "^3.2.7",
+    "pre-commit": "^3.8.0",
+    "flask-testing": "^0.8.1",
+    "httpx": "^0.27.2",
+    "locust": "^2.31.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/mocha": "^10.0.9",
+    "@types/chai": "^5.0.0",
+    "@types/sinon": "^17.0.3",
+    "@types/supertest": "^6.0.2",
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.17",
+    "@types/cookie-parser": "^1.4.7",
+    "typescript": "^5.6.3",
+    "ts-node": "^10.9.2",
+    "eslint": "^9.15.0",
+    "@eslint/js": "^9.15.0",
+    "eslint-plugin-jest": "^28.8.3",
+    "eslint-plugin-mocha": "^10.5.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-security": "^3.0.1",
+    "eslint-plugin-import": "^2.31.0",
+    "prettier": "^3.3.3",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "@typescript-eslint/parser": "^8.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.14.0",
+    "license-checker": "^25.0.1",
+    "jsdoc": "^4.0.4",
+    "conventional-changelog-cli": "^5.0.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "semantic-release": "^24.2.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "codecov": "^3.8.3",
+    "coveralls": "^3.1.1"
+  },
+  "peerDependencies": {
+    "node": ">=22.0.0"
+  },
+  "jest": {
+    "preset": "default",
+    "testEnvironment": "node",
+    "extensionsToTreatAsEsm": [".js"],
+    "transform": {},
+    "testMatch": [
+      "**/test/**/*.test.js",
+      "**/test/unit/**/*.test.js",
+      "**/test/integration/**/*.test.js",
+      "**/test/e2e/**/*.test.js",
+      "**/test/performance/**/*.test.js",
+      "**/test/security/**/*.test.js",
+      "**/test/cross-platform/**/*.test.js"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/coverage/",
+      "/logs/",
+      "/docs/"
+    ],
+    "collectCoverageFrom": [
+      "../**/*.js",
+      "!**/node_modules/**",
+      "!**/test/**",
+      "!**/coverage/**",
+      "!**/logs/**",
+      "!**/docs/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "html",
+      "json",
+      "lcov",
+      "clover"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 85,
+        "functions": 95,
+        "lines": 90,
+        "statements": 90
+      }
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/setup.js"
+    ],
+    "teardownAfterEnv": [
+      "<rootDir>/teardown.js"
+    ],
+    "testTimeout": 10000,
+    "maxWorkers": "50%",
+    "testSequencer": "@jest/test-sequencer",
+    "verbose": true,
+    "detectOpenHandles": true,
+    "forceExit": true,
+    "clearMocks": true,
+    "restoreMocks": true,
+    "resetMocks": true
+  },
+  "c8": {
+    "check-coverage": true,
+    "lines": 90,
+    "functions": 95,
+    "branches": 85,
+    "statements": 90,
+    "include": [
+      "../**/*.js"
+    ],
+    "exclude": [
+      "test/**",
+      "coverage/**",
+      "node_modules/**",
+      "logs/**",
+      "docs/**",
+      "*.config.js",
+      "*.test.js"
+    ],
+    "reporter": [
+      "text",
+      "html",
+      "json",
+      "lcov"
+    ],
+    "report-dir": "coverage",
+    "temp-directory": ".nyc_output",
+    "cache": true,
+    "all": true,
+    "skip-full": false
+  },
+  "mocha": {
+    "spec": [
+      "unit/**/*.test.js",
+      "integration/**/*.test.js",
+      "e2e/**/*.test.js",
+      "performance/**/*.test.js",
+      "security/**/*.test.js",
+      "cross-platform/**/*.test.js"
+    ],
+    "require": [
+      "./setup.js"
+    ],
+    "loader": "esmock",
+    "timeout": 10000,
+    "parallel": true,
+    "ui": "bdd",
+    "reporter": "spec",
+    "recursive": true,
+    "exit": true,
+    "bail": false,
+    "grep": "",
+    "invert": false,
+    "checkLeaks": true,
+    "fullTrace": true,
+    "asyncOnly": false,
+    "delay": false,
+    "forbidOnly": false,
+    "forbidPending": false,
+    "global": ["expect", "should"],
+    "retries": 0,
+    "slow": 75,
+    "jobs": 4
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-push": "npm run test:ci"
+    }
+  },
+  "lint-staged": {
+    "test/**/*.js": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tutorial-project/nodejs-tutorial.git",
+    "directory": "src/backend/test"
+  },
+  "bugs": {
+    "url": "https://github.com/tutorial-project/nodejs-tutorial/issues"
+  },
+  "homepage": "https://github.com/tutorial-project/nodejs-tutorial#readme",
+  "license": "MIT",
+  "author": {
+    "name": "Tutorial Project Team",
+    "email": "team@tutorial-project.com",
+    "url": "https://tutorial-project.com"
+  },
+  "contributors": [
+    {
+      "name": "Tutorial Project Team",
+      "email": "team@tutorial-project.com",
+      "url": "https://tutorial-project.com"
+    }
+  ],
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/tutorial-project"
+  },
+  "files": [
+    "test/",
+    "coverage/",
+    "docs/",
+    "*.js",
+    "*.json",
+    "*.md"
+  ],
+  "directories": {
+    "test": "./test",
+    "doc": "./docs"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+}

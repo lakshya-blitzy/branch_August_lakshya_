@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node.js Tutorial - Health Dashboard</title>
+    <style>
+        /* Modern CSS styling for clean, readable health dashboard interface */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2d3748, #4a5568);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-content {
+            padding: 30px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f56565, #e53e3e);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .health-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .health-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .health-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-healthy {
+            background: #48bb78;
+            box-shadow: 0 0 10px rgba(72, 187, 120, 0.5);
+        }
+
+        .status-warning {
+            background: #ed8936;
+            box-shadow: 0 0 10px rgba(237, 137, 54, 0.5);
+        }
+
+        .status-error {
+            background: #f56565;
+            box-shadow: 0 0 10px rgba(245, 101, 101, 0.5);
+        }
+
+        .health-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 10px 0;
+        }
+
+        .health-label {
+            font-size: 0.9rem;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .monitoring-status {
+            background: linear-gradient(45deg, #2d3748, #4a5568);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .monitoring-status.active {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #f56565;
+        }
+
+        .metrics-section {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .metric-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .footer {
+            background: #f7fafc;
+            padding: 20px;
+            text-align: center;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .dashboard-content {
+                padding: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header section with title and description -->
+        <div class="header">
+            <h1>🚀 Health Dashboard</h1>
+            <p>Real-time monitoring for Node.js Tutorial Application</p>
+        </div>
+
+        <!-- Main dashboard content -->
+        <div class="dashboard-content">
+            <!-- Control buttons for manual actions -->
+            <div class="controls">
+                <button id="refreshBtn" class="btn btn-primary">🔄 Manual Refresh</button>
+                <button id="startMonitoringBtn" class="btn btn-secondary">▶️ Start Monitoring</button>
+                <button id="stopMonitoringBtn" class="btn btn-danger" disabled>⏹️ Stop Monitoring</button>
+            </div>
+
+            <!-- Monitoring status indicator -->
+            <div id="monitoringStatus" class="monitoring-status">
+                <span id="statusText">Monitoring Inactive</span>
+                <span id="loadingIndicator" class="loading" style="display: none;"></span>
+            </div>
+
+            <!-- Main health information grid -->
+            <div class="health-grid">
+                <!-- Application Status Card -->
+                <div class="health-card">
+                    <h3>
+                        <span id="appStatusIndicator" class="status-indicator status-error"></span>
+                        Application Status
+                    </h3>
+                    <div id="appStatus" class="health-value">Unknown</div>
+                    <div class="health-label">Current Status</div>
+                </div>
+
+                <!-- Uptime Card -->
+                <div class="health-card">
+                    <h3>
+                        <span class="status-indicator status-healthy"></span>
+                        System Uptime
+                    </h3>
+                    <div id="uptime" class="health-value">--</div>
+                    <div class="health-label">Application Runtime</div>
+                </div>
+
+                <!-- Memory Usage Card -->
+                <div class="health-card">
+                    <h3>
+                        <span id="memoryStatusIndicator" class="status-indicator status-healthy"></span>
+                        Memory Usage
+                    </h3>
+                    <div id="memoryUsage" class="health-value">-- MB</div>
+                    <div class="health-label">Current Memory Consumption</div>
+                </div>
+
+                <!-- Last Check Card -->
+                <div class="health-card">
+                    <h3>
+                        <span class="status-indicator status-healthy"></span>
+                        Last Health Check
+                    </h3>
+                    <div id="lastCheck" class="health-value">Never</div>
+                    <div class="health-label">Last Update Time</div>
+                </div>
+            </div>
+
+            <!-- Error message display area -->
+            <div id="errorContainer" style="display: none;">
+                <div id="errorMessage" class="error-message"></div>
+            </div>
+
+            <!-- Detailed metrics section -->
+            <div id="metricsSection" class="metrics-section" style="display: none;">
+                <h3 style="margin-bottom: 20px; color: #2d3748;">📊 Detailed Metrics</h3>
+                <div id="metricsGrid" class="metrics-grid">
+                    <!-- Metrics will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer with educational information -->
+        <div class="footer">
+            <p>🎓 Educational Node.js Tutorial Project - Demonstrating API consumption and health monitoring patterns</p>
+            <p>Built with vanilla JavaScript, Express.js backend, and PM2 production management</p>
+        </div>
+    </div>
+
+    <script>
+        /* Global configuration and state variables for health monitoring */
+        
+        // Health API endpoint configuration object
+        const healthApiEndpoints = {
+            main: '/health',
+            quick: '/health/quick',
+            metrics: '/health/metrics'
+        };
+
+        // Monitoring configuration
+        const refreshInterval = 5000; // 5 seconds between health checks
+        let currentHealthData = null; // Store latest health data
+        let isMonitoring = false; // Track monitoring state
+        let monitoringIntervalId = null; // Store interval ID for cleanup
+
+        /* DOM element references for efficient access */
+        const elements = {
+            refreshBtn: document.getElementById('refreshBtn'),
+            startMonitoringBtn: document.getElementById('startMonitoringBtn'),
+            stopMonitoringBtn: document.getElementById('stopMonitoringBtn'),
+            monitoringStatus: document.getElementById('monitoringStatus'),
+            statusText: document.getElementById('statusText'),
+            loadingIndicator: document.getElementById('loadingIndicator'),
+            appStatus: document.getElementById('appStatus'),
+            appStatusIndicator: document.getElementById('appStatusIndicator'),
+            uptime: document.getElementById('uptime'),
+            memoryUsage: document.getElementById('memoryUsage'),
+            memoryStatusIndicator: document.getElementById('memoryStatusIndicator'),
+            lastCheck: document.getElementById('lastCheck'),
+            errorContainer: document.getElementById('errorContainer'),
+            errorMessage: document.getElementById('errorMessage'),
+            metricsSection: document.getElementById('metricsSection'),
+            metricsGrid: document.getElementById('metricsGrid')
+        };
+
+        /**
+         * Fetches comprehensive health status from the backend /health API endpoint using the Fetch API
+         * Handles response processing, error handling, and data formatting for display in the health dashboard interface
+         * 
+         * @param {boolean} includeMetrics - Whether to include detailed metrics in the health check
+         * @returns {Promise} Promise that resolves with health status data or rejects with error information for display
+         */
+        async function fetchHealthStatus(includeMetrics = false) {
+            try {
+                // Construct health API endpoint URL using healthApiEndpoints.main configuration
+                let url = healthApiEndpoints.main;
+                
+                // Add query parameters for detailed health information if includeMetrics is true
+                if (includeMetrics) {
+                    url += '?detailed=true&metrics=true';
+                }
+
+                // Send HTTP GET request to health endpoint using fetch() with appropriate headers
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    // Set reasonable timeout for health checks
+                    signal: AbortSignal.timeout(10000)
+                });
+
+                // Check response status and handle HTTP error codes (404, 500, 503) appropriately
+                if (!response.ok) {
+                    throw new Error(`Health check failed: ${response.status} ${response.statusText}`);
+                }
+
+                // Parse JSON response data and validate health response structure
+                const healthData = await response.json();
+                
+                // Validate that response contains expected health data structure
+                if (!healthData || typeof healthData !== 'object') {
+                    throw new Error('Invalid health response format');
+                }
+
+                // Extract key health metrics including status, uptime, memory usage, and performance data
+                const processedData = {
+                    status: healthData.status || 'Unknown',
+                    uptime: healthData.uptime || 0,
+                    memory: healthData.memory || {},
+                    timestamp: healthData.timestamp || new Date().toISOString(),
+                    environment: healthData.environment || 'unknown',
+                    nodeVersion: healthData.nodeVersion || process.version,
+                    pid: healthData.pid || 'unknown'
+                };
+
+                // Format health data for display including timestamp conversion and metric formatting
+                processedData.uptimeFormatted = formatUptime(processedData.uptime);
+                processedData.memoryFormatted = formatMemoryUsage(processedData.memory);
+
+                // Update currentHealthData global variable with latest health information
+                currentHealthData = processedData;
+
+                // Return formatted health data for DOM update and dashboard display
+                return processedData;
+
+            } catch (error) {
+                // Handle network errors and API unavailability with appropriate error messaging
+                console.error('Health status fetch error:', error);
+                
+                // Create standardized error response for consistent error handling
+                const errorResponse = {
+                    error: true,
+                    message: error.message || 'Failed to fetch health status',
+                    timestamp: new Date().toISOString()
+                };
+
+                throw errorResponse;
+            }
+        }
+
+        /**
+         * Fetches lightweight health status from the backend /health/quick API endpoint optimized for frequent polling
+         * Designed for load balancer health checks with minimal resource usage and fast response times
+         * 
+         * @returns {Promise} Promise that resolves with quick health status or rejects with connection error
+         */
+        async function fetchQuickHealth() {
+            try {
+                // Send HTTP GET request to /health/quick endpoint using fetch() API
+                const response = await fetch(healthApiEndpoints.quick, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    // Set request timeout for quick health check response requirements
+                    signal: AbortSignal.timeout(3000) // Shorter timeout for quick checks
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Quick health check failed: ${response.status}`);
+                }
+
+                // Parse minimal health response including status and basic uptime information
+                const quickData = await response.json();
+
+                // Handle quick health check failures and network connectivity issues
+                if (!quickData || !quickData.status) {
+                    throw new Error('Invalid quick health response');
+                }
+
+                // Format quick health data for status indicator display and monitoring
+                const processedQuickData = {
+                    status: quickData.status,
+                    uptime: quickData.uptime || 0,
+                    timestamp: new Date().toISOString(),
+                    isQuickCheck: true
+                };
+
+                // Return quick health status for real-time health indicator updates
+                return processedQuickData;
+
+            } catch (error) {
+                console.error('Quick health check error:', error);
+                throw {
+                    error: true,
+                    message: `Quick health check failed: ${error.message}`,
+                    timestamp: new Date().toISOString()
+                };
+            }
+        }
+
+        /**
+         * Updates the HTML DOM elements with current health status information
+         * Formats health data for readable display, updating status indicators, and managing health dashboard visual state
+         * 
+         * @param {object} healthData - Health status data object containing application metrics
+         * @returns {void} No return value, performs DOM manipulation side effects
+         */
+        function updateHealthDisplay(healthData) {
+            try {
+                // Handle error states and display appropriate error information
+                if (healthData.error) {
+                    handleApiError(new Error(healthData.message), 'Health Status Update');
+                    return;
+                }
+
+                // Update health status indicator element with current application health status
+                const statusText = healthData.status || 'Unknown';
+                elements.appStatus.textContent = statusText;
+
+                // Apply appropriate CSS classes for health status visualization (healthy, warning, error)
+                updateStatusIndicator(elements.appStatusIndicator, statusText);
+
+                // Format and display application uptime with human-readable time formatting
+                if (healthData.uptime !== undefined) {
+                    elements.uptime.textContent = healthData.uptimeFormatted || formatUptime(healthData.uptime);
+                }
+
+                // Update memory usage display with formatted memory consumption metrics
+                if (healthData.memory) {
+                    const memoryText = healthData.memoryFormatted || formatMemoryUsage(healthData.memory);
+                    elements.memoryUsage.textContent = memoryText;
+                    
+                    // Update memory status indicator based on usage levels
+                    updateMemoryStatusIndicator(healthData.memory);
+                }
+
+                // Update last check timestamp with current time and refresh interval information
+                const now = new Date();
+                elements.lastCheck.textContent = now.toLocaleTimeString();
+
+                // Display environment information including Node.js version and deployment mode
+                if (healthData.environment || healthData.nodeVersion) {
+                    updateEnvironmentInfo(healthData);
+                }
+
+                // Update detailed health metrics section with performance data if available
+                if (healthData.metrics || healthData.detailed) {
+                    updateDetailedMetrics(healthData);
+                }
+
+                // Hide error container if health update is successful
+                elements.errorContainer.style.display = 'none';
+
+            } catch (error) {
+                console.error('Error updating health display:', error);
+                handleApiError(error, 'Display Update');
+            }
+        }
+
+        /**
+         * Updates status indicator visual state based on health status
+         * 
+         * @param {HTMLElement} indicator - DOM element for status indicator
+         * @param {string} status - Current health status text
+         */
+        function updateStatusIndicator(indicator, status) {
+            // Remove existing status classes
+            indicator.classList.remove('status-healthy', 'status-warning', 'status-error');
+            
+            // Apply appropriate CSS classes for health status visualization
+            switch (status.toLowerCase()) {
+                case 'ok':
+                case 'healthy':
+                case 'up':
+                    indicator.classList.add('status-healthy');
+                    break;
+                case 'warning':
+                case 'degraded':
+                    indicator.classList.add('status-warning');
+                    break;
+                case 'error':
+                case 'down':
+                case 'unhealthy':
+                default:
+                    indicator.classList.add('status-error');
+                    break;
+            }
+        }
+
+        /**
+         * Updates memory status indicator based on memory usage levels
+         * 
+         * @param {object} memoryData - Memory usage information
+         */
+        function updateMemoryStatusIndicator(memoryData) {
+            if (!memoryData || !memoryData.used) return;
+
+            const memoryUsageMB = memoryData.used / (1024 * 1024);
+            const indicator = elements.memoryStatusIndicator;
+
+            // Remove existing classes
+            indicator.classList.remove('status-healthy', 'status-warning', 'status-error');
+
+            // Apply status based on memory usage thresholds
+            if (memoryUsageMB < 100) {
+                indicator.classList.add('status-healthy');
+            } else if (memoryUsageMB < 200) {
+                indicator.classList.add('status-warning');
+            } else {
+                indicator.classList.add('status-error');
+            }
+        }
+
+        /**
+         * Updates detailed metrics section with performance data
+         * 
+         * @param {object} healthData - Health data containing metrics
+         */
+        function updateDetailedMetrics(healthData) {
+            if (!healthData.metrics && !healthData.detailed) return;
+
+            const metricsData = [
+                { label: 'Environment', value: healthData.environment || 'unknown' },
+                { label: 'Node Version', value: healthData.nodeVersion || 'unknown' },
+                { label: 'Process ID', value: healthData.pid || 'unknown' },
+                { label: 'Last Updated', value: new Date(healthData.timestamp).toLocaleString() }
+            ];
+
+            // Add memory breakdown if available
+            if (healthData.memory) {
+                if (healthData.memory.rss) {
+                    metricsData.push({
+                        label: 'RSS Memory',
+                        value: `${Math.round(healthData.memory.rss / (1024 * 1024))} MB`
+                    });
+                }
+                if (healthData.memory.heapUsed) {
+                    metricsData.push({
+                        label: 'Heap Used',
+                        value: `${Math.round(healthData.memory.heapUsed / (1024 * 1024))} MB`
+                    });
+                }
+            }
+
+            // Clear existing metrics
+            elements.metricsGrid.innerHTML = '';
+
+            // Create metric items
+            metricsData.forEach(metric => {
+                const metricElement = document.createElement('div');
+                metricElement.className = 'metric-item';
+                metricElement.innerHTML = `
+                    <div class="metric-value">${metric.value}</div>
+                    <div class="metric-label">${metric.label}</div>
+                `;
+                elements.metricsGrid.appendChild(metricElement);
+            });
+
+            // Show metrics section
+            elements.metricsSection.style.display = 'block';
+        }
+
+        /**
+         * Updates environment information display
+         * 
+         * @param {object} healthData - Health data containing environment info
+         */
+        function updateEnvironmentInfo(healthData) {
+            // This could be expanded to show environment-specific information
+            // Currently handled in updateDetailedMetrics function
+        }
+
+        /**
+         * Initiates automatic health monitoring by setting up periodic health status polling
+         * Manages refresh intervals and maintains real-time health dashboard updates with user-controlled monitoring lifecycle
+         * 
+         * @returns {void} No return value, initiates monitoring side effects and DOM updates
+         */
+        function startHealthMonitoring() {
+            try {
+                // Prevent multiple monitoring instances
+                if (isMonitoring) {
+                    console.warn('Health monitoring is already active');
+                    return;
+                }
+
+                // Set isMonitoring global flag to true to indicate active monitoring state
+                isMonitoring = true;
+
+                // Update monitoring controls interface to show active monitoring status
+                updateMonitoringControls();
+
+                // Perform initial health status fetch using fetchHealthStatus() for immediate display
+                performHealthCheck();
+
+                // Set up periodic health status polling using setInterval() with configured refresh interval
+                monitoringIntervalId = setInterval(() => {
+                    performHealthCheck();
+                }, refreshInterval);
+
+                // Display monitoring status indicator and refresh countdown in user interface
+                updateMonitoringStatus('Monitoring Active - Next check in 5 seconds', true);
+
+                // Log monitoring start event for debugging and educational demonstration
+                console.log('Health monitoring started - checking every', refreshInterval, 'ms');
+
+            } catch (error) {
+                console.error('Failed to start health monitoring:', error);
+                handleApiError(error, 'Start Monitoring');
+            }
+        }
+
+        /**
+         * Stops automatic health monitoring by clearing periodic polling intervals
+         * Updates interface controls and maintains final health status display for manual health checking mode
+         * 
+         * @returns {void} No return value, performs monitoring cleanup and interface updates
+         */
+        function stopHealthMonitoring() {
+            try {
+                // Clear health monitoring interval using clearInterval() to stop automatic polling
+                if (monitoringIntervalId) {
+                    clearInterval(monitoringIntervalId);
+                    monitoringIntervalId = null;
+                }
+
+                // Set isMonitoring global flag to false to indicate inactive monitoring state
+                isMonitoring = false;
+
+                // Update monitoring controls interface to show stopped monitoring status
+                updateMonitoringControls();
+
+                // Display manual refresh option for on-demand health status checking
+                updateMonitoringStatus('Monitoring Stopped - Use manual refresh for health checks', false);
+
+                // Log monitoring stop event for debugging and educational demonstration
+                console.log('Health monitoring stopped');
+
+            } catch (error) {
+                console.error('Error stopping health monitoring:', error);
+                handleApiError(error, 'Stop Monitoring');
+            }
+        }
+
+        /**
+         * Updates monitoring control button states and status display
+         */
+        function updateMonitoringControls() {
+            // Update start/stop button states to reflect current monitoring status
+            elements.startMonitoringBtn.disabled = isMonitoring;
+            elements.stopMonitoringBtn.disabled = !isMonitoring;
+
+            // Update monitoring status display
+            const statusElement = elements.monitoringStatus;
+            if (isMonitoring) {
+                statusElement.classList.add('active');
+            } else {
+                statusElement.classList.remove('active');
+            }
+        }
+
+        /**
+         * Updates monitoring status text and loading indicator
+         * 
+         * @param {string} message - Status message to display
+         * @param {boolean} isActive - Whether monitoring is currently active
+         */
+        function updateMonitoringStatus(message, isActive) {
+            elements.statusText.textContent = message;
+            
+            if (isActive) {
+                elements.monitoringStatus.classList.add('active');
+            } else {
+                elements.monitoringStatus.classList.remove('active');
+            }
+        }
+
+        /**
+         * Performs manual health status refresh by fetching current health data
+         * Updates display and provides immediate health information without enabling automatic monitoring
+         * 
+         * @returns {Promise} Promise that resolves when manual refresh is complete
+         */
+        async function refreshHealthManually() {
+            try {
+                // Display loading indicator to show health refresh in progress
+                showLoadingIndicator(true);
+                elements.refreshBtn.disabled = true;
+
+                // Fetch current health status using fetchHealthStatus() with full metrics
+                const healthData = await fetchHealthStatus(true);
+
+                // Update health display with latest information using updateHealthDisplay()
+                updateHealthDisplay(healthData);
+
+                // Update last refresh timestamp with current time for user reference
+                const refreshTime = new Date().toLocaleString();
+                console.log('Manual health refresh completed at:', refreshTime);
+
+                // Log manual refresh event for debugging and user interaction tracking
+                console.log('Manual refresh successful:', healthData);
+
+            } catch (error) {
+                // Handle refresh errors and display appropriate error messaging
+                console.error('Manual refresh failed:', error);
+                handleApiError(error, 'Manual Refresh');
+            } finally {
+                // Clear loading indicator after successful or failed refresh attempt
+                showLoadingIndicator(false);
+                elements.refreshBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Performs health check during monitoring
+         */
+        async function performHealthCheck() {
+            try {
+                showLoadingIndicator(true);
+                
+                // Use quick health check during monitoring for better performance
+                const healthData = await fetchQuickHealth();
+                updateHealthDisplay(healthData);
+                
+            } catch (error) {
+                console.error('Automatic health check failed:', error);
+                handleApiError(error, 'Automatic Health Check');
+            } finally {
+                showLoadingIndicator(false);
+            }
+        }
+
+        /**
+         * Shows or hides loading indicator
+         * 
+         * @param {boolean} show - Whether to show the loading indicator
+         */
+        function showLoadingIndicator(show) {
+            elements.loadingIndicator.style.display = show ? 'inline-block' : 'none';
+        }
+
+        /**
+         * Formats application uptime seconds into human-readable duration string
+         * Provides appropriate time units (days, hours, minutes, seconds) for clear health dashboard display
+         * 
+         * @param {number} uptimeSeconds - Total uptime in seconds
+         * @returns {string} Formatted uptime string in human-readable format
+         */
+        function formatUptime(uptimeSeconds) {
+            if (!uptimeSeconds || uptimeSeconds < 0) {
+                return '0 seconds';
+            }
+
+            // Calculate days, hours, minutes, and seconds from total uptime seconds
+            const days = Math.floor(uptimeSeconds / 86400);
+            const hours = Math.floor((uptimeSeconds % 86400) / 3600);
+            const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+            const seconds = Math.floor(uptimeSeconds % 60);
+
+            const parts = [];
+
+            // Format duration components with appropriate pluralization and units
+            if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+            if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+            if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+            if (seconds > 0) parts.push(`${seconds} second${seconds !== 1 ? 's' : ''}`);
+
+            // Handle edge cases including zero uptime and very large uptime values
+            if (parts.length === 0) {
+                return '0 seconds';
+            }
+
+            // Return concise uptime string suitable for dashboard display
+            return parts.slice(0, 2).join(', '); // Show only the two most significant units
+        }
+
+        /**
+         * Formats memory usage bytes into human-readable memory size
+         * Provides appropriate units (MB, GB) and percentage information for clear memory consumption display
+         * 
+         * @param {object} memoryData - Memory usage data object
+         * @returns {string} Formatted memory usage string with units and percentage
+         */
+        function formatMemoryUsage(memoryData) {
+            if (!memoryData || typeof memoryData !== 'object') {
+                return 'Unknown';
+            }
+
+            // Handle missing memory data with appropriate fallback formatting
+            if (!memoryData.used && !memoryData.rss && !memoryData.heapUsed) {
+                return 'No data available';
+            }
+
+            // Use the most relevant memory metric available
+            const memoryBytes = memoryData.used || memoryData.rss || memoryData.heapUsed || 0;
+
+            // Convert memory bytes to appropriate units (MB, GB) for readability
+            const memoryMB = memoryBytes / (1024 * 1024);
+            
+            if (memoryMB >= 1024) {
+                const memoryGB = memoryMB / 1024;
+                return `${memoryGB.toFixed(2)} GB`;
+            } else {
+                return `${memoryMB.toFixed(2)} MB`;
+            }
+
+            // Calculate memory usage percentage if total memory information is available
+            // Note: This would require system memory information from the backend
+        }
+
+        /**
+         * Handles API communication errors during health status fetching
+         * Displays appropriate error messages and manages error state in health dashboard interface
+         * 
+         * @param {Error} error - Error object containing error details
+         * @param {string} operation - Description of the operation that failed
+         * @returns {void} No return value, performs error display and logging side effects
+         */
+        function handleApiError(error, operation) {
+            try {
+                // Determine error type and severity based on error object and operation context
+                const errorMessage = error.message || 'Unknown error occurred';
+                const timestamp = new Date().toLocaleString();
+
+                // Format user-friendly error message for health dashboard display
+                const displayMessage = `${operation} failed: ${errorMessage}`;
+
+                // Update health status indicator to show error state with appropriate styling
+                updateStatusIndicator(elements.appStatusIndicator, 'error');
+                elements.appStatus.textContent = 'Error';
+
+                // Display error information in health dashboard without exposing sensitive details
+                elements.errorMessage.textContent = `⚠️ ${displayMessage} (${timestamp})`;
+                elements.errorContainer.style.display = 'block';
+
+                // Log error details for debugging and educational demonstration purposes
+                console.error(`Health Dashboard Error [${operation}]:`, {
+                    message: errorMessage,
+                    timestamp,
+                    operation,
+                    error
+                });
+
+                // Provide recovery suggestions and troubleshooting information in error display
+                setTimeout(() => {
+                    if (elements.errorContainer.style.display === 'block') {
+                        const recoveryMessage = '💡 Tip: Check if the backend server is running and try manual refresh';
+                        elements.errorMessage.innerHTML += `<br><small>${recoveryMessage}</small>`;
+                    }
+                }, 2000);
+
+            } catch (displayError) {
+                // Fallback error handling if error display itself fails
+                console.error('Failed to display error:', displayError);
+                console.error('Original error:', error);
+            }
+        }
+
+        /**
+         * Initializes the health dashboard interface by setting up event listeners
+         * Configures initial display state, performs initial health check, and prepares interface for health monitoring operations
+         * 
+         * @returns {void} No return value, performs dashboard initialization side effects
+         */
+        function initializeHealthDashboard() {
+            try {
+                // Set up event listeners for manual refresh button and monitoring controls
+                elements.refreshBtn.addEventListener('click', refreshHealthManually);
+                elements.startMonitoringBtn.addEventListener('click', startHealthMonitoring);
+                elements.stopMonitoringBtn.addEventListener('click', stopHealthMonitoring);
+
+                // Set up keyboard shortcuts for refresh and monitoring toggle operations
+                document.addEventListener('keydown', (event) => {
+                    // F5 or Ctrl+R for manual refresh
+                    if (event.key === 'F5' || (event.ctrlKey && event.key === 'r')) {
+                        event.preventDefault();
+                        refreshHealthManually();
+                    }
+                    // Ctrl+M to toggle monitoring
+                    else if (event.ctrlKey && event.key === 'm') {
+                        event.preventDefault();
+                        if (isMonitoring) {
+                            stopHealthMonitoring();
+                        } else {
+                            startHealthMonitoring();
+                        }
+                    }
+                });
+
+                // Configure automatic dashboard refresh on page focus for updated information
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden && !isMonitoring) {
+                        // Perform health check when user returns to the page
+                        refreshHealthManually();
+                    }
+                });
+
+                // Initialize monitoring controls and button states for user interaction
+                updateMonitoringControls();
+
+                // Configure initial health dashboard display state and loading indicators
+                updateMonitoringStatus('Dashboard Initialized - Ready for health monitoring', false);
+
+                // Set up responsive layout handling for different screen sizes and devices
+                handleResponsiveLayout();
+
+                // Perform initial health status fetch to populate dashboard with current information
+                refreshHealthManually();
+
+                // Initialize educational information display about health monitoring concepts
+                displayEducationalInfo();
+
+                // Log dashboard initialization completion for debugging and demonstration purposes
+                console.log('Health Dashboard initialized successfully');
+                console.log('Available keyboard shortcuts:');
+                console.log('- F5 or Ctrl+R: Manual refresh');
+                console.log('- Ctrl+M: Toggle monitoring');
+
+            } catch (error) {
+                console.error('Failed to initialize health dashboard:', error);
+                handleApiError(error, 'Dashboard Initialization');
+            }
+        }
+
+        /**
+         * Handles responsive layout adjustments for different screen sizes
+         */
+        function handleResponsiveLayout() {
+            // This function can be expanded to handle specific responsive behaviors
+            // Currently handled through CSS media queries
+            console.log('Responsive layout handling initialized');
+        }
+
+        /**
+         * Displays educational information about health monitoring concepts
+         */
+        function displayEducationalInfo() {
+            // Add educational tooltips or information panels
+            // This demonstrates the educational nature of the tutorial project
+            console.log('Health Monitoring Educational Concepts:');
+            console.log('1. Health checks provide real-time application status');
+            console.log('2. Regular monitoring helps detect issues early');
+            console.log('3. Different endpoints serve different monitoring needs');
+            console.log('4. PM2 cluster mode enables production-ready deployment');
+        }
+
+        // Initialize the health dashboard when the page loads
+        document.addEventListener('DOMContentLoaded', initializeHealthDashboard);
+
+        // Additional event listener for page load as fallback
+        window.addEventListener('load', () => {
+            if (!isMonitoring && !currentHealthData) {
+                // Ensure initial health check if not already performed
+                refreshHealthManually();
+            }
+        });
+
+        // Cleanup monitoring when page is unloaded
+        window.addEventListener('beforeunload', () => {
+            if (isMonitoring) {
+                stopHealthMonitoring();
+            }
+        });
+    </script>
+</body>
+</html>

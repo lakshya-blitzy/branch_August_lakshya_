@@ -1,0 +1,376 @@
+# ============================================================================
+# DEVELOPMENT-OPTIMIZED DOCKERFILE FOR NODE.JS TUTORIAL PROJECT
+# ============================================================================
+# 
+# Development-specific containerization for Node.js v22.x LTS tutorial project
+# providing enhanced developer experience with hot reloading, debugging capabilities,
+# and comprehensive development tooling. Optimized for educational value and rapid
+# iteration cycles while maintaining production deployment readiness patterns.
+#
+# EDUCATIONAL OBJECTIVES:
+# - Demonstrate modern containerized development practices
+# - Showcase multi-stage Docker builds for development optimization
+# - Implement hot reloading in containerized Node.js applications
+# - Configure remote debugging for containerized development environments
+# - Establish cross-platform development environment consistency
+# - Integrate with docker-compose for multi-service development
+#
+# DEVELOPMENT FEATURES:
+# - Node.js v22.x LTS with Active LTS support extending into late 2025
+# - Nodemon v3.1.7 hot reloading with cross-platform file watching
+# - Remote debugging on port 9229 for IDE integration
+# - Comprehensive development dependencies and tooling
+# - Volume mounting optimization for live code synchronization
+# - Enhanced Unix utilities for development convenience
+# - Non-root user execution following security best practices
+#
+# TECHNOLOGY STACK INTEGRATION:
+# - Express.js v5.1.0 development environment support
+# - Jest/Mocha testing frameworks with live execution
+# - PM2 development process management preparation
+# - Modern ES Modules with top-level await capabilities
+# - Cross-platform compatibility (Windows, macOS, Linux)
+#
+# USAGE EXAMPLES:
+# Build: docker build -f docker/Dockerfile.dev -t nodejs-tutorial-dev .
+# Run: docker run -p 3000:3000 -p 9229:9229 -v $(pwd):/app nodejs-tutorial-dev
+# Compose: docker-compose -f docker-compose.dev.yml up
+#
+# MAINTAINER: Node.js Tutorial Project Team
+# VERSION: 1.0.0
+# LAST UPDATED: 2025-01-01
+# ============================================================================
+
+# ============================================================================
+# STAGE 1: DEVELOPMENT BASE - Enhanced Alpine with Development Tools
+# ============================================================================
+# Creates development-optimized base image with comprehensive tooling and
+# debugging capabilities. Includes additional Unix utilities, Git support,
+# and development dependencies for enhanced developer experience.
+
+FROM node:22-alpine AS development_base
+
+# Set development-specific labels for container identification and management
+LABEL maintainer="Node.js Tutorial Project Team"
+LABEL version="1.0.0"
+LABEL description="Development container for Node.js Tutorial Project with hot reloading and debugging"
+LABEL educational.purpose="Demonstrate modern containerized development practices"
+LABEL development.stage="base"
+LABEL security.user="node"
+LABEL nodejs.version="22.x-lts"
+LABEL nodemon.version="3.1.7"
+LABEL express.version="5.1.0"
+
+# Install comprehensive development tools and utilities for enhanced developer experience
+# Enhanced tooling provides Git integration, debugging utilities, performance monitoring,
+# and development convenience tools while maintaining Alpine's minimal attack surface
+RUN apk add --no-cache \
+    # Version control and development workflow support
+    git \
+    curl \
+    wget \
+    # Shell enhancements for better development experience  
+    bash \
+    zsh \
+    fish \
+    # Text editors for container-based development
+    vim \
+    nano \
+    # System monitoring and debugging utilities
+    htop \
+    procps \
+    strace \
+    # Build tools for native module compilation
+    python3 \
+    make \
+    g++ \
+    gcc \
+    musl-dev \
+    # Network debugging and testing tools
+    netcat-openbsd \
+    bind-tools \
+    # File manipulation and archiving utilities
+    zip \
+    unzip \
+    tar \
+    # JSON processing for configuration management
+    jq \
+    # SSL/TLS debugging for HTTPS development
+    openssl \
+    ca-certificates \
+    # Performance profiling and debugging
+    perf \
+    valgrind \
+    # Development convenience utilities
+    tree \
+    less \
+    grep \
+    sed \
+    awk
+
+# Set working directory following Node.js container best practices
+# /app is the standard working directory for Node.js applications
+WORKDIR /app
+
+# Configure Git for development workflows within container
+# Provides sensible defaults for containerized development
+RUN git config --global init.defaultBranch main && \
+    git config --global user.name "Container Developer" && \
+    git config --global user.email "developer@container.local" && \
+    git config --global safe.directory /app
+
+# ============================================================================
+# STAGE 2: DEVELOPMENT DEPENDENCIES - Comprehensive Dependency Installation
+# ============================================================================
+# Installs all dependencies including development dependencies for comprehensive
+# development environment. Optimizes npm cache and implements security best
+# practices for dependency management.
+
+FROM development_base AS development_dependencies
+
+# Development stage identification
+LABEL development.stage="dependencies"
+LABEL npm.cache="optimized"
+LABEL dependencies.type="development"
+
+# Copy package files for dependency installation with optimal Docker layer caching
+# Separate copy ensures dependency installation layer is cached when source code changes
+COPY package*.json ./
+
+# Create npm cache directory with proper permissions for node user
+# Optimizes subsequent npm operations and provides persistent cache
+RUN mkdir -p /home/node/.npm && \
+    chown -R node:node /home/node/.npm
+
+# Install all dependencies including development dependencies
+# npm ci provides faster, reliable, reproducible builds by installing from package-lock.json
+# --include=dev explicitly includes development dependencies for comprehensive development environment
+RUN npm ci --include=dev --prefer-offline --no-audit
+
+# Install global development utilities for enhanced development experience
+# nodemon: Hot reloading and automatic restart on file changes
+# pm2: Development process management and monitoring preparation
+# npm-check-updates: Dependency update management
+# clinic: Performance profiling and debugging toolkit
+RUN npm install -g \
+    nodemon@^3.1.7 \
+    pm2@^6.0.8 \
+    npm-check-updates@latest \
+    @nearform/clinic@latest \
+    autocannon@latest
+
+# Clean npm cache to reduce image size while maintaining development functionality
+# Removes temporary files and reduces final image size
+RUN npm cache clean --force
+
+# ============================================================================
+# STAGE 3: DEVELOPMENT RUNTIME - Final Development Environment
+# ============================================================================
+# Creates final development runtime with hot reloading, debugging capabilities,
+# security hardening, and comprehensive development features. Implements
+# non-root user execution and cross-platform development optimizations.
+
+FROM development_dependencies AS development_runtime
+
+# Final development stage identification and feature documentation
+LABEL development.stage="runtime"
+LABEL features.hot_reload="nodemon"
+LABEL features.debugging="node-inspector:9229"
+LABEL features.security="non-root-user"
+LABEL features.cross_platform="chokidar-polling"
+LABEL features.volume_optimization="live-sync"
+LABEL features.ide_integration="vscode,webstorm,chrome-devtools"
+
+# Configure development environment variables for optimal development experience
+# NODE_ENV=development: Enables development mode with enhanced debugging and logging
+# DEBUG: Express.js and Helmet.js debug logging for development insights
+# DEV_MODE: Application-specific development mode flag
+# HOT_RELOAD: Enables hot reloading functionality for instant feedback
+# CHOKIDAR_USEPOLLING: Cross-platform file watching compatibility (Windows, macOS, Linux)
+# FORCE_COLOR: Enables colored terminal output in containerized environment
+ENV NODE_ENV=development
+ENV DEBUG=express:*,helmet:*,tutorial:*
+ENV DEV_MODE=true
+ENV HOT_RELOAD=true
+ENV CHOKIDAR_USEPOLLING=true
+ENV FORCE_COLOR=1
+ENV TERM=xterm-256color
+
+# Configure development-specific Node.js optimizations
+# Enables source map support for enhanced debugging experience
+# Configures unhandled rejection handling for development safety
+ENV NODE_OPTIONS="--enable-source-maps --unhandled-rejections=strict"
+
+# Create dedicated nodejs group and user for security best practices
+# Follows principle of least privilege by running as non-root user
+# Group ID 1001 and User ID 1001 avoid conflicts with host system users
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -G nodejs -h /home/nodejs -s /bin/bash
+
+# Create development directories with proper ownership and permissions
+# Ensures nodejs user has necessary permissions for development operations
+RUN mkdir -p /app/logs /app/tmp /app/uploads /app/coverage /app/docs && \
+    chown -R nodejs:nodejs /app && \
+    chmod -R 755 /app
+
+# Copy application source code with nodejs user ownership
+# --chown flag ensures files are owned by nodejs user from the start
+# Prevents permission issues during development and file watching
+COPY --chown=nodejs:nodejs . .
+
+# Ensure proper permissions for development files and directories
+# Critical for hot reloading, file watching, and development operations
+RUN chown -R nodejs:nodejs /app && \
+    chmod +x /app/scripts/*.sh 2>/dev/null || true
+
+# Switch to nodejs user for all subsequent operations
+# Implements security best practice of non-root execution
+# Ensures all processes run with minimal required privileges
+USER nodejs
+
+# Expose application port and debugging port for development access
+# Port 3000: Standard Node.js application port for HTTP traffic
+# Port 9229: Node.js inspector protocol for remote debugging
+EXPOSE 3000 9229
+
+# Configure comprehensive health check for development monitoring
+# Validates application responsiveness and health during development
+# 30-second interval balances monitoring frequency with resource usage
+# 3-second timeout prevents hanging health checks
+# 10-second start period allows application startup time
+# 3 retries provide resilience against temporary issues
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Set default command for development container startup
+# Uses npm run dev script which typically includes nodemon for hot reloading
+# npm run dev command should be defined in package.json scripts section
+# Provides consistent development startup across different development environments
+CMD ["npm", "run", "dev"]
+
+# ============================================================================
+# DEVELOPMENT USAGE DOCUMENTATION AND BEST PRACTICES
+# ============================================================================
+#
+# DOCKER BUILD COMMANDS:
+# Build development image:
+#   docker build -f docker/Dockerfile.dev -t nodejs-tutorial-dev .
+#
+# Build with custom build arguments:
+#   docker build -f docker/Dockerfile.dev \
+#     --build-arg NODE_VERSION=22-alpine \
+#     --build-arg NODEMON_VERSION=3.1.7 \
+#     -t nodejs-tutorial-dev .
+#
+# DOCKER RUN COMMANDS:
+# Run with port mapping and volume mounting:
+#   docker run -p 3000:3000 -p 9229:9229 \
+#     -v $(pwd):/app \
+#     -v /app/node_modules \
+#     nodejs-tutorial-dev
+#
+# Run with environment variable overrides:
+#   docker run -p 3000:3000 -p 9229:9229 \
+#     -v $(pwd):/app \
+#     -e DEBUG=express:*,tutorial:* \
+#     -e LOG_LEVEL=debug \
+#     nodejs-tutorial-dev
+#
+# Run with interactive terminal:
+#   docker run -it -p 3000:3000 -p 9229:9229 \
+#     -v $(pwd):/app \
+#     nodejs-tutorial-dev /bin/bash
+#
+# DOCKER COMPOSE INTEGRATION:
+# Use with docker-compose.dev.yml:
+#   docker-compose -f docker-compose.dev.yml up
+#   docker-compose -f docker-compose.dev.yml up --build
+#   docker-compose -f docker-compose.dev.yml logs -f
+#
+# VOLUME MOUNTING BEST PRACTICES:
+# Source code synchronization:
+#   -v $(pwd):/app
+#
+# Node modules persistence (performance optimization):
+#   -v nodejs-tutorial-node-modules:/app/node_modules
+#
+# Log persistence:
+#   -v nodejs-tutorial-logs:/app/logs
+#
+# DEBUGGING CONFIGURATION:
+# VS Code launch.json configuration:
+# {
+#   "type": "node",
+#   "request": "attach",
+#   "name": "Docker: Attach to Node",
+#   "port": 9229,
+#   "address": "localhost",
+#   "localRoot": "${workspaceFolder}/src/backend",
+#   "remoteRoot": "/app",
+#   "protocol": "inspector"
+# }
+#
+# Chrome DevTools debugging:
+#   Open chrome://inspect in Chrome browser
+#   Configure network target: localhost:9229
+#   Click "inspect" on detected Node.js process
+#
+# DEVELOPMENT WORKFLOW RECOMMENDATIONS:
+# 1. Use volume mounts for live code synchronization
+# 2. Enable hot reloading with nodemon for instant feedback
+# 3. Configure IDE debugging for seamless development experience
+# 4. Monitor container logs for development insights
+# 5. Use health checks to verify application status
+# 6. Leverage multi-stage builds for optimized development images
+# 7. Follow security best practices with non-root user execution
+#
+# CROSS-PLATFORM CONSIDERATIONS:
+# Windows users:
+#   - Use WSL2 for optimal Docker performance
+#   - Enable CHOKIDAR_USEPOLLING for file watching compatibility
+#   - Use PowerShell or Git Bash for command execution
+#
+# macOS users:
+#   - Docker Desktop provides native integration
+#   - File watching should work without polling
+#   - Consider osxfs performance implications for large projects
+#
+# Linux users:
+#   - Native Docker performance and compatibility
+#   - Optimal file watching and volume mounting performance
+#   - Full feature compatibility without platform-specific adjustments
+#
+# PERFORMANCE OPTIMIZATION:
+# 1. Use .dockerignore to exclude unnecessary files
+# 2. Implement multi-stage builds for smaller final images
+# 3. Leverage Docker layer caching for faster builds
+# 4. Use named volumes for node_modules persistence
+# 5. Configure appropriate file watching modes for platform
+# 6. Monitor resource usage and adjust container limits
+#
+# SECURITY CONSIDERATIONS:
+# 1. Run containers as non-root user (nodejs:nodejs)
+# 2. Use official Node.js base images with security updates
+# 3. Keep development dependencies separate from production
+# 4. Implement proper file permissions and ownership
+# 5. Avoid exposing debugging ports in production environments
+# 6. Regularly update base images and dependencies
+# 7. Use secrets management for sensitive development data
+#
+# TROUBLESHOOTING COMMON ISSUES:
+# Permission denied errors:
+#   - Ensure proper file ownership with --chown in COPY commands
+#   - Verify nodejs user has necessary permissions
+#   - Check volume mount permissions on host system
+#
+# File watching not working:
+#   - Enable CHOKIDAR_USEPOLLING=true for cross-platform compatibility
+#   - Verify volume mounts are configured correctly
+#   - Check nodemon configuration in nodemon.json
+#
+# Debugging connection failures:
+#   - Verify port 9229 is exposed and mapped correctly
+#   - Ensure Node.js is started with --inspect=0.0.0.0:9229
+#   - Check firewall and network configuration
+#
+# ============================================================================

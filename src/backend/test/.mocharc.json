@@ -1,0 +1,381 @@
+{
+  "$schema": "https://json.schemastore.org/mocharc.json",
+  "spec": [
+    "unit/**/*.test.js",
+    "integration/**/*.test.js",
+    "e2e/**/*.test.js",
+    "performance/**/*.test.js",
+    "security/**/*.test.js"
+  ],
+  "require": [
+    "./setup.js"
+  ],
+  "loader": "esmock",
+  "timeout": 10000,
+  "ui": "bdd",
+  "reporter": "spec",
+  "reporter-options": {
+    "output": "../logs/test-directory-results.json",
+    "consoleReporter": "spec",
+    "jsonReporter": "../logs/test-results.json"
+  },
+  "parallel": true,
+  "jobs": 2,
+  "recursive": true,
+  "extension": [
+    "js",
+    "mjs"
+  ],
+  "ignore": [
+    "node_modules/**",
+    "coverage/**",
+    "fixtures/**",
+    "helpers/**",
+    "../flask-app/**/*.py"
+  ],
+  "file": [
+    "./setup.js"
+  ],
+  "exit": true,
+  "check-leaks": true,
+  "full-trace": true,
+  "bail": false,
+  "slow": 50,
+  "grep": "",
+  "global-setup": "./setup.js",
+  "global-teardown": "./teardown.js",
+  "watch": false,
+  "watch-files": [
+    "../**/*.js",
+    "../**/*.mjs"
+  ],
+  "watch-ignore": [
+    "node_modules/**",
+    "coverage/**",
+    "../logs/**"
+  ],
+  "diff": true,
+  "inline-diffs": false,
+  "reporter-option": [
+    "maxDiffSize=8192"
+  ],
+  "color": true,
+  "growl": false,
+  "dry-run": false,
+  "fail-zero": false,
+  "forbid-only": false,
+  "forbid-pending": false,
+  "require-async": true,
+  "sort": false,
+  "experimental-loader": [
+    "esmock"
+  ],
+  "node-option": [
+    "--loader=esmock",
+    "--experimental-loader=esmock",
+    "--enable-source-maps",
+    "--max-old-space-size=512"
+  ],
+  "package": "./package.json",
+  "config": {
+    "testDirectoryScope": true,
+    "enableCoverage": true,
+    "coverageTool": "c8",
+    "framework": "mocha",
+    "nodeVersion": "v22.x",
+    "esModules": true,
+    "crossPlatformTesting": true,
+    "pm2Testing": true,
+    "securityTesting": true,
+    "performanceTesting": true,
+    "educationalMode": true,
+    "tutorialPhase": "Testing Implementation (Phase 4)",
+    "complexityLevel": "Intermediate"
+  },
+  "testCategories": {
+    "unit": {
+      "description": "Isolated component testing for HTTP server, Express.js routes, middleware, controllers, and services",
+      "patterns": [
+        "unit/basic-server.test.js",
+        "unit/express-server.test.js",
+        "unit/routes/**/*.test.js",
+        "unit/middleware/**/*.test.js",
+        "unit/controllers/**/*.test.js",
+        "unit/services/**/*.test.js"
+      ],
+      "timeout": 5000,
+      "parallel": true,
+      "coverageRequired": true
+    },
+    "integration": {
+      "description": "Component interaction testing including API endpoints, middleware stack, and cross-platform compatibility",
+      "patterns": [
+        "integration/express-app.test.js",
+        "integration/api-endpoints.test.js",
+        "integration/middleware-stack.test.js",
+        "integration/cross-platform.test.js",
+        "integration/flask-parity.test.js"
+      ],
+      "timeout": 10000,
+      "parallel": true,
+      "coverageRequired": true
+    },
+    "e2e": {
+      "description": "Complete workflow testing including server deployment, PM2 cluster mode, and production scenarios",
+      "patterns": [
+        "e2e/server-deployment.test.js",
+        "e2e/pm2-cluster.test.js",
+        "e2e/production-workflow.test.js",
+        "e2e/zero-downtime.test.js"
+      ],
+      "timeout": 15000,
+      "parallel": false,
+      "coverageRequired": false
+    },
+    "performance": {
+      "description": "Performance validation including response time, memory usage, and load testing",
+      "patterns": [
+        "performance/response-time.test.js",
+        "performance/memory-usage.test.js",
+        "performance/concurrent-requests.test.js",
+        "performance/load-testing.test.js"
+      ],
+      "timeout": 30000,
+      "parallel": false,
+      "coverageRequired": false
+    },
+    "security": {
+      "description": "Security validation including Helmet.js headers, XSS protection, and vulnerability scanning",
+      "patterns": [
+        "security/helmet-headers.test.js",
+        "security/xss-protection.test.js",
+        "security/csrf-protection.test.js",
+        "security/vulnerability-scan.test.js"
+      ],
+      "timeout": 8000,
+      "parallel": true,
+      "coverageRequired": true
+    }
+  },
+  "educationalConfiguration": {
+    "tutorialPhases": {
+      "phase1BasicServer": {
+        "testFiles": "unit/basic-server.test.js",
+        "learningObjective": "Basic HTTP server implementation testing using Node.js core modules",
+        "complexity": "Beginner",
+        "timeout": 3000
+      },
+      "phase2ExpressIntegration": {
+        "testFiles": "unit/express-server.test.js",
+        "learningObjective": "Express.js framework integration testing with middleware and routing",
+        "complexity": "Intermediate",
+        "timeout": 5000
+      },
+      "phase3FlaskMigration": {
+        "testFiles": "integration/flask-parity.test.js",
+        "learningObjective": "Cross-platform testing and feature parity validation with Flask",
+        "complexity": "Intermediate",
+        "timeout": 10000
+      },
+      "phase4TestingImplementation": {
+        "testFiles": "**/*.test.js",
+        "learningObjective": "Comprehensive testing framework implementation and configuration",
+        "complexity": "Intermediate",
+        "timeout": 10000
+      },
+      "phase5ProductionDeployment": {
+        "testFiles": "e2e/pm2-cluster.test.js",
+        "learningObjective": "PM2 cluster mode testing and production deployment validation",
+        "complexity": "Advanced",
+        "timeout": 15000
+      },
+      "phase6SecurityImplementation": {
+        "testFiles": "security/**/*.test.js",
+        "learningObjective": "Security testing with Helmet.js and vulnerability validation",
+        "complexity": "Advanced",
+        "timeout": 8000
+      }
+    },
+    "progressiveComplexity": {
+      "beginner": [
+        "unit/basic-server.test.js",
+        "unit/http-server.test.js"
+      ],
+      "intermediate": [
+        "unit/express-server.test.js",
+        "integration/express-app.test.js",
+        "integration/cross-platform.test.js"
+      ],
+      "advanced": [
+        "e2e/**/*.test.js",
+        "security/**/*.test.js",
+        "performance/**/*.test.js"
+      ]
+    }
+  },
+  "environmentConfiguration": {
+    "nodeEnv": "test",
+    "testFramework": "mocha",
+    "esModules": true,
+    "coverageEnabled": true,
+    "parallelExecution": true,
+    "testDirectoryScope": true,
+    "memoryManagement": {
+      "checkLeaks": true,
+      "gcExposure": false,
+      "maxOldSpaceSize": "512"
+    }
+  },
+  "coverageIntegration": {
+    "tool": "c8",
+    "enabled": true,
+    "thresholds": {
+      "statements": 90,
+      "branches": 85,
+      "functions": 95,
+      "lines": 90
+    },
+    "includePatterns": [
+      "../**/*.js",
+      "../**/*.mjs"
+    ],
+    "excludePatterns": [
+      "./fixtures/**",
+      "./helpers/**",
+      "../node_modules/**",
+      "../coverage/**",
+      "../test/**"
+    ],
+    "reporters": [
+      "text",
+      "html",
+      "json"
+    ],
+    "outputDirectory": "../coverage/test-directory"
+  },
+  "performanceConfiguration": {
+    "parallelExecution": {
+      "enabled": true,
+      "maxWorkers": 2,
+      "strategy": "directory-optimized"
+    },
+    "timeoutSettings": {
+      "globalTimeout": 10000,
+      "slowThreshold": 50,
+      "unitTestTimeout": 5000,
+      "integrationTestTimeout": 10000,
+      "e2eTestTimeout": 15000,
+      "performanceTestTimeout": 30000
+    },
+    "resourceManagement": {
+      "checkLeaks": true,
+      "exitProcess": true,
+      "fullTrace": true,
+      "memoryLimit": "512MB"
+    }
+  },
+  "crossPlatformTesting": {
+    "expressTestingEnabled": true,
+    "flaskCompatibilityEnabled": true,
+    "apiCompatibilityEnabled": true,
+    "flaskParityTimeout": 15000
+  },
+  "pm2TestingConfiguration": {
+    "clusterModeTestingEnabled": true,
+    "zeroDowntimeTestingEnabled": true,
+    "productionWorkflowEnabled": true,
+    "clusterModeTimeout": 20000,
+    "zeroDowntimeTimeout": 25000,
+    "productionWorkflowTimeout": 30000
+  },
+  "securityTestingConfiguration": {
+    "helmetValidationEnabled": true,
+    "vulnerabilityScanningEnabled": true,
+    "xssProtectionEnabled": true,
+    "helmetTimeout": 5000,
+    "vulnerabilityScanTimeout": 10000,
+    "xssProtectionTimeout": 5000
+  },
+  "developmentEnvironment": {
+    "watchMode": false,
+    "debugMode": false,
+    "verboseOutput": false,
+    "colorOutput": true,
+    "diffOutput": true,
+    "stackTrace": true,
+    "reporter": "spec"
+  },
+  "cicdEnvironment": {
+    "reporter": "json",
+    "parallel": true,
+    "coverageRequired": true,
+    "bailOnFailure": false,
+    "outputFile": "../logs/ci-test-results.json",
+    "timeoutMultiplier": 1.5
+  },
+  "compatibilityRequirements": {
+    "nodeVersion": "^18.18.0 || ^20.9.0 || >=21.1.0",
+    "mochaVersion": "^11.0.0",
+    "esModules": true,
+    "testFrameworks": {
+      "primary": "mocha",
+      "alternative": "jest",
+      "comparisonEnabled": true
+    }
+  },
+  "fileManagement": {
+    "testExtensions": [
+      "js",
+      "mjs"
+    ],
+    "ignorePatterns": [
+      "node_modules/**",
+      "coverage/**",
+      "fixtures/**",
+      "helpers/**",
+      "../flask-app/**/*.py"
+    ],
+    "recursiveDiscovery": true,
+    "testDirectoryRoot": "."
+  },
+  "errorHandling": {
+    "exitOnCompletion": true,
+    "checkLeaks": true,
+    "fullTrace": true,
+    "bailOnFailure": false,
+    "forbidOnly": false,
+    "forbidPending": false
+  },
+  "educationalValue": {
+    "demonstrates": [
+      "Directory-specific Mocha configuration patterns",
+      "Test discovery and organization within test directories",
+      "Parallel test execution optimization for directory scope",
+      "Coverage integration and reporting for isolated test environments",
+      "Progressive testing complexity from unit to e2e testing",
+      "Cross-platform testing configuration and validation",
+      "Security testing framework integration and validation",
+      "Performance testing configuration and benchmarking",
+      "CI/CD integration patterns for directory-specific testing",
+      "Educational testing progression and complexity management"
+    ],
+    "learningOutcomes": [
+      "Understanding directory-specific test configuration",
+      "Configuring test discovery patterns for organized test suites",
+      "Implementing parallel execution for performance optimization",
+      "Setting up coverage reporting for isolated test environments",
+      "Managing test complexity progression for educational purposes",
+      "Configuring cross-platform compatibility testing",
+      "Implementing security testing with framework integration",
+      "Setting up performance testing and benchmarking",
+      "Integrating directory-specific tests with CI/CD pipelines",
+      "Creating educational test configurations for progressive learning"
+    ],
+    "tutorialIntegration": {
+      "phase": "Testing Implementation (Phase 4)",
+      "complexity": "Intermediate",
+      "prerequisites": "Understanding of Mocha framework and test directory organization",
+      "nextSteps": "Test implementation and execution with directory-specific configuration"
+    }
+  }
+}

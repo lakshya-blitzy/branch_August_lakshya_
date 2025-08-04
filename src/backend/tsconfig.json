@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    // Target and Module Configuration for Node.js v22.x LTS with ES Modules
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    
+    // ES Modules Support and Interoperability
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": false,
+    "moduleSuffixes": [".js", ".ts"],
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    // JavaScript Interoperability for Incremental Adoption
+    "allowJs": true,
+    "checkJs": false,
+    "maxNodeModuleJsDepth": 1,
+    
+    // Output Configuration
+    "outDir": "./dist",
+    "rootDir": "./",
+    "removeComments": false,
+    "noEmitOnError": true,
+    "preserveConstEnums": true,
+    "importHelpers": false,
+    
+    // Declaration and Source Map Generation
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSourceMap": false,
+    "inlineSources": false,
+    
+    // Incremental Compilation for Development Performance
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "composite": false,
+    
+    // Strict Type Checking Configuration
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    
+    // Additional Type Checking and Code Quality
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    
+    // Path Mapping for Scalable Application Architecture
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@backend/*": ["./*"],
+      "@config/*": ["./config/*"],
+      "@middleware/*": ["./middleware/*"],
+      "@routes/*": ["./routes/*"],
+      "@controllers/*": ["./controllers/*"],
+      "@services/*": ["./services/*"],
+      "@utils/*": ["./utils/*"],
+      "@security/*": ["./security/*"],
+      "@pm2/*": ["./pm2/*"],
+      "@monitoring/*": ["./monitoring/*"],
+      "@test/*": ["./test/*"],
+      "@types/*": ["./types/*"],
+      "@jest/*": ["./jest/*"]
+    },
+    
+    // Type Definitions and Module Resolution
+    "types": [
+      "node",
+      "express",
+      "jest",
+      "mocha"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types"
+    ],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true
+  },
+  
+  // File Inclusion Patterns for TypeScript Compilation
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.mjs",
+    "**/*.json"
+  ],
+  
+  // File Exclusion Patterns
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "logs",
+    "tmp",
+    "uploads",
+    "certificates",
+    "bin",
+    "public",
+    "views",
+    "docker",
+    ".github",
+    "flask-app",
+    "**/*.test.js",
+    "**/*.test.ts",
+    "**/*.spec.js",
+    "**/*.spec.ts",
+    "test/**/*",
+    "tests/**/*",
+    "**/__tests__/**/*",
+    "**/__mocks__/**/*"
+  ],
+  
+  // ts-node Configuration for ES Modules Development
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node",
+    "transpileOnly": true,
+    "files": true,
+    "compilerOptions": {
+      "module": "ESNext",
+      "target": "ES2022",
+      "moduleResolution": "Bundler",
+      "allowSyntheticDefaultImports": true,
+      "esModuleInterop": true
+    }
+  },
+  
+  // Enable Automatic Compilation on Save for Development
+  "compileOnSave": true,
+  
+  // TypeScript Language Server Configuration
+  "watchOptions": {
+    "watchFile": "useFsEvents",
+    "watchDirectory": "useFsEvents",
+    "fallbackPolling": "dynamicPriority",
+    "synchronousWatchDirectory": true,
+    "excludeDirectories": ["**/node_modules", "**/.git"]
+  }
+}

@@ -1,0 +1,952 @@
+{
+  "httpEndpoints": {
+    "hello": {
+      "method": "GET",
+      "path": "/hello",
+      "expectedResponse": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "X-Powered-By": null
+        },
+        "body": {
+          "message": "Hello world"
+        }
+      },
+      "testScenarios": [
+        {
+          "name": "successful_hello_request",
+          "description": "Valid GET request to /hello endpoint",
+          "input": {
+            "method": "GET",
+            "path": "/hello",
+            "headers": {}
+          },
+          "expected": {
+            "statusCode": 200,
+            "responseTime": "<100ms",
+            "contentType": "application/json"
+          }
+        },
+        {
+          "name": "hello_with_query_params",
+          "description": "GET request to /hello with query parameters",
+          "input": {
+            "method": "GET",
+            "path": "/hello?param=value",
+            "headers": {}
+          },
+          "expected": {
+            "statusCode": 200,
+            "responseTime": "<100ms"
+          }
+        }
+      ]
+    },
+    "goodEvening": {
+      "method": "GET",
+      "path": "/good-evening",
+      "expectedResponse": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "X-Powered-By": null
+        },
+        "body": {
+          "message": "Good evening"
+        }
+      },
+      "testScenarios": [
+        {
+          "name": "successful_good_evening_request",
+          "description": "Valid GET request to /good-evening endpoint",
+          "input": {
+            "method": "GET",
+            "path": "/good-evening",
+            "headers": {}
+          },
+          "expected": {
+            "statusCode": 200,
+            "responseTime": "<100ms",
+            "contentType": "application/json"
+          }
+        }
+      ]
+    },
+    "health": {
+      "method": "GET",
+      "path": "/health",
+      "expectedResponse": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "status": "OK",
+          "timestamp": "2025-01-01T00:00:00.000Z",
+          "uptime": 123.456,
+          "environment": "development"
+        }
+      },
+      "testScenarios": [
+        {
+          "name": "health_check_successful",
+          "description": "Valid health check request",
+          "input": {
+            "method": "GET",
+            "path": "/health",
+            "headers": {}
+          },
+          "expected": {
+            "statusCode": 200,
+            "responseTime": "<50ms",
+            "requiredFields": ["status", "timestamp", "uptime", "environment"]
+          }
+        }
+      ]
+    }
+  },
+  "securityTestData": {
+    "helmetHeaders": {
+      "contentSecurityPolicy": {
+        "expected": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+        "description": "Content Security Policy header for XSS prevention"
+      },
+      "crossOriginEmbedderPolicy": {
+        "expected": "require-corp",
+        "description": "Cross-Origin Embedder Policy header"
+      },
+      "crossOriginOpenerPolicy": {
+        "expected": "same-origin",
+        "description": "Cross-Origin Opener Policy header"
+      },
+      "crossOriginResourcePolicy": {
+        "expected": "cross-origin",
+        "description": "Cross-Origin Resource Policy header"
+      },
+      "originAgentCluster": {
+        "expected": "?1",
+        "description": "Origin Agent Cluster header"
+      },
+      "referrerPolicy": {
+        "expected": "no-referrer",
+        "description": "Referrer Policy header"
+      },
+      "strictTransportSecurity": {
+        "expected": "max-age=31536000; includeSubDomains",
+        "description": "Strict Transport Security header for HTTPS enforcement"
+      },
+      "xContentTypeOptions": {
+        "expected": "nosniff",
+        "description": "X-Content-Type-Options header"
+      },
+      "xDnsPrefetchControl": {
+        "expected": "off",
+        "description": "X-DNS-Prefetch-Control header"
+      },
+      "xDownloadOptions": {
+        "expected": "noopen",
+        "description": "X-Download-Options header"
+      },
+      "xFrameOptions": {
+        "expected": "SAMEORIGIN",
+        "description": "X-Frame-Options header for clickjacking prevention"
+      },
+      "xPermittedCrossDomainPolicies": {
+        "expected": "none",
+        "description": "X-Permitted-Cross-Domain-Policies header"
+      },
+      "xPoweredBy": {
+        "expected": null,
+        "description": "X-Powered-By header should be removed"
+      },
+      "xXssProtection": {
+        "expected": "0",
+        "description": "X-XSS-Protection header disabled for modern browsers"
+      }
+    },
+    "xssAttacks": [
+      {
+        "name": "script_injection",
+        "payload": "<script>alert('xss')</script>",
+        "expectedBlocking": true,
+        "description": "Basic script tag injection attempt"
+      },
+      {
+        "name": "javascript_protocol",
+        "payload": "javascript:alert('xss')",
+        "expectedBlocking": true,
+        "description": "JavaScript protocol injection"
+      },
+      {
+        "name": "event_handler_injection",
+        "payload": "<img src=x onerror=alert('xss')>",
+        "expectedBlocking": true,
+        "description": "Event handler based XSS"
+      },
+      {
+        "name": "svg_xss",
+        "payload": "<svg onload=alert('xss')>",
+        "expectedBlocking": true,
+        "description": "SVG-based XSS attack"
+      }
+    ],
+    "cspViolations": [
+      {
+        "violation": "script-src",
+        "source": "unsafe-inline",
+        "expected": "blocked",
+        "description": "Inline script execution should be blocked"
+      },
+      {
+        "violation": "script-src",
+        "source": "unsafe-eval",
+        "expected": "blocked",
+        "description": "eval() usage should be blocked"
+      },
+      {
+        "violation": "object-src",
+        "source": "data:",
+        "expected": "blocked",
+        "description": "Object embedding should be blocked"
+      }
+    ],
+    "securityHeaders": {
+      "requiredHeaders": [
+        "Content-Security-Policy",
+        "Strict-Transport-Security",
+        "X-Content-Type-Options",
+        "X-Frame-Options",
+        "Referrer-Policy"
+      ],
+      "forbiddenHeaders": [
+        "X-Powered-By",
+        "Server"
+      ],
+      "headerValidation": {
+        "strictTransportSecurity": {
+          "pattern": "max-age=\\d+",
+          "minAge": 31536000
+        },
+        "contentSecurityPolicy": {
+          "requiredDirectives": ["default-src", "script-src", "object-src"]
+        }
+      }
+    }
+  },
+  "performanceBenchmarks": {
+    "responseTimeLimits": {
+      "hello": {
+        "target": 50,
+        "warning": 75,
+        "critical": 100,
+        "unit": "ms"
+      },
+      "goodEvening": {
+        "target": 50,
+        "warning": 75,
+        "critical": 100,
+        "unit": "ms"
+      },
+      "health": {
+        "target": 25,
+        "warning": 40,
+        "critical": 50,
+        "unit": "ms"
+      }
+    },
+    "memoryThresholds": {
+      "perProcess": {
+        "target": 50,
+        "warning": 75,
+        "critical": 100,
+        "restart": 150,
+        "unit": "MB"
+      },
+      "total": {
+        "target": 200,
+        "warning": 300,
+        "critical": 500,
+        "unit": "MB"
+      },
+      "heapUsed": {
+        "target": 30,
+        "warning": 50,
+        "critical": 80,
+        "unit": "MB"
+      }
+    },
+    "concurrencyTargets": {
+      "simultaneousRequests": {
+        "target": 1000,
+        "minimum": 500,
+        "test": 100,
+        "unit": "requests"
+      },
+      "requestsPerSecond": {
+        "target": 5000,
+        "minimum": 1000,
+        "test": 500,
+        "unit": "req/sec"
+      },
+      "connectionPool": {
+        "target": 1000,
+        "minimum": 100,
+        "unit": "connections"
+      }
+    },
+    "resourceLimits": {
+      "cpu": {
+        "target": 70,
+        "warning": 80,
+        "critical": 90,
+        "unit": "percent"
+      },
+      "diskIO": {
+        "target": 50,
+        "warning": 75,
+        "critical": 90,
+        "unit": "MB/s"
+      },
+      "networkIO": {
+        "target": 100,
+        "warning": 200,
+        "critical": 500,
+        "unit": "MB/s"
+      }
+    }
+  },
+  "crossPlatformTestData": {
+    "expressResponses": {
+      "hello": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "message": "Hello world"
+        },
+        "responseTime": "<100ms"
+      },
+      "goodEvening": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "message": "Good evening"
+        },
+        "responseTime": "<100ms"
+      },
+      "health": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "bodyStructure": {
+          "status": "string",
+          "timestamp": "string",
+          "uptime": "number",
+          "environment": "string"
+        }
+      }
+    },
+    "flaskResponses": {
+      "hello": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "message": "Hello world"
+        },
+        "responseTime": "<100ms"
+      },
+      "goodEvening": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "message": "Good evening"
+        },
+        "responseTime": "<100ms"
+      },
+      "health": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyStructure": {
+          "status": "string",
+          "timestamp": "string",
+          "uptime": "number",
+          "environment": "string"
+        }
+      }
+    },
+    "compatibilityMatrix": {
+      "responseFormat": {
+        "jsonStructure": "identical",
+        "statusCodes": "identical",
+        "errorHandling": "equivalent"
+      },
+      "performance": {
+        "responseTimeVariance": "10%",
+        "throughputComparison": "comparable",
+        "memoryUsagePattern": "similar"
+      },
+      "functionality": {
+        "endpointParity": "100%",
+        "errorResponseParity": "100%",
+        "healthCheckParity": "100%"
+      }
+    }
+  },
+  "errorScenarios": {
+    "httpErrors": {
+      "notFound": {
+        "request": {
+          "method": "GET",
+          "path": "/nonexistent"
+        },
+        "expectedResponse": {
+          "statusCode": 404,
+          "headers": {
+            "content-type": "application/json; charset=utf-8"
+          },
+          "body": {
+            "error": "Not Found",
+            "message": "Cannot GET /nonexistent",
+            "statusCode": 404
+          }
+        }
+      },
+      "methodNotAllowed": {
+        "request": {
+          "method": "POST",
+          "path": "/hello"
+        },
+        "expectedResponse": {
+          "statusCode": 405,
+          "headers": {
+            "content-type": "application/json; charset=utf-8"
+          },
+          "body": {
+            "error": "Method Not Allowed",
+            "message": "Method POST not allowed",
+            "statusCode": 405
+          }
+        }
+      },
+      "badRequest": {
+        "request": {
+          "method": "GET",
+          "path": "/hello",
+          "headers": {
+            "content-type": "invalid-content-type"
+          }
+        },
+        "expectedResponse": {
+          "statusCode": 400,
+          "headers": {
+            "content-type": "application/json; charset=utf-8"
+          },
+          "body": {
+            "error": "Bad Request",
+            "statusCode": 400
+          }
+        }
+      }
+    },
+    "validationErrors": {
+      "invalidPath": {
+        "scenarios": [
+          {
+            "path": "/../etc/passwd",
+            "expectedStatus": 404,
+            "description": "Path traversal attempt"
+          },
+          {
+            "path": "/hello%00",
+            "expectedStatus": 400,
+            "description": "Null byte injection"
+          },
+          {
+            "path": "/hello" + "A".repeat(2048),
+            "expectedStatus": 414,
+            "description": "URI too long"
+          }
+        ]
+      },
+      "invalidHeaders": {
+        "scenarios": [
+          {
+            "headers": {
+              "content-length": "-1"
+            },
+            "expectedStatus": 400,
+            "description": "Invalid content length"
+          },
+          {
+            "headers": {
+              "host": "evil.example.com"
+            },
+            "expectedStatus": 400,
+            "description": "Host header injection"
+          }
+        ]
+      }
+    },
+    "serverErrors": {
+      "internalServerError": {
+        "trigger": "force_error",
+        "expectedResponse": {
+          "statusCode": 500,
+          "headers": {
+            "content-type": "application/json; charset=utf-8"
+          },
+          "body": {
+            "error": "Internal Server Error",
+            "statusCode": 500
+          }
+        }
+      },
+      "serviceUnavailable": {
+        "trigger": "overload_server",
+        "expectedResponse": {
+          "statusCode": 503,
+          "headers": {
+            "retry-after": "60"
+          },
+          "body": {
+            "error": "Service Unavailable",
+            "statusCode": 503
+          }
+        }
+      }
+    }
+  },
+  "mockResponses": {
+    "successResponses": {
+      "helloSuccess": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-response-time": "15ms"
+        },
+        "body": {
+          "message": "Hello world",
+          "timestamp": "2025-01-01T00:00:00.000Z"
+        }
+      },
+      "goodEveningSuccess": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-response-time": "12ms"
+        },
+        "body": {
+          "message": "Good evening",
+          "timestamp": "2025-01-01T18:00:00.000Z"
+        }
+      },
+      "healthSuccess": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "cache-control": "no-cache"
+        },
+        "body": {
+          "status": "OK",
+          "timestamp": "2025-01-01T00:00:00.000Z",
+          "uptime": 3600.123,
+          "environment": "development",
+          "version": "1.0.0",
+          "pid": 12345
+        }
+      }
+    },
+    "errorResponses": {
+      "notFoundError": {
+        "statusCode": 404,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "Not Found",
+          "message": "The requested resource was not found",
+          "statusCode": 404,
+          "timestamp": "2025-01-01T00:00:00.000Z"
+        }
+      },
+      "internalServerError": {
+        "statusCode": 500,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "Internal Server Error",
+          "message": "An unexpected error occurred",
+          "statusCode": 500,
+          "timestamp": "2025-01-01T00:00:00.000Z"
+        }
+      },
+      "validationError": {
+        "statusCode": 400,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": {
+          "error": "Bad Request",
+          "message": "Invalid request parameters",
+          "statusCode": 400,
+          "timestamp": "2025-01-01T00:00:00.000Z"
+        }
+      }
+    },
+    "securityResponses": {
+      "blockedRequest": {
+        "statusCode": 403,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-blocked-reason": "security-policy-violation"
+        },
+        "body": {
+          "error": "Forbidden",
+          "message": "Request blocked by security policy",
+          "statusCode": 403,
+          "timestamp": "2025-01-01T00:00:00.000Z"
+        }
+      },
+      "rateLimited": {
+        "statusCode": 429,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "retry-after": "60",
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "0"
+        },
+        "body": {
+          "error": "Too Many Requests",
+          "message": "Rate limit exceeded",
+          "statusCode": 429,
+          "timestamp": "2025-01-01T00:00:00.000Z"
+        }
+      }
+    }
+  },
+  "testEnvironments": {
+    "development": {
+      "nodeEnv": "development",
+      "port": 3000,
+      "logLevel": "debug",
+      "enableCors": true,
+      "security": {
+        "helmetEnabled": true,
+        "httpsRedirect": false,
+        "contentSecurityPolicy": {
+          "reportOnly": true
+        }
+      },
+      "performance": {
+        "responseTimeTarget": 100,
+        "memoryLimitMB": 100,
+        "cpuThreshold": 80
+      },
+      "database": {
+        "enabled": false,
+        "connectionString": null
+      }
+    },
+    "production": {
+      "nodeEnv": "production",
+      "port": 3000,
+      "logLevel": "info",
+      "enableCors": false,
+      "security": {
+        "helmetEnabled": true,
+        "httpsRedirect": true,
+        "contentSecurityPolicy": {
+          "reportOnly": false,
+          "directives": {
+            "defaultSrc": ["'self'"],
+            "scriptSrc": ["'self'"],
+            "styleSrc": ["'self'", "'unsafe-inline'"],
+            "imgSrc": ["'self'", "data:", "https:"],
+            "objectSrc": ["'none'"]
+          }
+        }
+      },
+      "performance": {
+        "responseTimeTarget": 50,
+        "memoryLimitMB": 150,
+        "cpuThreshold": 70
+      },
+      "database": {
+        "enabled": false,
+        "connectionString": null
+      }
+    },
+    "testing": {
+      "nodeEnv": "test",
+      "port": 0,
+      "logLevel": "silent",
+      "enableCors": true,
+      "security": {
+        "helmetEnabled": true,
+        "httpsRedirect": false,
+        "contentSecurityPolicy": {
+          "reportOnly": true
+        }
+      },
+      "performance": {
+        "responseTimeTarget": 200,
+        "memoryLimitMB": 200,
+        "cpuThreshold": 90
+      },
+      "database": {
+        "enabled": false,
+        "connectionString": null
+      },
+      "testing": {
+        "timeout": 10000,
+        "coverage": {
+          "enabled": true,
+          "threshold": {
+            "statements": 90,
+            "branches": 85,
+            "functions": 95,
+            "lines": 90
+          }
+        }
+      }
+    }
+  },
+  "pm2TestData": {
+    "clusterConfig": {
+      "name": "tutorial-app",
+      "script": "./server.js",
+      "instances": "max",
+      "execMode": "cluster",
+      "autorestart": true,
+      "watch": false,
+      "maxMemoryRestart": "1G",
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": 3000
+      },
+      "envProduction": {
+        "NODE_ENV": "production",
+        "PORT": 3000
+      },
+      "logFile": "./logs/combined.log",
+      "outFile": "./logs/out.log",
+      "errorFile": "./logs/error.log",
+      "logDateFormat": "YYYY-MM-DD HH:mm Z",
+      "mergeLogsOnRestart": false
+    },
+    "processMetrics": {
+      "expectedProcessCount": {
+        "development": 1,
+        "production": "max",
+        "testing": 1
+      },
+      "healthCheck": {
+        "interval": 30000,
+        "timeout": 5000,
+        "retries": 3,
+        "endpoint": "/health"
+      },
+      "memoryMonitoring": {
+        "checkInterval": 30000,
+        "restartThreshold": "1G",
+        "alertThreshold": "800M"
+      },
+      "cpuMonitoring": {
+        "checkInterval": 10000,
+        "alertThreshold": 80,
+        "sustainedDuration": 60000
+      }
+    },
+    "loadBalancing": {
+      "algorithm": "round-robin",
+      "enableStickySessions": false,
+      "healthCheckEnabled": true,
+      "failoverTimeout": 5000,
+      "loadBalancerMetrics": {
+        "requestDistribution": "even",
+        "responseTimeVariance": "<10%",
+        "failoverTime": "<5s"
+      },
+      "performanceExpectations": {
+        "scalabilityFactor": 10,
+        "cpuCores": "all",
+        "performanceIncrease": "linear"
+      }
+    }
+  },
+  "validationRules": {
+    "httpValidation": {
+      "requestValidation": {
+        "allowedMethods": ["GET", "HEAD", "OPTIONS"],
+        "maxPathLength": 2048,
+        "maxHeaderSize": 8192,
+        "requiredHeaders": {
+          "host": true,
+          "user-agent": false
+        }
+      },
+      "responseValidation": {
+        "requiredHeaders": {
+          "content-type": true,
+          "content-length": false,
+          "date": true
+        },
+        "statusCodeRanges": {
+          "success": [200, 299],
+          "clientError": [400, 499],
+          "serverError": [500, 599]
+        },
+        "responseTimeThresholds": {
+          "fast": 50,
+          "acceptable": 100,
+          "slow": 200
+        }
+      },
+      "endpointValidation": {
+        "hello": {
+          "method": "GET",
+          "responseType": "application/json",
+          "requiredFields": ["message"],
+          "maxResponseTime": 100
+        },
+        "goodEvening": {
+          "method": "GET",
+          "responseType": "application/json",
+          "requiredFields": ["message"],
+          "maxResponseTime": 100
+        },
+        "health": {
+          "method": "GET",
+          "responseType": "application/json",
+          "requiredFields": ["status", "timestamp", "uptime", "environment"],
+          "maxResponseTime": 50
+        }
+      }
+    },
+    "securityValidation": {
+      "headerValidation": {
+        "requiredSecurityHeaders": [
+          "Content-Security-Policy",
+          "Strict-Transport-Security",
+          "X-Content-Type-Options",
+          "X-Frame-Options",
+          "Referrer-Policy"
+        ],
+        "forbiddenHeaders": [
+          "X-Powered-By",
+          "Server"
+        ],
+        "headerPatterns": {
+          "strictTransportSecurity": "max-age=\\d+",
+          "contentSecurityPolicy": "default-src\\s+[^;]+",
+          "xFrameOptions": "(DENY|SAMEORIGIN|ALLOW-FROM\\s+\\S+)"
+        }
+      },
+      "contentValidation": {
+        "allowedContentTypes": [
+          "application/json",
+          "text/plain",
+          "text/html"
+        ],
+        "blockedPatterns": [
+          "<script[^>]*>.*?</script>",
+          "javascript:",
+          "data:text/html",
+          "vbscript:"
+        ]
+      },
+      "vulnerabilityChecks": {
+        "xssProtection": {
+          "checkInputSanitization": true,
+          "checkOutputEncoding": true,
+          "checkContentSecurityPolicy": true
+        },
+        "clickjackingProtection": {
+          "checkXFrameOptions": true,
+          "checkContentSecurityPolicy": true
+        },
+        "informationDisclosure": {
+          "checkErrorMessages": true,
+          "checkServerHeaders": true,
+          "checkVersionDisclosure": false
+        }
+      }
+    },
+    "performanceValidation": {
+      "responseTimeValidation": {
+        "endpoints": {
+          "hello": {
+            "target": 50,
+            "warning": 75,
+            "critical": 100
+          },
+          "goodEvening": {
+            "target": 50,
+            "warning": 75,
+            "critical": 100
+          },
+          "health": {
+            "target": 25,
+            "warning": 40,
+            "critical": 50
+          }
+        },
+        "measurementMethod": "percentile95",
+        "sampleSize": 100
+      },
+      "resourceValidation": {
+        "memoryUsage": {
+          "perProcess": {
+            "target": 50,
+            "warning": 75,
+            "critical": 100,
+            "unit": "MB"
+          },
+          "total": {
+            "target": 200,
+            "warning": 300,
+            "critical": 500,
+            "unit": "MB"
+          }
+        },
+        "cpuUsage": {
+          "target": 70,
+          "warning": 80,
+          "critical": 90,
+          "unit": "percent",
+          "measurementDuration": 60
+        }
+      },
+      "loadTestingValidation": {
+        "concurrentUsers": {
+          "minimum": 100,
+          "target": 500,
+          "maximum": 1000
+        },
+        "requestsPerSecond": {
+          "minimum": 1000,
+          "target": 5000,
+          "maximum": 10000
+        },
+        "testDuration": {
+          "rampUp": 30,
+          "steady": 300,
+          "rampDown": 30,
+          "unit": "seconds"
+        }
+      }
+    }
+  }
+}

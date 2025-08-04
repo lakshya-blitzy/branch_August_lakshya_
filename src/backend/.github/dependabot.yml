@@ -1,0 +1,415 @@
+# GitHub Dependabot Configuration for Comprehensive Node.js Tutorial Project
+# Version 2 specification for automated dependency updates and security vulnerability management
+# Manages multi-ecosystem dependencies including npm, pip, docker, and github-actions
+# with educational-friendly grouping strategies and security-first prioritization
+
+version: 2
+
+# Global configuration for enhanced security and dependency management
+updates:
+  # ========================================================================
+  # NPM ECOSYSTEM CONFIGURATION
+  # Node.js/npm dependencies for Express.js v5.1.0 and PM2 process management
+  # ========================================================================
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    
+    # Pull request management for controlled updates
+    open-pull-requests-limit: 5
+    target-branch: "develop"
+    
+    # Versioning strategy for compatibility maintenance
+    versioning-strategy: "widen"
+    
+    # Commit message customization for clear change tracking
+    commit-message:
+      prefix: "npm"
+      prefix-development: "npm-dev"
+      include: "scope"
+    
+    # Labels for automated categorization and workflow integration
+    labels:
+      - "dependencies"
+      - "npm"
+      - "auto-update"
+      - "tutorial-maintenance"
+    
+    # Dependency filtering for controlled updates
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    
+    # Critical version constraints for stability
+    ignore:
+      # Express.js v5.1.0 minimum requirement for security and modern features
+      - dependency-name: "express"
+        versions: ["< 5.0.0"]
+      # Node.js v22.x LTS compatibility requirement
+      - dependency-name: "node"
+        versions: ["< 22.0.0"]
+      # PM2 v6.x minimum for cluster mode and production features
+      - dependency-name: "pm2"
+        versions: ["< 6.0.0"]
+    
+    # Educational-friendly dependency grouping for comprehensible updates
+    groups:
+      # Express.js ecosystem with middleware and security components
+      express_ecosystem:
+        patterns:
+          - "express*"
+          - "helmet*"
+          - "cors*"
+          - "compression*"
+          - "express-rate-limit*"
+          - "express-slow-down*"
+          - "morgan*"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Testing frameworks for comprehensive quality assurance
+      testing_frameworks:
+        patterns:
+          - "jest*"
+          - "mocha*"
+          - "chai*"
+          - "sinon*"
+          - "supertest*"
+          - "@jest/*"
+          - "c8*"
+          - "nyc*"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # PM2 process management ecosystem
+      pm2_ecosystem:
+        patterns:
+          - "pm2*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+      
+      # Security packages with priority updates
+      security_packages:
+        patterns:
+          - "helmet*"
+          - "*security*"
+          - "*audit*"
+          - "jsonwebtoken*"
+          - "bcryptjs*"
+          - "validator*"
+          - "bleach*"
+          - "email-validator*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+      
+      # Development tools and code quality
+      development_tools:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+          - "nodemon*"
+          - "@types/*"
+          - "typescript*"
+          - "ts-node*"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Performance and monitoring tools
+      performance_tools:
+        patterns:
+          - "artillery*"
+          - "autocannon*"
+          - "@nearform/clinic*"
+          - "winston*"
+          - "debug*"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Utility libraries for core functionality
+      utility_libraries:
+        patterns:
+          - "axios*"
+          - "uuid*"
+          - "async*"
+          - "chalk*"
+          - "dotenv*"
+          - "deep-equal*"
+          - "validators*"
+          - "jsonschema*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ========================================================================
+  # PIP ECOSYSTEM CONFIGURATION
+  # Flask cross-platform implementation dependencies maintaining feature parity
+  # ========================================================================
+  - package-ecosystem: "pip"
+    directory: "/flask-app"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "06:00"
+      timezone: "UTC"
+    
+    # Pull request management for Flask ecosystem
+    open-pull-requests-limit: 3
+    target-branch: "develop"
+    
+    # Versioning strategy for Python compatibility
+    versioning-strategy: "widen"
+    
+    # Commit message customization for Flask updates
+    commit-message:
+      prefix: "pip"
+      include: "scope"
+    
+    # Labels for Flask ecosystem categorization
+    labels:
+      - "dependencies"
+      - "python"
+      - "flask"
+      - "cross-platform"
+      - "tutorial-maintenance"
+    
+    # Dependency filtering for Flask compatibility
+    allow:
+      - dependency-type: "direct"
+    
+    # Critical Flask version constraints
+    ignore:
+      # Flask 3.1+ requirement for modern features and security
+      - dependency-name: "Flask"
+        versions: ["< 3.0.0"]
+      # Python 3.9+ compatibility requirement
+      - dependency-name: "python"
+        versions: ["< 3.9.0"]
+    
+    # Flask-specific dependency grouping for feature parity
+    groups:
+      # Core Flask framework components
+      flask_core:
+        patterns:
+          - "Flask*"
+          - "Werkzeug*"
+          - "Jinja2*"
+          - "ItsDangerous*"
+          - "Click*"
+          - "Blinker*"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Flask security middleware equivalent to Helmet.js
+      flask_security:
+        patterns:
+          - "flask-talisman*"
+          - "flask-cors*"
+          - "*security*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+      
+      # WSGI deployment equivalent to PM2 functionality
+      wsgi_deployment:
+        patterns:
+          - "gunicorn*"
+          - "*wsgi*"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Environment and configuration management
+      environment_management:
+        patterns:
+          - "python-dotenv*"
+          - "*env*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ========================================================================
+  # DOCKER ECOSYSTEM CONFIGURATION
+  # Container image dependencies for production deployment
+  # ========================================================================
+  - package-ecosystem: "docker"
+    directory: "/docker"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+      timezone: "UTC"
+    
+    # Conservative pull request management for infrastructure
+    open-pull-requests-limit: 2
+    target-branch: "develop"
+    
+    # Commit message customization for Docker updates
+    commit-message:
+      prefix: "docker"
+      include: "scope"
+    
+    # Labels for containerization updates
+    labels:
+      - "dependencies"
+      - "docker"
+      - "containerization"
+      - "infrastructure"
+      - "tutorial-maintenance"
+    
+    # Docker image filtering for security and compatibility
+    allow:
+      - dependency-type: "direct"
+    
+    # Critical base image version constraints
+    ignore:
+      # Node.js v22.x LTS requirement for long-term support
+      - dependency-name: "node"
+        versions: ["< 22.0.0"]
+    
+    # Docker image grouping for systematic updates
+    groups:
+      # Base container images for runtime environments
+      base_images:
+        patterns:
+          - "node:*"
+          - "alpine:*"
+          - "ubuntu:*"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Production runtime images for deployment
+      runtime_images:
+        patterns:
+          - "*runtime*"
+          - "*production*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ========================================================================
+  # GITHUB ACTIONS ECOSYSTEM CONFIGURATION
+  # CI/CD workflow dependencies for automation pipeline
+  # ========================================================================
+  - package-ecosystem: "github-actions"
+    directory: "/.github/workflows"
+    schedule:
+      interval: "monthly"
+      day: 15
+      time: "06:00"
+      timezone: "UTC"
+    
+    # Conservative approach for CI/CD stability
+    open-pull-requests-limit: 2
+    target-branch: "develop"
+    
+    # Commit message customization for workflow updates
+    commit-message:
+      prefix: "actions"
+      include: "scope"
+    
+    # Labels for CI/CD workflow categorization
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "ci-cd"
+      - "automation"
+      - "tutorial-maintenance"
+    
+    # GitHub Actions grouping for workflow stability
+    groups:
+      # Essential setup actions for CI/CD pipeline
+      setup_actions:
+        patterns:
+          - "actions/checkout*"
+          - "actions/setup-node*"
+          - "actions/setup-python*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+      
+      # Artifact management actions for build pipeline
+      upload_actions:
+        patterns:
+          - "actions/upload-artifact*"
+          - "actions/download-artifact*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+      
+      # Security scanning actions for vulnerability detection
+      security_actions:
+        patterns:
+          - "github/codeql-action*"
+          - "snyk/actions*"
+          - "*security*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+      
+      # Code coverage and quality actions
+      coverage_actions:
+        patterns:
+          - "codecov/codecov-action*"
+          - "*coverage*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+
+# ========================================================================
+# EDUCATIONAL DOCUMENTATION AND METADATA
+# Comprehensive configuration documentation for learning objectives
+# ========================================================================
+
+# Configuration Metadata:
+# - Multi-ecosystem management across Node.js, Python, Docker, and GitHub Actions
+# - Security-first prioritization with immediate critical vulnerability updates
+# - Educational-friendly grouping strategies for comprehensible dependency management
+# - Progressive update scheduling aligned with tutorial learning phases
+# - Comprehensive ecosystem coverage for modern full-stack development
+
+# Learning Objectives:
+# 1. Automated dependency management across multiple technology stacks
+# 2. Security vulnerability monitoring and rapid response procedures
+# 3. Dependency grouping strategies for maintainable project organization
+# 4. Cross-platform compatibility validation between Node.js and Python implementations
+# 5. Production deployment dependency management with PM2 and Docker containerization
+# 6. CI/CD pipeline dependency stability and automation workflow maintenance
+
+# Security Features:
+# - Immediate security updates for critical vulnerabilities
+# - Version constraints ensuring compatibility with security-enhanced frameworks
+# - Security-focused dependency grouping for rapid security patch deployment
+# - Comprehensive vulnerability scanning across all ecosystem dependencies
+
+# Educational Value:
+# - Progressive complexity introduction through phased dependency updates
+# - Cross-platform development understanding through Node.js and Flask comparison
+# - Production deployment practices through PM2 and Docker dependency management
+# - Modern development workflow integration through GitHub Actions automation
+# - Security-conscious development practices through automated vulnerability management
+
+# Maintenance Strategy:
+# - Weekly updates for active development dependencies (npm, pip, docker)
+# - Monthly updates for infrastructure dependencies (github-actions)
+# - Automated testing integration ensuring update compatibility
+# - Educational documentation updates accompanying dependency changes
+# - Cross-platform feature parity validation through automated testing

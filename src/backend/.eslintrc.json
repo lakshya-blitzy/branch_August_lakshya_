@@ -1,0 +1,246 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "es2024": true,
+    "jest": true,
+    "mocha": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "@typescript-eslint/recommended",
+    "plugin:node/recommended",
+    "plugin:jest/recommended",
+    "plugin:security/recommended-legacy",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "impliedStrict": true,
+      "globalReturn": false
+    }
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "node",
+    "jest",
+    "mocha",
+    "security",
+    "prettier"
+  ],
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "semi": true,
+        "trailingComma": "es5",
+        "printWidth": 80,
+        "tabWidth": 2,
+        "useTabs": false,
+        "bracketSpacing": true,
+        "arrowParens": "avoid",
+        "endOfLine": "lf",
+        "bracketSameLine": false,
+        "embeddedLanguageFormatting": "auto",
+        "htmlWhitespaceSensitivity": "css",
+        "insertPragma": false,
+        "jsxSingleQuote": true,
+        "proseWrap": "preserve",
+        "quoteProps": "as-needed",
+        "requirePragma": false,
+        "vueIndentScriptAndStyle": false
+      }
+    ],
+    "no-console": "warn",
+    "no-unused-vars": "error",
+    "no-undef": "error",
+    "prefer-const": "error",
+    "no-var": "error",
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"],
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "prefer-arrow-callback": "error",
+    "prefer-template": "error",
+    "template-curly-spacing": ["error", "never"],
+    "arrow-spacing": [
+      "error",
+      {
+        "before": true,
+        "after": true
+      }
+    ],
+    "object-shorthand": ["error", "always"],
+    "node/no-unsupported-features/es-syntax": "off",
+    "node/no-missing-import": "error",
+    "node/no-extraneous-import": "error",
+    "node/no-unpublished-import": [
+      "error",
+      {
+        "allowModules": ["jest", "mocha", "supertest", "chai", "sinon"]
+      }
+    ],
+    "node/prefer-global/process": ["error", "always"],
+    "node/prefer-global/console": ["error", "always"],
+    "node/no-process-exit": "error",
+    "security/detect-object-injection": "warn",
+    "security/detect-non-literal-regexp": "warn",
+    "security/detect-unsafe-regex": "error",
+    "security/detect-buffer-noassert": "error",
+    "security/detect-child-process": "warn",
+    "security/detect-disable-mustache-escape": "error",
+    "security/detect-eval-with-expression": "error",
+    "security/detect-no-csrf-before-method-override": "error",
+    "security/detect-non-literal-fs-filename": "warn",
+    "security/detect-non-literal-require": "warn",
+    "security/detect-possible-timing-attacks": "warn",
+    "security/detect-pseudoRandomBytes": "error",
+    "import/no-commonjs": "off",
+    "import/extensions": ["error", "ignorePackages"],
+    "import/no-default-export": "off",
+    "import/prefer-default-export": "off"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.js",
+        "**/*.spec.js",
+        "**/test/**/*.js",
+        "**/__tests__/**/*.js",
+        "**/jest/**/*.js"
+      ],
+      "env": {
+        "jest": true,
+        "mocha": true,
+        "node": true
+      },
+      "plugins": ["jest", "mocha"],
+      "rules": {
+        "no-console": "off",
+        "node/no-unpublished-import": "off",
+        "jest/expect-expect": "error",
+        "jest/no-disabled-tests": "warn",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/prefer-to-have-length": "warn",
+        "jest/valid-expect": "error",
+        "mocha/no-exclusive-tests": "error",
+        "mocha/no-pending-tests": "warn",
+        "mocha/no-skipped-tests": "warn",
+        "mocha/no-identical-title": "error"
+      }
+    },
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "error",
+        "@typescript-eslint/explicit-function-return-type": "warn",
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/prefer-interface": "off",
+        "@typescript-eslint/prefer-type-alias": "off",
+        "no-unused-vars": "off"
+      }
+    },
+    {
+      "files": [
+        "*.config.js",
+        "ecosystem.config.js",
+        "jest.config.js",
+        ".eslintrc.js",
+        "pm2/*.js",
+        "config/*.js",
+        "scripts/*.js"
+      ],
+      "env": {
+        "node": true,
+        "commonjs": true
+      },
+      "rules": {
+        "no-console": "off",
+        "node/no-unpublished-import": "off",
+        "import/no-commonjs": "off",
+        "security/detect-object-injection": "off"
+      }
+    },
+    {
+      "files": [
+        "ecosystem.*.js",
+        "**/pm2/*.js",
+        "pm2.config.js",
+        "cluster.config.js",
+        "monitoring.config.js"
+      ],
+      "env": {
+        "node": true,
+        "commonjs": true
+      },
+      "rules": {
+        "no-console": "off",
+        "node/no-process-env": "off",
+        "security/detect-object-injection": "off",
+        "node/no-unpublished-import": "off"
+      }
+    },
+    {
+      "files": [
+        "**/middleware/*.js",
+        "**/security/*.js",
+        "**/routes/*.js",
+        "**/controllers/*.js",
+        "**/services/*.js"
+      ],
+      "rules": {
+        "no-console": "warn",
+        "security/detect-object-injection": "error",
+        "security/detect-non-literal-regexp": "error"
+      }
+    },
+    {
+      "files": ["server.js", "app.js", "**/index.js"],
+      "rules": {
+        "no-console": "off",
+        "node/no-process-exit": "warn"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "node_modules/**",
+    "coverage/**",
+    "dist/**",
+    "build/**",
+    "logs/**",
+    "tmp/**",
+    "uploads/**",
+    "certificates/**",
+    ".nyc_output/**",
+    "*.min.js",
+    "*.bundle.js",
+    "flask-app/**",
+    "python/**",
+    "docs/**",
+    "public/**",
+    "static/**"
+  ],
+  "settings": {
+    "node": {
+      "version": ">=22.0.0",
+      "tryExtensions": [".js", ".json", ".node", ".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".mjs", ".ts", ".tsx", ".json"]
+      }
+    }
+  },
+  "globals": {
+    "ESLINT_CONFIG_VERSION": "readonly",
+    "LINTING_STANDARDS": "readonly",
+    "SUPPORTED_ENVIRONMENTS": "readonly"
+  }
+}

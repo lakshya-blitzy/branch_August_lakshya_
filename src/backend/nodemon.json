@@ -1,0 +1,96 @@
+{
+  "script": "server.js",
+  "watch": [
+    "src/backend/**/*.js",
+    "src/backend/**/*.json",
+    "src/backend/**/*.md",
+    "src/backend/config/",
+    "src/backend/routes/",
+    "src/backend/middleware/",
+    "src/backend/controllers/",
+    "src/backend/services/",
+    "src/backend/utils/",
+    "src/backend/security/",
+    "src/backend/pm2/",
+    "src/backend/monitoring/",
+    "src/backend/scripts/",
+    "src/backend/examples/",
+    "src/backend/templates/",
+    "src/backend/.env*",
+    "ecosystem.config.js",
+    "package.json"
+  ],
+  "ignore": [
+    "node_modules/**/*",
+    "src/backend/test/**/*",
+    "src/backend/coverage/**/*",
+    "src/backend/logs/**/*",
+    "src/backend/tmp/**/*",
+    "src/backend/uploads/**/*",
+    "src/backend/public/**/*",
+    "src/backend/views/**/*",
+    "src/backend/.github/**/*",
+    "src/backend/docker/**/*",
+    "src/backend/benchmarks/**/*",
+    "src/backend/flask-app/**/*",
+    "*.log",
+    "*.pid",
+    "*.lock",
+    ".git/**/*",
+    ".vscode/**/*",
+    ".idea/**/*",
+    "dist/**/*",
+    "build/**/*"
+  ],
+  "ext": "js,json,md",
+  "env": {
+    "NODE_ENV": "development",
+    "DEBUG": "tutorial:*",
+    "LOG_LEVEL": "debug",
+    "HOT_RELOAD": "true",
+    "NODEMON_ACTIVE": "true",
+    "PM2_WATCH": "false"
+  },
+  "exec": "node --trace-warnings --experimental-modules",
+  "restartable": "rs",
+  "verbose": true,
+  "delay": 1000,
+  "legacyWatch": false,
+  "signal": "SIGTERM",
+  "colours": true,
+  "runOnChangeOnly": false,
+  "events": {
+    "start": "echo '🚀 Starting Node.js Tutorial Server with Nodemon v3.1.7'",
+    "restart": "echo '🔄 Restarting server due to file changes...'",
+    "crash": "echo '💥 Server crashed! Check logs for details.'",
+    "exit": "echo '👋 Node.js Tutorial Server stopped gracefully'"
+  },
+  "quiet": false,
+  "exitcrash": false,
+  "nodeArgs": [
+    "--trace-warnings",
+    "--experimental-modules",
+    "--trace-uncaught",
+    "--unhandled-rejections=strict"
+  ],
+  "dump": false,
+  "watchOptions": {
+    "followSymlinks": false,
+    "usePolling": false,
+    "ignoreInitial": true,
+    "persistent": true,
+    "ignored": [
+      "**/node_modules/**",
+      "**/.git/**",
+      "**/coverage/**",
+      "**/logs/**"
+    ],
+    "awaitWriteFinish": {
+      "stabilityThreshold": 100,
+      "pollInterval": 50
+    }
+  },
+  "stdin": true,
+  "stdout": true,
+  "stderr": true
+}
