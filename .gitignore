@@ -1,24 +1,230 @@
-# Compiled class file
-*.class
-configuration.properties
+# ============================================================================
+# NODE.JS TUTORIAL PROJECT - COMPREHENSIVE .GITIGNORE
+# ============================================================================
+# 
+# Comprehensive Git ignore file for Node.js tutorial project demonstrating
+# progressive web application development from basic HTTP server implementation
+# to production-ready deployment with PM2 cluster mode, comprehensive testing,
+# and cross-platform Flask migration comparison.
+#
+# Supports:
+# - Node.js v22.x LTS with Express.js v5.1.0
+# - PM2 v6.0.8 cluster mode deployment  
+# - Jest/Mocha testing frameworks with comprehensive coverage
+# - Helmet.js security implementation with SSL certificate management
+# - Flask cross-platform migration and feature parity validation
+# - Modern development tooling (ESLint, Prettier, TypeScript)
+# - Production deployment with zero-downtime capabilities
+#
+# Security Features:
+# - Excludes sensitive environment files while preserving templates
+# - Protects SSL certificates and private cryptographic material
+# - Excludes security scan results that may contain sensitive information
+# - Maintains directory structure through strategic .gitkeep preservation
+#
+# ============================================================================
 
-# Log file
+# Node.js Dependencies and Package Managers
+# Excludes all package manager artifacts while preserving package.json definitions
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment Configuration
+# Excludes sensitive environment files while preserving documentation templates
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+!.env.example
+!.env.template
+
+# Logs and Monitoring
+# Excludes runtime log files while preserving directory structure for PM2
+logs/*.log
+logs/**/*.log
+logs/**/*.gz
 *.log
+pm2.log
+combined.log
+access.log
+error.log
+out.log
+!logs/.gitkeep
 
-# BlueJ files
-*.ctxt
+# Test Coverage and Reports
+# Excludes generated coverage reports while maintaining testing infrastructure
+coverage/
+*.lcov
+.nyc_output/
+junit.xml
+test-results.xml
+coverage-final.json
+!coverage/.gitkeep
+!coverage/jest/.gitkeep
+!coverage/mocha/.gitkeep
+!coverage/c8/.gitkeep
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
+# Build Artifacts and Temporary Files
+# Excludes all build outputs and temporary processing files
+dist/
+build/
+public/build/
+tmp/
+temp/
+.cache/
+.parcel-cache/
+*.tgz
 *.tar.gz
-*.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+# SSL Certificates and Private Keys
+# Excludes cryptographic material while preserving certificate infrastructure
+certificates/*.crt
+certificates/*.key
+certificates/*.pem
+certificates/*.p12
+certificates/*.pfx
+*.crt
+*.key
+*.pem
+!certificates/.gitkeep
+!certificates/README.md
+
+# PM2 Runtime and Process Files
+# Excludes PM2 runtime artifacts while preserving ecosystem configuration
+.pm2/
+pm2.json
+ecosystem.json
+pids/
+dumps/
+pm2-dev.json
+
+# Python Flask Cross-Platform Support
+# Excludes Python artifacts for cross-platform development compatibility
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# Development Tools and IDE
+# Excludes IDE-specific settings and development tool cache files
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.eslintcache
+.stylelintcache
+.prettier-cache/
+
+# Operating System Files
+# Excludes platform-specific system files for cross-platform compatibility
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Security Scanning and Reports
+# Excludes security assessment files that may contain sensitive information
+*.sarif
+.snyk
+security-report.json
+vulnerability-scan.json
+audit-results.json
+
+# Performance Testing Results
+# Excludes performance benchmarking outputs and load testing results
+benchmark-results/
+load-test-results/
+artillery-report.json
+autocannon-results.json
+performance-metrics.json
+
+# Docker and Container Files (if used)
+# Excludes container-specific files while preserving base configuration
+.dockerignore
+docker-compose.override.yml
+
+# Backup and Archive Files
+# Excludes backup files and temporary archives created during development
+*.backup
+*.bak
+*.old
+*.orig
+*.rej
+
+# Miscellaneous
+# Additional Node.js and JavaScript ecosystem exclusions
+.npm
+.node_repl_history
+*.seed
+*.pid.lock
+jspm_packages/
+web_modules/
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ============================================================================
+# EDUCATIONAL NOTES AND BEST PRACTICES
+# ============================================================================
+#
+# This .gitignore demonstrates professional version control practices including:
+#
+# 1. SECURITY CONSIDERATIONS:
+#    - Environment files (.env*) excluded to protect sensitive configuration
+#    - SSL certificates excluded to prevent accidental key exposure
+#    - Security scan results excluded to avoid information disclosure
+#
+# 2. PERFORMANCE OPTIMIZATIONS:
+#    - Node modules excluded to prevent repository bloat (>100MB saved)
+#    - Log files excluded to maintain repository performance
+#    - Build artifacts excluded as they're regenerated from source
+#
+# 3. CROSS-PLATFORM COMPATIBILITY:
+#    - Python files excluded for Flask migration support
+#    - OS-specific files excluded for multi-platform development
+#    - IDE settings excluded to support diverse development environments
+#
+# 4. PRODUCTION DEPLOYMENT:
+#    - PM2 runtime files excluded while preserving configuration
+#    - Certificate directory maintained for SSL infrastructure
+#    - Log directory preserved for production logging pipeline
+#
+# 5. TESTING INFRASTRUCTURE:
+#    - Coverage directories maintained via .gitkeep files
+#    - Test artifacts excluded while preserving test configuration
+#    - Performance test results excluded but infrastructure maintained
+#
+# 6. DEVELOPMENT WORKFLOW:
+#    - Package manager lock files excluded for flexibility
+#    - Development cache excluded for consistent builds
+#    - Temporary files excluded to maintain clean workspace
+#
+# MAINTENANCE RECOMMENDATIONS:
+# - Review and update patterns quarterly for new tools
+# - Test effectiveness with `git status` and `git check-ignore`
+# - Validate directory preservation through .gitkeep files
+# - Monitor repository size and performance impact
+#
+# ============================================================================
