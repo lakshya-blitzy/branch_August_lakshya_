@@ -1,0 +1,75 @@
+{
+  "testEnvironment": "node",
+  "preset": null,
+  "extensionsToTreatAsEsm": [".js"],
+  "transform": {},
+  "testMatch": [
+    "**/test/**/*.test.js",
+    "**/__tests__/**/*.js"
+  ],
+  "testPathIgnorePatterns": [
+    "/node_modules/",
+    "/coverage/",
+    "/dist/"
+  ],
+  "collectCoverage": true,
+  "collectCoverageFrom": [
+    "**/*.js",
+    "!**/node_modules/**",
+    "!**/test/**",
+    "!**/coverage/**"
+  ],
+  "coverageDirectory": "coverage",
+  "coverageReporters": [
+    "text",
+    "html",
+    "json",
+    "lcov"
+  ],
+  "coverageThreshold": {
+    "global": {
+      "statements": 90,
+      "branches": 85,
+      "functions": 95,
+      "lines": 90
+    }
+  },
+  "setupFilesAfterEnv": ["./setup.js"],
+  "globalSetup": "./global-setup.js",
+  "globalTeardown": "./global-teardown.js",
+  "testTimeout": 10000,
+  "maxWorkers": "50%",
+  "verbose": true,
+  "bail": false,
+  "forceExit": true,
+  "detectHandles": true,
+  "detectLeaks": false,
+  "clearMocks": true,
+  "resetMocks": true,
+  "restoreMocks": true,
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1"
+  },
+  "moduleFileExtensions": [
+    "js",
+    "json"
+  ],
+  "watchPlugins": [
+    "jest-watch-typeahead/filename",
+    "jest-watch-typeahead/testname"
+  ],
+  "reporters": [
+    "default",
+    [
+      "jest-junit",
+      {
+        "outputDirectory": "coverage",
+        "outputName": "junit.xml",
+        "classNameTemplate": "{classname}",
+        "titleTemplate": "{title}",
+        "ancestorSeparator": " › ",
+        "usePathForSuiteName": true
+      }
+    ]
+  ]
+}
