@@ -1,0 +1,378 @@
+# Artillery v2.0.0 Load Testing Configuration
+# Node.js Tutorial Project - Comprehensive Performance Testing Suite
+# 
+# This configuration implements professional load testing methodologies for validating
+# Express.js v5.1.0 application performance, PM2 cluster mode effectiveness, and
+# production deployment readiness with educational demonstration value.
+#
+# Educational Value: Demonstrates Artillery framework configuration, modern load testing
+# strategies, performance target validation, and PM2 cluster mode performance verification.
+
+config:
+  # Target application configuration
+  target: "http://localhost:3000"
+  
+  # Performance testing phases with educational progression
+  phases:
+    # Phase 1: Baseline Performance Measurement
+    # Purpose: Establishes baseline performance metrics under normal load conditions
+    # Educational Value: Demonstrates baseline testing methodology for regression detection
+    - name: "baseline_measurement"
+      duration: 300  # 5 minutes
+      arrivalRate: 5  # 5 users per second
+      rampTo: 5       # Steady state
+      
+    # Phase 2: Gradual Load Ramp-Up
+    # Purpose: Gradual load increase to identify performance thresholds and optimal concurrency
+    # Educational Value: Shows progressive load testing to find performance breaking points
+    - name: "gradual_ramp_up"
+      duration: 600   # 10 minutes
+      arrivalRate: 1  # Starting point
+      rampTo: 50      # Gradual increase to target load
+      
+    # Phase 3: Sustained Production Load Testing
+    # Purpose: Validates performance under expected production load conditions
+    # Educational Value: Demonstrates production capacity validation methodology
+    - name: "sustained_load"
+      duration: 900   # 15 minutes
+      arrivalRate: 50 # Target production load (50 req/sec)
+      
+    # Phase 4: Stress Testing - Maximum Capacity Validation
+    # Purpose: Identifies maximum throughput and performance breakdown points
+    # Educational Value: Shows stress testing to find system limits and failure modes
+    - name: "stress_testing"
+      duration: 300   # 5 minutes
+      arrivalRate: 100 # High stress load (100 req/sec)
+      
+    # Phase 5: Spike Testing - Traffic Surge Resilience
+    # Purpose: Tests system resilience under sudden traffic spikes and recovery
+    # Educational Value: Demonstrates spike testing for traffic surge handling
+    - name: "spike_testing"
+      duration: 120   # 2 minutes
+      arrivalRate: 5  # Normal baseline
+      rampTo: 200     # Sudden spike to 200 req/sec
+      
+    # Phase 6: Endurance Testing - Long-term Stability
+    # Purpose: Long-term stability validation and memory leak detection
+    # Educational Value: Shows endurance testing for production reliability
+    - name: "endurance_testing"
+      duration: 3600  # 60 minutes
+      arrivalRate: 25 # Moderate sustained load
+  
+  # Global configuration options for educational demonstration
+  defaults:
+    headers:
+      # Educational header for tracking test source
+      "X-Artillery-Test": "Node.js-Tutorial-Performance-Suite"
+      "User-Agent": "Artillery-LoadTest-v2.0.0"
+  
+  # Environment variables for configuration flexibility
+  # Educational Value: Demonstrates configurable testing parameters
+  variables:
+    target_url: "http://localhost:3000"
+    test_duration: 300
+    arrival_rate: 50
+    max_virtual_users: 200
+    performance_threshold_ms: 50
+    
+  # Advanced configuration for production-ready testing
+  http:
+    # Connection pooling for realistic load simulation
+    pool: 10
+    # Request timeout configuration
+    timeout: 10
+    # Follow redirects (if any)
+    followRedirects: true
+    # Keep-alive configuration for connection reuse
+    keepAlive: true
+
+  # Performance metrics and monitoring configuration
+  # Educational Value: Shows comprehensive metrics collection setup
+  metrics:
+    # Custom metrics for educational demonstration
+    - name: "response_time_educational"
+      expression: "response.timings.response"
+    - name: "requests_per_second"
+      expression: "stats.requestsPerSecond"
+    - name: "error_rate_percentage"
+      expression: "(stats.errors / stats.requestsCompleted) * 100"
+
+  # Artillery plugins for enhanced functionality
+  plugins:
+    # Metrics by endpoint plugin for detailed analysis
+    metrics-by-endpoint:
+      # Group metrics by endpoint for detailed performance analysis
+      enabled: true
+    # Expect plugin for response validation
+    expect:
+      # Educational demonstration of response validation
+      enabled: true
+
+# Test scenarios demonstrating different endpoint performance patterns
+# Educational Value: Shows weighted scenario distribution and endpoint-specific testing
+scenarios:
+  # Primary hello endpoint test scenario (40% traffic distribution)
+  # Purpose: Tests main greeting endpoint under various load conditions
+  # Educational Value: Demonstrates primary endpoint load testing with validation
+  - name: "hello_endpoint_performance_test"
+    weight: 40
+    flow:
+      - get:
+          url: "/hello"
+          # Response validation for educational demonstration
+          expect:
+            - statusCode: 200
+            - contentType: "application/json"
+            - hasProperty: "message"
+          # Custom response time measurement for educational tracking
+          capture:
+            - json: "$.message"
+              as: "hello_message"
+          # Educational logging for debugging
+          log: "Hello endpoint response: {{ hello_message }}"
+  
+  # Secondary good-evening endpoint test scenario (30% traffic distribution)
+  # Purpose: Tests secondary greeting endpoint performance characteristics
+  # Educational Value: Shows secondary endpoint testing and traffic distribution
+  - name: "good_evening_endpoint_performance_test"
+    weight: 30
+    flow:
+      - get:
+          url: "/good-evening"
+          expect:
+            - statusCode: 200
+            - contentType: "application/json"
+            - hasProperty: "message"
+          capture:
+            - json: "$.message"
+              as: "evening_message"
+          log: "Good evening endpoint response: {{ evening_message }}"
+  
+  # Health check endpoint test scenario (30% traffic distribution)
+  # Purpose: Validates health monitoring endpoint performance and reliability
+  # Educational Value: Demonstrates health check testing and monitoring integration
+  - name: "health_check_performance_test"
+    weight: 30
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+            - contentType: "application/json"
+            - hasProperty: "status"
+            - hasProperty: "uptime"
+          capture:
+            - json: "$.status"
+              as: "health_status"
+            - json: "$.uptime"
+              as: "server_uptime"
+          log: "Health check - Status: {{ health_status }}, Uptime: {{ server_uptime }}s"
+
+# Performance expectations and targets for educational demonstration
+# Educational Value: Shows how to define and validate performance requirements
+expectations:
+  # Response time targets based on technical specifications
+  response_time:
+    # 50th percentile target (median response time)
+    p50: 25  # < 25ms median response time
+    # 95th percentile target (95% of requests)
+    p95: 50  # < 50ms for 95% of requests
+    # 99th percentile target (99% of requests)
+    p99: 100 # < 100ms for 99% of requests
+    # Maximum acceptable response time
+    max: 200 # < 200ms maximum response time
+  
+  # Throughput requirements for PM2 cluster mode validation
+  throughput:
+    # Minimum acceptable throughput
+    minimum: 1000   # > 1000 requests/second
+    # Target production throughput
+    target: 5000    # > 5000 requests/second (PM2 cluster)
+    # Maximum expected throughput with PM2 cluster mode
+    maximum: 10000  # > 10000 requests/second (optimal PM2 scaling)
+  
+  # Error rate thresholds for different load conditions
+  error_rates:
+    # Normal load error rate (baseline and sustained load)
+    normal_load: 1    # < 1% error rate
+    # Stress load error rate (high load conditions)
+    stress_load: 5    # < 5% error rate
+    # Spike load error rate (traffic surge conditions)
+    spike_load: 10    # < 10% error rate
+  
+  # Resource utilization targets for system monitoring
+  resource_utilization:
+    # CPU utilization target
+    cpu_average: 80     # < 80% average CPU usage
+    # Memory usage per PM2 process
+    memory_per_process: 100  # < 100MB per process
+    # Network throughput target
+    network_throughput: 100  # < 100MB/sec network usage
+
+# PM2 cluster mode specific testing configuration
+# Educational Value: Demonstrates PM2 performance validation and scaling testing
+pm2_cluster_testing:
+  # Single process baseline configuration
+  single_process_baseline:
+    description: "Baseline performance testing with single PM2 process for comparison"
+    configuration: "instances: 1"
+    expected_metrics:
+      response_time_p95: 100  # Higher response time with single process
+      throughput: 1000        # Lower throughput baseline
+      cpu_utilization: 90     # Higher CPU usage per process
+  
+  # Cluster mode performance validation
+  cluster_mode_validation:
+    description: "Performance testing with PM2 cluster mode enabled (instances: max)"
+    configuration: "instances: 'max'"
+    expected_improvement:
+      performance_factor: 10   # Expected 10x performance improvement
+      response_time_p95: 50    # Improved response time
+      throughput: 10000        # Significantly higher throughput
+      cpu_utilization: 70      # Better CPU distribution
+  
+  # Load balancing effectiveness testing
+  load_balancer_testing:
+    description: "PM2 built-in load balancer effectiveness validation"
+    metrics_to_monitor:
+      - "request_distribution_across_workers"
+      - "process_cpu_utilization_balance"
+      - "response_time_consistency"
+      - "worker_process_health_status"
+    validation_criteria:
+      - "Even request distribution across all worker processes"
+      - "Consistent response times across different workers"
+      - "Automatic failover on worker process crash"
+
+# Advanced reporting configuration for educational analysis
+# Educational Value: Shows comprehensive performance reporting and analysis
+reporting:
+  # Report output formats for different stakeholders
+  output_formats:
+    - "json"      # Machine-readable format for CI/CD integration
+    - "html"      # Human-readable format for stakeholder review
+    - "csv"       # Spreadsheet format for detailed analysis
+    - "junit"     # JUnit XML format for test result integration
+  
+  # Output directory configuration
+  output_directory: "./reports/artillery"
+  
+  # Chart generation for visual analysis
+  include_charts: true
+  
+  # Detailed metrics collection for educational analysis
+  detailed_metrics:
+    - "response_times_by_endpoint"
+    - "throughput_by_test_phase"
+    - "error_rates_by_scenario"
+    - "resource_utilization_trends"
+    - "pm2_cluster_performance_comparison"
+  
+  # Performance trend analysis for educational insights
+  trend_analysis:
+    - "response_time_degradation_detection"
+    - "throughput_improvement_tracking"
+    - "error_rate_pattern_analysis"
+    - "resource_utilization_optimization_insights"
+
+# Educational metadata for tutorial integration
+# Educational Value: Provides context and learning objectives for the testing configuration
+educational_metadata:
+  tutorial_phase: "Phase 4: Performance Testing Implementation"
+  complexity_level: "Intermediate to Advanced"
+  learning_objectives:
+    - "Understanding Artillery framework configuration and YAML syntax"
+    - "Implementing comprehensive load testing strategies with multiple phases"
+    - "Configuring performance targets and validation criteria"
+    - "Integrating load testing with PM2 cluster mode validation"
+    - "Setting up real-time performance monitoring and metrics collection"
+    - "Creating production-ready performance testing pipelines"
+    - "Analyzing load testing results for performance optimization"
+  
+  prerequisites:
+    - "Understanding of HTTP protocol and RESTful API concepts"
+    - "Basic knowledge of YAML configuration syntax"
+    - "Familiarity with load testing concepts and performance metrics"
+    - "Express.js application understanding and endpoint functionality"
+  
+  next_steps:
+    - "Integration with performance monitoring dashboard"
+    - "PM2 cluster mode deployment and scaling validation"
+    - "Cross-platform performance comparison with Flask implementation"
+    - "Automated performance testing in CI/CD pipeline integration"
+
+# Environment-specific configuration overrides
+# Educational Value: Demonstrates environment-aware testing configuration
+environments:
+  # Development environment configuration
+  development:
+    target: "http://localhost:3000"
+    phases:
+      - name: "dev_quick_test"
+        duration: 60    # Shorter duration for development
+        arrivalRate: 10 # Lower load for development
+    
+  # Staging environment configuration
+  staging:
+    target: "http://staging.example.com:3000"
+    phases:
+      - name: "staging_validation"
+        duration: 300   # Medium duration for staging
+        arrivalRate: 25 # Moderate load for staging
+    
+  # Production environment configuration (commented for safety)
+  # production:
+  #   target: "http://production.example.com:3000"
+  #   phases:
+  #     - name: "production_load_test"
+  #       duration: 1800  # Extended duration for production
+  #       arrivalRate: 50 # Full production load
+
+# Integration with monitoring and alerting systems
+# Educational Value: Shows integration with external monitoring tools
+monitoring_integration:
+  # Real-time metrics streaming for educational monitoring
+  real_time_metrics:
+    enabled: true
+    endpoint: "http://localhost:8086/artillery-metrics"
+    interval: 5  # 5-second intervals for real-time monitoring
+  
+  # Performance alerts configuration
+  performance_alerts:
+    response_time_threshold: 100    # Alert if response time > 100ms
+    error_rate_threshold: 5         # Alert if error rate > 5%
+    throughput_threshold: 500       # Alert if throughput < 500 req/sec
+    
+  # Custom metrics for educational analysis
+  custom_metrics:
+    - name: "pm2_cluster_effectiveness"
+      formula: "throughput_cluster / throughput_single_process"
+      target: 10  # Target 10x improvement with cluster mode
+    
+    - name: "educational_performance_score"
+      formula: "((target_response_time - actual_response_time) / target_response_time) * 100"
+      target: 90  # Target 90% performance score
+
+# Cross-platform testing preparation for Flask comparison
+# Educational Value: Demonstrates cross-platform performance testing setup
+cross_platform_testing:
+  # Node.js Express configuration (current)
+  nodejs_express:
+    target: "http://localhost:3000"
+    framework: "Express.js v5.1.0"
+    runtime: "Node.js v22.x"
+    process_manager: "PM2 cluster mode"
+  
+  # Flask implementation configuration (future comparison)
+  python_flask:
+    target: "http://localhost:5000"
+    framework: "Flask v3.1.1"
+    runtime: "Python 3.9+"
+    process_manager: "Gunicorn with multiple workers"
+  
+  # Comparison metrics for educational analysis
+  comparison_metrics:
+    - "response_time_comparison"
+    - "throughput_comparison"
+    - "resource_utilization_comparison"
+    - "scalability_characteristics_comparison"
