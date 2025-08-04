@@ -1,0 +1,48 @@
+{
+  "spec": [
+    "../test/unit/**/*.test.js",
+    "../test/integration/**/*.test.js",
+    "../test/e2e/**/*.test.js",
+    "../test/performance/**/*.test.js",
+    "../test/security/**/*.test.js"
+  ],
+  "require": [
+    "./setup.js"
+  ],
+  "loader": "esmock",
+  "timeout": 10000,
+  "ui": "bdd",
+  "reporter": "spec",
+  "reporterOptions": {
+    "output": "../logs/mocha-test-results.json",
+    "consoleReporter": "spec",
+    "jsonReporter": "../logs/mocha-results.json",
+    "tapReporter": "../logs/mocha-results.tap",
+    "htmlReporter": "../coverage/mocha/index.html"
+  },
+  "parallel": true,
+  "jobs": 4,
+  "recursive": true,
+  "extension": [
+    "js",
+    "mjs"
+  ],
+  "ignore": [
+    "../node_modules/**",
+    "../coverage/**",
+    "../logs/**",
+    "../tmp/**",
+    "../flask-app/**/*.py"
+  ],
+  "file": [
+    "./setup.js"
+  ],
+  "exit": true,
+  "checkLeaks": true,
+  "fullTrace": true,
+  "bail": false,
+  "slow": 75,
+  "grep": "",
+  "globalSetup": "./setup.js",
+  "globalTeardown": "./teardown.js"
+}
