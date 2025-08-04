@@ -1,0 +1,256 @@
+# GitHub Actions Workflow for Comprehensive Node.js Performance Testing and Benchmarking
+# Validates Express.js v5.1.0 performance, PM2 cluster mode scaling, security middleware impact,
+# and cross-platform comparison with Flask implementation
+# Educational Focus: Professional CI/CD performance testing pipeline with enterprise-grade reporting
+
+name: Performance Testing
+
+# Workflow Triggers - Comprehensive performance validation across development lifecycle
+on:
+  # Code changes trigger performance validation on main development branches
+  push:
+    branches: 
+      - main
+      - develop
+      - 'performance/*'
+  
+  # Pull request validation ensures performance impact assessment before merging
+  pull_request:
+    branches: 
+      - main
+  
+  # Daily regression testing for continuous performance monitoring at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Manual workflow execution for on-demand performance testing and benchmarking
+  workflow_dispatch:
+
+# Concurrency control ensures only one performance test runs per branch to avoid resource conflicts
+# and maintain accurate performance measurements
+concurrency:
+  group: performance-${{ github.ref }}
+  cancel-in-progress: true
+
+# Environment variables for consistent performance testing configuration
+env:
+  NODE_ENV: test
+  PM2_SILENT: true
+  PERFORMANCE_MODE: ci
+  BENCHMARK_ITERATIONS: 1000
+  CONCURRENT_USERS: 100
+
+jobs:
+  # Primary performance testing job with matrix strategy for comprehensive validation
+  performance-test:
+    name: Node.js Performance Benchmarking
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    # Matrix strategy testing multiple Node.js LTS versions and performance scenarios
+    # Demonstrates enterprise-grade testing across different runtime environments
+    strategy:
+      matrix:
+        node_version: ['18.x', '20.x', '22.x']
+        test_scenario: ['baseline', 'cluster', 'security', 'cross-platform']
+      fail-fast: false
+    
+    steps:
+      # Repository checkout with full history for performance regression analysis
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      # Node.js environment setup with version matrix support and npm caching
+      # Express.js v5.1.0 requires Node.js 18+ for enhanced security and performance features
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org/'
+      
+      # Optimized dependency installation for faster CI execution
+      - name: Install Dependencies
+        run: npm ci --prefer-offline --no-audit
+        working-directory: ./src/backend
+      
+      # Global PM2 installation for cluster mode performance testing
+      # PM2 v6.0.8 provides enterprise-grade process management with built-in load balancer
+      - name: Install Global PM2
+        run: npm install -g pm2@latest
+      
+      # Python environment setup for cross-platform Flask performance comparison
+      # Only executed for cross-platform test scenarios to optimize build time
+      - name: Setup Python Environment for Flask Testing
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+        if: matrix.test_scenario == 'cross-platform'
+      
+      # Flask dependencies installation for cross-platform performance validation
+      - name: Install Flask Dependencies
+        run: pip install -r flask-app/requirements.txt
+        working-directory: ./src/backend
+        if: matrix.test_scenario == 'cross-platform'
+      
+      # System resource validation ensures optimal environment for accurate benchmarking
+      - name: System Resource Validation
+        run: node scripts/health-check.js --performance-mode
+        working-directory: ./src/backend
+      
+      # Baseline performance testing for single-process Express.js application
+      # Validates fundamental HTTP server performance without clustering
+      - name: Baseline Performance Testing
+        run: node benchmarks/response-time.js --scenario baseline --output ./results/baseline.json
+        working-directory: ./src/backend
+        if: matrix.test_scenario == 'baseline'
+      
+      # PM2 cluster mode performance testing with load balancing effectiveness analysis
+      # Demonstrates x10 performance scaling factor on multi-core systems
+      - name: PM2 Cluster Performance Testing
+        run: node benchmarks/performance-suite.js --scenario cluster --pm2-instances max --output ./results/cluster.json
+        working-directory: ./src/backend
+        if: matrix.test_scenario == 'cluster'
+      
+      # Security middleware performance testing analyzes Helmet.js impact
+      # Validates 15 sub-middlewares performance overhead and optimization opportunities
+      - name: Security Middleware Performance Testing
+        run: node benchmarks/memory-usage.js --security-analysis --helmet-profiling --output ./results/security.json
+        working-directory: ./src/backend
+        if: matrix.test_scenario == 'security'
+      
+      # Cross-platform performance comparison between Node.js Express and Flask
+      # Educational demonstration of technology stack performance characteristics
+      - name: Cross-Platform Performance Comparison
+        run: node benchmarks/performance-suite.js --cross-platform --nodejs-flask-comparison --output ./results/cross-platform.json
+        working-directory: ./src/backend
+        if: matrix.test_scenario == 'cross-platform'
+      
+      # Concurrent load testing with progressive load levels and throughput validation
+      # Validates > 1000 req/sec throughput target and response time under load
+      - name: Concurrent Load Testing
+        run: node benchmarks/concurrent-requests.js --concurrency 10,50,100 --validate-targets --output ./results/concurrent.json
+        working-directory: ./src/backend
+      
+      # Comprehensive memory usage analysis with leak detection and optimization guidance
+      # Validates < 100MB memory usage target and identifies optimization opportunities
+      - name: Memory Usage Analysis
+        run: node benchmarks/memory-usage.js --leak-detection --profiling --output ./results/memory.json
+        working-directory: ./src/backend
+      
+      # Performance target validation against predefined SLA requirements
+      # Ensures < 100ms response time, > 1000 req/sec throughput, < 100MB memory usage
+      - name: Performance Target Validation
+        run: node scripts/test.js --performance-validation --thresholds-check
+        working-directory: ./src/backend
+      
+      # Comprehensive performance report generation with multiple output formats
+      # Provides executive summaries, technical analysis, and optimization recommendations
+      - name: Generate Performance Report
+        run: node benchmarks/performance-suite.js --generate-report --format html,json,pdf --output ./reports/
+        working-directory: ./src/backend
+      
+      # Performance regression analysis for continuous monitoring (scheduled runs only)
+      # Compares current performance against historical baselines for trend detection
+      - name: Performance Regression Analysis
+        run: node scripts/test.js --regression-analysis --baseline-comparison
+        working-directory: ./src/backend
+        if: github.event_name == 'schedule'
+      
+      # Performance results artifact upload for analysis and historical tracking
+      # Retains performance data for 30 days to support trend analysis
+      - name: Upload Performance Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results-${{ matrix.node_version }}-${{ matrix.test_scenario }}
+          path: src/backend/results/
+          retention-days: 30
+        if: always()
+      
+      # Comprehensive performance reports upload for stakeholder review
+      # Extended retention for executive summaries and optimization guidance
+      - name: Upload Performance Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-reports-${{ matrix.node_version }}-${{ matrix.test_scenario }}
+          path: src/backend/reports/
+          retention-days: 90
+        if: always()
+      
+      # Performance analysis summary as pull request comment for developer feedback
+      # Provides immediate performance impact visibility in development workflow
+      - name: Performance Summary Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            require('./src/backend/scripts/performance-comment.js')(github, context)
+        if: github.event_name == 'pull_request'
+      
+      # Detailed performance failure analysis and debugging guidance
+      # Assists developers in identifying and resolving performance issues
+      - name: Performance Failure Analysis
+        run: node scripts/test.js --failure-analysis --debug-performance
+        working-directory: ./src/backend
+        if: failure()
+
+  # Historical performance comparison job for trend analysis and reporting
+  # Aggregates performance data across all matrix jobs for comprehensive analysis
+  performance-comparison:
+    name: Historical Performance Comparison
+    runs-on: ubuntu-latest
+    needs: [performance-test]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      # Download all performance results from matrix jobs for comprehensive analysis
+      - name: Download Performance Results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: performance-results-*
+          merge-multiple: true
+          path: ./performance-data/
+      
+      # Checkout repository for analysis scripts access
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      # Node.js setup for performance analysis scripts execution
+      - name: Setup Node.js for Analysis
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+      
+      # Install dependencies for performance analysis tools
+      - name: Install Analysis Dependencies
+        run: npm ci --prefer-offline --no-audit
+        working-directory: ./src/backend
+      
+      # Aggregate performance data across all test scenarios and Node.js versions
+      # Provides comprehensive performance overview and cross-version comparison
+      - name: Aggregate Performance Analysis
+        run: node scripts/performance-aggregator.js --input ./performance-data/ --output ./analysis/
+        working-directory: ./src/backend
+      
+      # Performance trend analysis with historical comparison and regression detection
+      # Identifies performance trends and significant changes over time
+      - name: Performance Trend Analysis
+        run: node scripts/performance-trends.js --historical-comparison --trend-detection
+        working-directory: ./src/backend
+      
+      # Executive summary generation with key performance insights
+      # Provides high-level performance overview and improvement recommendations
+      - name: Generate Executive Summary
+        run: node scripts/executive-summary.js --performance-overview --recommendations
+        working-directory: ./src/backend
+      
+      # Upload aggregated analysis results for executive review
+      - name: Upload Analysis Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-analysis-summary
+          path: src/backend/analysis/
+          retention-days: 180
+        if: always()
