@@ -1,0 +1,672 @@
+# ============================================================================
+# DEVELOPMENT DOCKER COMPOSE CONFIGURATION - NODE.JS TUTORIAL PROJECT
+# ============================================================================
+#
+# Development-specific Docker Compose orchestration for Node.js Tutorial Project
+# providing comprehensive development environment with hot reloading, debugging
+# capabilities, cross-platform Flask integration, and enhanced developer experience.
+#
+# EDUCATIONAL OBJECTIVES:
+# - Demonstrate development-specific containerization with multi-service orchestration
+# - Implement hot reloading in containerized Node.js and Flask environments
+# - Configure cross-platform development workflow with feature parity validation
+# - Setup remote debugging for containerized applications with IDE integration
+# - Establish development environment optimization with volume mounting and caching
+# - Showcase multi-service development coordination with Redis and cross-service communication
+#
+# DEVELOPMENT FEATURES:
+# - Node.js v22.x LTS development container with nodemon hot reloading
+# - Flask development service for cross-platform comparison and feature parity
+# - Redis cache service for development caching and session management
+# - Development networks for service isolation and debugging
+# - Volume mounting for live code editing and instant synchronization
+# - Remote debugging capabilities with IDE integration support
+# - Development-optimized service orchestration and startup coordination
+#
+# TECHNOLOGY STACK:
+# - Node.js v22.x LTS with Express.js v5.1.0 development environment
+# - Flask 3.1.1 development service with auto-reload capabilities
+# - Redis 7-alpine for development caching and cross-service communication
+# - Docker Compose v3.8 for modern container orchestration features
+# - Nodemon v3.1.7 for Node.js hot reloading and file watching
+# - Development debugging protocols and IDE integration
+#
+# USAGE:
+# docker-compose -f docker-compose.dev.yml up
+# docker-compose -f docker-compose.dev.yml up --build
+# docker-compose -f docker-compose.dev.yml logs -f nodejs-dev
+# docker-compose -f docker-compose.dev.yml exec nodejs-dev bash
+#
+# VERSION: 1.0.0
+# MAINTAINER: Node.js Tutorial Project Team
+# LAST UPDATED: 2025-01-01
+# ============================================================================
+
+# Docker Compose specification version 3.8 for advanced development features
+version: '3.8'
+
+# Project identification and development environment naming
+name: nodejs-tutorial-dev
+
+# ============================================================================
+# YAML ANCHORS FOR DEVELOPMENT CONFIGURATION REUSE
+# ============================================================================
+
+# Development environment variables shared across services
+x-dev-env: &dev-env
+  NODE_ENV: development
+  LOG_LEVEL: debug
+  DEBUG: "express:*,helmet:*,tutorial:*"
+  FORCE_COLOR: '1'
+  CHOKIDAR_USEPOLLING: 'true'
+  HOT_RELOAD: 'true'
+  DEV_MODE: 'true'
+  EDUCATIONAL_LOGGING: 'true'
+  TUTORIAL_MODE: 'true'
+
+# Development logging configuration optimized for debugging
+x-dev-logging: &dev-logging
+  driver: json-file
+  options:
+    max-size: '50m'
+    max-file: '3'
+    compress: 'false'
+    labels: 'service,environment'
+
+# Development resource limits for optimal performance
+x-dev-resources: &dev-resources
+  cpus: '2.0'
+  memory: '2G'
+
+# Development restart policy for fault tolerance
+x-dev-restart: &dev-restart
+  condition: on-failure
+  delay: 10s
+  max_attempts: 5
+  window: 60s
+
+# ============================================================================
+# DEVELOPMENT SERVICES ORCHESTRATION
+# ============================================================================
+
+services:
+  # ========================================================================
+  # NODE.JS DEVELOPMENT SERVICE
+  # ========================================================================
+  # Primary Node.js development container with Express.js v5.1.0, hot reloading,
+  # debugging capabilities, and comprehensive development tooling
+  
+  nodejs-dev:
+    # Development-specific build configuration
+    build:
+      context: ..  # Build from backend directory for full project access
+      dockerfile: ./docker/Dockerfile.dev  # Development-optimized Dockerfile
+      target: development_runtime  # Target development stage with full tooling
+      args:
+        NODE_ENV: development
+        DEV_MODE: 'true'
+        HOT_RELOAD: 'true'
+        DEBUG_ENABLED: 'true'
+        CHOKIDAR_POLLING: 'true'
+        NODEMON_VERSION: '3.1.7'
+        EXPRESS_VERSION: '5.1.0'
+      cache_from:
+        - node:22-alpine
+        - nodejs-tutorial-dev:cache
+    
+    # Container identification and networking
+    image: nodejs-tutorial-dev:latest
+    container_name: nodejs-tutorial-dev
+    hostname: nodejs-dev
+    restart: unless-stopped
+    
+    # Security: non-root user execution
+    user: 'node:node'
+    working_dir: /app
+    
+    # Development command with hot reloading via nodemon
+    command: ['npm', 'run', 'dev']
+    
+    # Port mapping for development access and debugging
+    ports:
+      - '${DEV_PORT:-3000}:3000'  # HTTP port for Express.js development server
+      - '${DEBUG_PORT:-9229}:9229'  # Node.js inspector protocol for remote debugging
+    
+    # Comprehensive development environment variables
+    environment:
+      <<: *dev-env  # Inherit common development environment
+      # Core application configuration
+      PORT: 3000
+      HOST: '0.0.0.0'
+      
+      # Node.js development optimization
+      NODE_OPTIONS: '--trace-warnings --experimental-modules --inspect=0.0.0.0:9229'
+      UV_THREADPOOL_SIZE: 4
+      
+      # Nodemon configuration for hot reloading
+      NODEMON_WATCH: 'true'
+      NODEMON_DELAY: '1000'
+      NODEMON_VERBOSE: 'true'
+      
+      # Express.js v5.1.0 development settings
+      EXPRESS_VERSION: '5.1.0'
+      EXPRESS_ENV: development
+      EXPRESS_TRUST_PROXY: 'false'
+      
+      # Security headers for development
+      HELMET_ENABLED: 'true'
+      CORS_ORIGIN: '*'
+      CORS_CREDENTIALS: 'true'
+      RATE_LIMIT_MAX: '10000'
+      
+      # Development debugging and monitoring
+      HEALTH_CHECK_ENABLED: 'true'
+      METRICS_ENABLED: 'true'
+      PERFORMANCE_MONITORING: 'true'
+      
+      # Cross-service communication
+      REDIS_URL: 'redis://redis-dev:6379'
+      FLASK_SERVICE_URL: 'http://flask-dev:5000'
+      
+      # Educational and tutorial features
+      TUTORIAL_PHASE: 'Development Phase 8'
+      CROSS_PLATFORM_ENABLED: 'true'
+      FEATURE_PARITY_VALIDATION: 'true'
+    
+    # Volume mounts for live development
+    volumes:
+      # Live source code synchronization with bind mounts
+      - ../:/app  # Full project source for development
+      - /app/node_modules  # Prevent node_modules override
+      
+      # Development dependency caching
+      - nodejs_node_modules:/app/node_modules  # Node.js modules cache
+      
+      # Development logs and debugging
+      - dev_logs:/app/logs  # Development log persistence
+      
+      # Configuration files (read-only)
+      - ../package.json:/app/package.json:ro
+      - ../package-lock.json:/app/package-lock.json:ro
+      - ../nodemon.json:/app/nodemon.json:ro
+      - ../ecosystem.config.js:/app/ecosystem.config.js:ro
+    
+    # Temporary filesystem for development operations
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=200m
+    
+    # Process limits for development stability
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    
+    # Resource allocation for development performance
+    deploy:
+      resources:
+        limits:
+          <<: *dev-resources
+        reservations:
+          cpus: '0.5'
+          memory: '512M'
+      restart_policy:
+        <<: *dev-restart
+    
+    # Development health check with faster intervals
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:3000/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s  # Allow time for development startup
+    
+    # Network configuration for development communication
+    networks:
+      - dev-network
+      - debug-network
+    
+    # Service dependencies
+    depends_on:
+      redis-dev:
+        condition: service_healthy
+    
+    # Development logging configuration
+    logging:
+      <<: *dev-logging
+    
+    # Container labels for development identification
+    labels:
+      # Docker Compose metadata
+      com.docker.compose.service: 'nodejs-tutorial-dev'
+      com.docker.compose.project: 'nodejs-tutorial-dev'
+      
+      # Tutorial and educational metadata
+      tutorial.service.type: 'nodejs-development'
+      tutorial.hot-reload: 'enabled'
+      tutorial.debugging: 'enabled'
+      tutorial.express.version: '5.1.0'
+      tutorial.node.version: '22.x'
+      tutorial.nodemon.version: '3.1.7'
+      
+      # Development features
+      development.debugging.port: '9229'
+      development.hot-reload: 'nodemon'
+      development.file-watching: 'chokidar'
+      development.cross-platform: 'enabled'
+  
+  # ========================================================================
+  # FLASK DEVELOPMENT SERVICE
+  # ========================================================================
+  # Cross-platform Flask development service for feature parity validation
+  # and educational comparison between Node.js and Python implementations
+  
+  flask-dev:
+    # Flask development build configuration
+    build:
+      context: ../flask-app  # Flask application directory
+      dockerfile: ../docker/Dockerfile.flask.dev  # Flask development Dockerfile
+      args:
+        FLASK_ENV: development
+        FLASK_DEBUG: '1'
+        DEV_MODE: 'true'
+        PYTHON_VERSION: '3.11'
+        FLASK_VERSION: '3.1.1'
+    
+    # Container identification
+    image: flask-tutorial-dev:latest
+    container_name: flask-tutorial-dev
+    hostname: flask-dev
+    restart: unless-stopped
+    
+    # Security: non-root user execution
+    user: 'flask:flask'
+    working_dir: /app
+    
+    # Flask development command with auto-reload
+    command: ['flask', 'run', '--host=0.0.0.0', '--port=5000', '--debug']
+    
+    # Port mapping for Flask development access
+    ports:
+      - '${FLASK_DEV_PORT:-5000}:5000'  # HTTP port for Flask development server
+    
+    # Flask development environment variables
+    environment:
+      # Core Flask configuration
+      FLASK_ENV: development
+      FLASK_DEBUG: '1'
+      FLASK_APP: main.py
+      PYTHONPATH: /app
+      PYTHONUNBUFFERED: '1'
+      
+      # Server configuration
+      PORT: 5000
+      HOST: '0.0.0.0'
+      
+      # Cross-platform compatibility
+      CORS_ORIGIN: '*'
+      LOG_LEVEL: DEBUG
+      
+      # Educational features
+      TUTORIAL_MODE: 'true'
+      CROSS_PLATFORM_MODE: 'true'
+      FEATURE_PARITY_MODE: 'true'
+      
+      # Cross-service communication
+      REDIS_URL: 'redis://redis-dev:6379'
+      NODEJS_SERVICE_URL: 'http://nodejs-dev:3000'
+      
+      # Development debugging
+      FLASK_DEBUG_MODE: 'true'
+      PYTHON_DEV_MODE: 'true'
+    
+    # Volume mounts for Flask development
+    volumes:
+      # Live Flask source code synchronization
+      - ../flask-app:/app  # Flask application source
+      
+      # Python bytecode cache for performance
+      - flask_cache:/app/__pycache__  # Python compilation cache
+      
+      # Flask development logs
+      - flask_logs:/app/logs  # Flask development logging
+    
+    # Flask development health check
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:5000/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    
+    # Network configuration
+    networks:
+      - dev-network
+    
+    # Service dependencies
+    depends_on:
+      redis-dev:
+        condition: service_healthy
+    
+    # Flask development logging
+    logging:
+      <<: *dev-logging
+    
+    # Flask container labels
+    labels:
+      # Docker Compose metadata
+      com.docker.compose.service: 'flask-tutorial-dev'
+      com.docker.compose.project: 'nodejs-tutorial-dev'
+      
+      # Tutorial metadata
+      tutorial.service.type: 'flask-development'
+      tutorial.auto-reload: 'enabled'
+      tutorial.flask.version: '3.1.1'
+      tutorial.python.version: '3.11'
+      tutorial.cross-platform: 'nodejs-equivalent'
+      
+      # Development features
+      development.auto-reload: 'flask-debug'
+      development.cross-platform: 'feature-parity'
+  
+  # ========================================================================
+  # REDIS DEVELOPMENT SERVICE
+  # ========================================================================
+  # Redis cache service for development environment providing caching,
+  # session management, and cross-service communication capabilities
+  
+  redis-dev:
+    # Official Redis 7-alpine image for development
+    image: redis:7-alpine
+    container_name: redis-tutorial-dev
+    hostname: redis-dev
+    restart: unless-stopped
+    
+    # Redis development port mapping
+    ports:
+      - '${REDIS_DEV_PORT:-6379}:6379'  # Redis development port
+    
+    # Redis development configuration with memory limits
+    command: [
+      'redis-server',
+      '--appendonly', 'yes',
+      '--maxmemory', '256mb',
+      '--maxmemory-policy', 'allkeys-lru',
+      '--save', '60', '1',
+      '--loglevel', 'notice'
+    ]
+    
+    # Redis data persistence for development
+    volumes:
+      - redis_dev_data:/data  # Redis development data persistence
+    
+    # Redis health check
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    
+    # Network configuration
+    networks:
+      - dev-network
+    
+    # Redis development logging
+    logging:
+      <<: *dev-logging
+    
+    # Redis container labels
+    labels:
+      # Docker Compose metadata
+      com.docker.compose.service: 'redis-tutorial-dev'
+      com.docker.compose.project: 'nodejs-tutorial-dev'
+      
+      # Service metadata
+      tutorial.service.type: 'redis-cache'
+      tutorial.cache.enabled: 'true'
+      tutorial.development: 'true'
+      
+      # Performance configuration
+      redis.version: '7-alpine'
+      redis.persistence: 'enabled'
+      redis.max-memory: '256mb'
+
+# ============================================================================
+# DEVELOPMENT NETWORKS CONFIGURATION
+# ============================================================================
+# Network configuration for development service isolation and communication
+
+networks:
+  # Primary development network for inter-service communication
+  dev-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: 'nodejs-tutorial-dev'
+      com.docker.network.bridge.enable_icc: 'true'
+      com.docker.network.bridge.enable_ip_masquerade: 'true'
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+          gateway: 172.25.0.1
+    labels:
+      network.purpose: 'Development network for Node.js, Flask, and Redis service communication'
+      network.features: 'Cross-platform service discovery, development isolation, feature parity testing'
+      network.educational: 'Demonstrates container networking and service communication patterns'
+  
+  # Dedicated debugging network for development tools and IDE integration
+  debug-network:
+    driver: bridge
+    attachable: true  # Allow external debugging tools to connect
+    driver_opts:
+      com.docker.network.bridge.name: 'nodejs-tutorial-debug'
+    labels:
+      network.purpose: 'Dedicated debugging network for development tools and IDE integration'
+      network.features: 'Debug port isolation, IDE attachment, development debugging traffic'
+      network.attachable: 'External debugging tools and IDEs can connect'
+
+# ============================================================================
+# DEVELOPMENT VOLUMES CONFIGURATION
+# ============================================================================
+# Volume configuration for development data persistence and performance optimization
+
+volumes:
+  # Node.js modules cache for faster development container startup
+  nodejs_node_modules:
+    driver: local
+    labels:
+      volume.purpose: 'Node.js dependency cache for development performance optimization'
+      volume.benefits: 'Faster container startup, persistent dependencies, improved development workflow'
+      volume.educational: 'Demonstrates dependency caching strategies in containerized development'
+  
+  # Flask Python bytecode cache for development performance
+  flask_cache:
+    driver: local
+    labels:
+      volume.purpose: 'Python bytecode cache for Flask development performance optimization'
+      volume.benefits: 'Faster Flask startup, Python compilation caching, enhanced development performance'
+      volume.educational: 'Shows Python bytecode caching in containerized environments'
+  
+  # Redis development data persistence
+  redis_dev_data:
+    driver: local
+    labels:
+      volume.purpose: 'Redis development data persistence for caching and session management'
+      volume.benefits: 'Persistent cache across restarts, session management, cross-service state sharing'
+      volume.educational: 'Demonstrates data persistence in development containerized services'
+  
+  # Development logs aggregation
+  dev_logs:
+    driver: local
+    labels:
+      volume.purpose: 'Development logs persistence for debugging and analysis'
+      volume.benefits: 'Persistent logging, debugging support, development monitoring'
+      volume.educational: 'Shows centralized logging patterns in multi-service development'
+  
+  # Flask development logs
+  flask_logs:
+    driver: local
+    labels:
+      volume.purpose: 'Flask development logs for Python application debugging'
+      volume.benefits: 'Flask-specific logging, Python debugging support, cross-platform comparison'
+      volume.educational: 'Demonstrates language-specific logging in containerized development'
+
+# ============================================================================
+# DEVELOPMENT CONFIGURATION METADATA
+# ============================================================================
+# Educational and operational metadata for development environment
+
+x-development-metadata:
+  description: 'Comprehensive development Docker Compose configuration for Node.js Tutorial Project'
+  
+  learning_objectives:
+    - 'Development-specific container orchestration with hot reloading and debugging'
+    - 'Cross-platform development workflow with Node.js and Flask service coordination'
+    - 'Multi-service development environment with Redis caching and session management'
+    - 'Remote debugging setup for containerized applications with IDE integration'
+    - 'Volume mounting strategies for live code editing and development performance'
+    - 'Development network isolation and service communication patterns'
+    - 'Hot reloading implementation in containerized Node.js and Flask environments'
+    - 'Development vs production containerization differences and optimizations'
+  
+  technology_integration:
+    nodejs:
+      version: 'v22.x LTS'
+      framework: 'Express.js v5.1.0'
+      hot_reload: 'Nodemon v3.1.7'
+      debugging: 'Node.js Inspector Protocol'
+    flask:
+      version: 'Flask 3.1.1'
+      runtime: 'Python 3.11'
+      auto_reload: 'Flask Debug Mode'
+      debugging: 'Flask Debug Mode with Interactive Debugger'
+    redis:
+      version: 'Redis 7-alpine'
+      purpose: 'Development caching and session management'
+      persistence: 'Development data persistence'
+  
+  development_features:
+    hot_reloading:
+      nodejs: 'Nodemon file watching with CHOKIDAR_USEPOLLING for cross-platform compatibility'
+      flask: 'Flask debug mode with automatic reload on Python file changes'
+      synchronization: 'Bind mount configuration for instant source code synchronization'
+    
+    debugging:
+      nodejs: 'Remote debugging on port 9229 with Node.js inspector protocol'
+      flask: 'Flask debug mode with enhanced error reporting and interactive debugging'
+      ide_support: 'VS Code, WebStorm, Chrome DevTools integration'
+    
+    cross_platform:
+      coordination: 'Coordinated Node.js and Flask development with feature parity validation'
+      communication: 'Redis-based session sharing and cross-service state management'
+      validation: 'API endpoint compatibility testing between implementations'
+  
+  development_workflow:
+    startup_commands:
+      full_environment: 'docker-compose -f docker-compose.dev.yml up -d'
+      nodejs_only: 'docker-compose -f docker-compose.dev.yml up -d nodejs-dev redis-dev'
+      flask_only: 'docker-compose -f docker-compose.dev.yml up -d flask-dev redis-dev'
+      with_logs: 'docker-compose -f docker-compose.dev.yml up'
+      build_and_start: 'docker-compose -f docker-compose.dev.yml up --build'
+    
+    development_commands:
+      view_logs: 'docker-compose -f docker-compose.dev.yml logs -f'
+      restart_service: 'docker-compose -f docker-compose.dev.yml restart [service-name]'
+      exec_nodejs: 'docker-compose -f docker-compose.dev.yml exec nodejs-dev bash'
+      exec_flask: 'docker-compose -f docker-compose.dev.yml exec flask-dev sh'
+      run_tests: 'docker-compose -f docker-compose.dev.yml exec nodejs-dev npm test'
+      debug_nodejs: 'Connect IDE to localhost:9229 for Node.js remote debugging'
+    
+    debugging_workflow:
+      nodejs_debug: 'VS Code: attach to localhost:9229, Chrome DevTools: chrome://inspect'
+      flask_debug: 'Flask debug mode provides interactive debugging and error reporting'
+      service_communication: 'Test cross-service communication via Redis and HTTP'
+      feature_parity: 'Validate identical responses between /hello endpoints'
+  
+  educational_progression:
+    phase: 'Advanced Phase 8: Container Development Orchestration'
+    complexity: 'Advanced'
+    prerequisites:
+      - 'Docker and Docker Compose fundamentals'
+      - 'Node.js application development experience'
+      - 'Flask framework basics and Python development'
+      - 'Development workflow understanding and debugging'
+    builds_upon:
+      - 'Basic HTTP server implementation (Phase 1)'
+      - 'Express.js framework integration (Phase 2)'
+      - 'Flask cross-platform migration (Phase 3)'
+      - 'Testing framework implementation (Phase 4)'
+      - 'PM2 production deployment (Phase 5)'
+      - 'Security implementation with Helmet.js (Phase 6)'
+    next_steps:
+      - 'Production containerization with docker-compose.prod.yml'
+      - 'Kubernetes development and orchestration'
+      - 'Advanced monitoring and observability'
+      - 'CI/CD pipeline integration with containerized testing'
+  
+  performance_optimization:
+    development:
+      hot_reload_efficiency: 'Optimized file watching with minimal restart delays'
+      volume_caching: 'Named volumes for dependency caching and faster startup'
+      resource_allocation: 'Balanced CPU and memory limits for development performance'
+      cross_platform: 'Polling-based file watching for Windows/macOS compatibility'
+    
+    cross_service:
+      communication: 'Optimized inter-service networking with development bridge networks'
+      shared_cache: 'Redis shared cache for cross-platform session management'
+      parallel_development: 'Independent hot reloading for Node.js and Flask services'
+  
+  security_considerations:
+    development_security:
+      network_isolation: 'Development networks isolated from production environments'
+      debug_ports: 'Debug ports only exposed in development with network restrictions'
+      non_root_execution: 'All containers run as non-root users for security'
+      environment_separation: 'Clear separation between development and production configs'
+    
+    debugging_security:
+      port_exposure: 'Debug ports only exposed for development use'
+      network_separation: 'Dedicated debug network for debugging traffic isolation'
+      development_logging: 'Enhanced logging without exposing production secrets'
+
+# ============================================================================
+# DEVELOPMENT USAGE GUIDE AND BEST PRACTICES
+# ============================================================================
+#
+# QUICK START:
+# 1. Copy .env.example to .env and configure development settings
+# 2. docker-compose -f docker-compose.dev.yml up --build
+# 3. Access Node.js app: http://localhost:3000
+# 4. Access Flask app: http://localhost:5000
+# 5. Debug Node.js: Connect IDE to localhost:9229
+#
+# DEVELOPMENT WORKFLOW:
+# - Edit source code in ../src or ../flask-app for live reloading
+# - Monitor logs: docker-compose -f docker-compose.dev.yml logs -f
+# - Test endpoints: curl http://localhost:3000/hello && curl http://localhost:5000/hello
+# - Debug: Use VS Code or Chrome DevTools for Node.js debugging
+# - Cross-platform validation: Compare Node.js and Flask endpoint responses
+#
+# IDE INTEGRATION:
+# VS Code launch.json for Node.js debugging:
+# {
+#   "type": "node",
+#   "request": "attach",
+#   "name": "Docker: Attach to Node",
+#   "port": 9229,
+#   "address": "localhost",
+#   "remoteRoot": "/app"
+# }
+#
+# PERFORMANCE TIPS:
+# - Use named volumes for node_modules to improve startup times
+# - Enable file watching polling for cross-platform compatibility
+# - Monitor resource usage with docker stats
+# - Use docker-compose logs for centralized log viewing
+#
+# TROUBLESHOOTING:
+# - File watching issues: Ensure CHOKIDAR_USEPOLLING=true
+# - Permission errors: Check user/group ownership in containers
+# - Port conflicts: Modify DEV_PORT and FLASK_DEV_PORT in .env
+# - Debug connection: Verify port 9229 mapping and firewall settings
+#
+# ============================================================================
