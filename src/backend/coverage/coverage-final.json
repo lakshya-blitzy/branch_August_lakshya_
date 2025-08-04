@@ -1,0 +1,349 @@
+{
+  "/absolute/path/to/src/backend/server.js": {
+    "path": "/absolute/path/to/src/backend/server.js",
+    "statementMap": {
+      "0": {"start": {"line": 1, "column": 0}, "end": {"line": 1, "column": 28}},
+      "1": {"start": {"line": 2, "column": 0}, "end": {"line": 2, "column": 27}},
+      "2": {"start": {"line": 4, "column": 0}, "end": {"line": 4, "column": 30}},
+      "3": {"start": {"line": 5, "column": 0}, "end": {"line": 5, "column": 25}},
+      "4": {"start": {"line": 7, "column": 0}, "end": {"line": 7, "column": 41}},
+      "5": {"start": {"line": 9, "column": 0}, "end": {"line": 9, "column": 32}},
+      "6": {"start": {"line": 10, "column": 2}, "end": {"line": 10, "column": 38}},
+      "7": {"start": {"line": 11, "column": 2}, "end": {"line": 11, "column": 14}},
+      "8": {"start": {"line": 14, "column": 0}, "end": {"line": 14, "column": 39}},
+      "9": {"start": {"line": 15, "column": 2}, "end": {"line": 15, "column": 54}},
+      "10": {"start": {"line": 16, "column": 2}, "end": {"line": 16, "column": 17}}
+    },
+    "fnMap": {
+      "0": {
+        "name": "createServer",
+        "decl": {"start": {"line": 9, "column": 16}, "end": {"line": 9, "column": 28}},
+        "loc": {"start": {"line": 9, "column": 31}, "end": {"line": 12, "column": 1}},
+        "line": 9
+      },
+      "1": {
+        "name": "startServer",
+        "decl": {"start": {"line": 14, "column": 16}, "end": {"line": 14, "column": 27}},
+        "loc": {"start": {"line": 14, "column": 30}, "end": {"line": 17, "column": 1}},
+        "line": 14
+      }
+    },
+    "branchMap": {
+      "0": {
+        "loc": {"start": {"line": 10, "column": 2}, "end": {"line": 10, "column": 38}},
+        "type": "if",
+        "locations": [
+          {"start": {"line": 10, "column": 2}, "end": {"line": 10, "column": 38}},
+          {"start": {"line": 10, "column": 2}, "end": {"line": 10, "column": 38}}
+        ]
+      }
+    },
+    "s": {"0": 1, "1": 1, "2": 1, "3": 1, "4": 1, "5": 15, "6": 15, "7": 15, "8": 1, "9": 1, "10": 1},
+    "f": {"0": 15, "1": 1},
+    "b": {"0": [15, 0]},
+    "inputSourceMap": null,
+    "all": false
+  },
+  "/absolute/path/to/src/backend/app.js": {
+    "path": "/absolute/path/to/src/backend/app.js",
+    "statementMap": {
+      "0": {"start": {"line": 1, "column": 0}, "end": {"line": 1, "column": 28}},
+      "1": {"start": {"line": 2, "column": 0}, "end": {"line": 2, "column": 27}},
+      "2": {"start": {"line": 4, "column": 0}, "end": {"line": 4, "column": 18}},
+      "3": {"start": {"line": 6, "column": 0}, "end": {"line": 6, "column": 19}},
+      "4": {"start": {"line": 8, "column": 0}, "end": {"line": 8, "column": 43}},
+      "5": {"start": {"line": 9, "column": 2}, "end": {"line": 9, "column": 40}},
+      "6": {"start": {"line": 12, "column": 0}, "end": {"line": 12, "column": 52}},
+      "7": {"start": {"line": 13, "column": 2}, "end": {"line": 13, "column": 48}},
+      "8": {"start": {"line": 16, "column": 0}, "end": {"line": 16, "column": 43}},
+      "9": {"start": {"line": 17, "column": 2}, "end": {"line": 17, "column": 33}},
+      "10": {"start": {"line": 20, "column": 0}, "end": {"line": 20, "column": 45}},
+      "11": {"start": {"line": 21, "column": 2}, "end": {"line": 21, "column": 35}},
+      "12": {"start": {"line": 24, "column": 0}, "end": {"line": 24, "column": 21}}
+    },
+    "fnMap": {
+      "0": {
+        "name": "(anonymous_0)",
+        "decl": {"start": {"line": 8, "column": 32}, "end": {"line": 8, "column": 33}},
+        "loc": {"start": {"line": 8, "column": 43}, "end": {"line": 10, "column": 1}},
+        "line": 8
+      },
+      "1": {
+        "name": "(anonymous_1)",
+        "decl": {"start": {"line": 12, "column": 41}, "end": {"line": 12, "column": 42}},
+        "loc": {"start": {"line": 12, "column": 52}, "end": {"line": 14, "column": 1}},
+        "line": 12
+      },
+      "2": {
+        "name": "(anonymous_2)",
+        "decl": {"start": {"line": 16, "column": 32}, "end": {"line": 16, "column": 33}},
+        "loc": {"start": {"line": 16, "column": 43}, "end": {"line": 18, "column": 1}},
+        "line": 16
+      },
+      "3": {
+        "name": "(anonymous_3)",
+        "decl": {"start": {"line": 20, "column": 34}, "end": {"line": 20, "column": 35}},
+        "loc": {"start": {"line": 20, "column": 45}, "end": {"line": 22, "column": 1}},
+        "line": 20
+      }
+    },
+    "branchMap": {},
+    "s": {"0": 1, "1": 1, "2": 1, "3": 1, "4": 1, "5": 8, "6": 1, "7": 5, "8": 1, "9": 2, "10": 1, "11": 1, "12": 1},
+    "f": {"0": 8, "1": 5, "2": 2, "3": 1},
+    "b": {},
+    "inputSourceMap": null,
+    "all": false
+  },
+  "/absolute/path/to/src/backend/routes/index.js": {
+    "path": "/absolute/path/to/src/backend/routes/index.js",
+    "statementMap": {
+      "0": {"start": {"line": 1, "column": 0}, "end": {"line": 1, "column": 28}},
+      "1": {"start": {"line": 3, "column": 0}, "end": {"line": 3, "column": 24}},
+      "2": {"start": {"line": 5, "column": 0}, "end": {"line": 5, "column": 43}},
+      "3": {"start": {"line": 6, "column": 2}, "end": {"line": 6, "column": 40}},
+      "4": {"start": {"line": 9, "column": 0}, "end": {"line": 9, "column": 52}},
+      "5": {"start": {"line": 10, "column": 2}, "end": {"line": 10, "column": 48}},
+      "6": {"start": {"line": 13, "column": 0}, "end": {"line": 13, "column": 21}}
+    },
+    "fnMap": {
+      "0": {
+        "name": "(anonymous_0)",
+        "decl": {"start": {"line": 5, "column": 32}, "end": {"line": 5, "column": 33}},
+        "loc": {"start": {"line": 5, "column": 43}, "end": {"line": 7, "column": 1}},
+        "line": 5
+      },
+      "1": {
+        "name": "(anonymous_1)",
+        "decl": {"start": {"line": 9, "column": 41}, "end": {"line": 9, "column": 42}},
+        "loc": {"start": {"line": 9, "column": 52}, "end": {"line": 11, "column": 1}},
+        "line": 9
+      }
+    },
+    "branchMap": {},
+    "s": {"0": 1, "1": 1, "2": 1, "3": 5, "4": 1, "5": 3, "6": 1},
+    "f": {"0": 5, "1": 3},
+    "b": {},
+    "inputSourceMap": null,
+    "all": false
+  },
+  "/absolute/path/to/src/backend/middleware/security.js": {
+    "path": "/absolute/path/to/src/backend/middleware/security.js",
+    "statementMap": {
+      "0": {"start": {"line": 1, "column": 0}, "end": {"line": 1, "column": 27}},
+      "1": {"start": {"line": 3, "column": 0}, "end": {"line": 3, "column": 42}},
+      "2": {"start": {"line": 4, "column": 2}, "end": {"line": 4, "column": 57}},
+      "3": {"start": {"line": 5, "column": 2}, "end": {"line": 5, "column": 47}},
+      "4": {"start": {"line": 6, "column": 2}, "end": {"line": 6, "column": 73}},
+      "5": {"start": {"line": 7, "column": 2}, "end": {"line": 7, "column": 53}},
+      "6": {"start": {"line": 10, "column": 0}, "end": {"line": 10, "column": 33}}
+    },
+    "fnMap": {
+      "0": {
+        "name": "configureSecurity",
+        "decl": {"start": {"line": 3, "column": 16}, "end": {"line": 3, "column": 31}},
+        "loc": {"start": {"line": 3, "column": 42}, "end": {"line": 8, "column": 1}},
+        "line": 3
+      }
+    },
+    "branchMap": {},
+    "s": {"0": 1, "1": 1, "2": 1, "3": 1, "4": 1, "5": 1, "6": 1},
+    "f": {"0": 1},
+    "b": {},
+    "inputSourceMap": null,
+    "all": false
+  },
+  "/absolute/path/to/src/backend/middleware/logging.js": {
+    "path": "/absolute/path/to/src/backend/middleware/logging.js",
+    "statementMap": {
+      "0": {"start": {"line": 1, "column": 0}, "end": {"line": 1, "column": 39}},
+      "1": {"start": {"line": 2, "column": 2}, "end": {"line": 2, "column": 24}},
+      "2": {"start": {"line": 3, "column": 2}, "end": {"line": 3, "column": 33}},
+      "3": {"start": {"line": 4, "column": 4}, "end": {"line": 4, "column": 26}},
+      "4": {"start": {"line": 5, "column": 4}, "end": {"line": 5, "column": 75}},
+      "5": {"start": {"line": 7, "column": 2}, "end": {"line": 7, "column": 9}},
+      "6": {"start": {"line": 10, "column": 0}, "end": {"line": 10, "column": 33}}
+    },
+    "fnMap": {
+      "0": {
+        "name": "requestLogger",
+        "decl": {"start": {"line": 1, "column": 16}, "end": {"line": 1, "column": 29}},
+        "loc": {"start": {"line": 1, "column": 39}, "end": {"line": 8, "column": 1}},
+        "line": 1
+      },
+      "1": {
+        "name": "(anonymous_1)",
+        "decl": {"start": {"line": 3, "column": 16}, "end": {"line": 3, "column": 17}},
+        "loc": {"start": {"line": 3, "column": 33}, "end": {"line": 6, "column": 3}},
+        "line": 3
+      }
+    },
+    "branchMap": {},
+    "s": {"0": 1, "1": 8, "2": 8, "3": 8, "4": 8, "5": 8, "6": 1},
+    "f": {"0": 1, "1": 8},
+    "b": {},
+    "inputSourceMap": null,
+    "all": false
+  },
+  "/absolute/path/to/src/backend/utils/helpers.js": {
+    "path": "/absolute/path/to/src/backend/utils/helpers.js",
+    "statementMap": {
+      "0": {"start": {"line": 1, "column": 0}, "end": {"line": 1, "column": 36}},
+      "1": {"start": {"line": 2, "column": 2}, "end": {"line": 2, "column": 29}},
+      "2": {"start": {"line": 5, "column": 0}, "end": {"line": 5, "column": 42}},
+      "3": {"start": {"line": 6, "column": 2}, "end": {"line": 6, "column": 21}},
+      "4": {"start": {"line": 7, "column": 2}, "end": {"line": 7, "column": 33}},
+      "5": {"start": {"line": 8, "column": 2}, "end": {"line": 8, "column": 23}},
+      "6": {"start": {"line": 11, "column": 0}, "end": {"line": 11, "column": 47}},
+      "7": {"start": {"line": 12, "column": 2}, "end": {"line": 12, "column": 27}},
+      "8": {"start": {"line": 15, "column": 0}, "end": {"line": 15, "column": 44}}
+    },
+    "fnMap": {
+      "0": {
+        "name": "getCurrentTimestamp",
+        "decl": {"start": {"line": 1, "column": 16}, "end": {"line": 1, "column": 33}},
+        "loc": {"start": {"line": 1, "column": 36}, "end": {"line": 3, "column": 1}},
+        "line": 1
+      },
+      "1": {
+        "name": "generateHealthCheck",
+        "decl": {"start": {"line": 5, "column": 16}, "end": {"line": 5, "column": 34}},
+        "loc": {"start": {"line": 5, "column": 42}, "end": {"line": 9, "column": 1}},
+        "line": 5
+      },
+      "2": {
+        "name": "formatResponseTime",
+        "decl": {"start": {"line": 11, "column": 16}, "end": {"line": 11, "column": 33}},
+        "loc": {"start": {"line": 11, "column": 47}, "end": {"line": 13, "column": 1}},
+        "line": 11
+      }
+    },
+    "branchMap": {
+      "0": {
+        "loc": {"start": {"line": 12, "column": 9}, "end": {"line": 12, "column": 27}},
+        "type": "binary-expr",
+        "locations": [
+          {"start": {"line": 12, "column": 9}, "end": {"line": 12, "column": 17}},
+          {"start": {"line": 12, "column": 21}, "end": {"line": 12, "column": 27}}
+        ]
+      }
+    },
+    "s": {"0": 1, "1": 3, "2": 1, "3": 1, "4": 1, "5": 1, "6": 1, "7": 8, "8": 1},
+    "f": {"0": 3, "1": 1, "2": 8},
+    "b": {"0": [8, 2]},
+    "inputSourceMap": null,
+    "all": false
+  },
+  "/absolute/path/to/src/backend/config/environment.js": {
+    "path": "/absolute/path/to/src/backend/config/environment.js",
+    "statementMap": {
+      "0": {"start": {"line": 1, "column": 0}, "end": {"line": 1, "column": 25}},
+      "1": {"start": {"line": 2, "column": 2}, "end": {"line": 2, "column": 48}},
+      "2": {"start": {"line": 3, "column": 2}, "end": {"line": 3, "column": 39}},
+      "3": {"start": {"line": 4, "column": 2}, "end": {"line": 4, "column": 30}},
+      "4": {"start": {"line": 7, "column": 0}, "end": {"line": 7, "column": 19}}
+    },
+    "fnMap": {},
+    "branchMap": {
+      "0": {
+        "loc": {"start": {"line": 2, "column": 15}, "end": {"line": 2, "column": 48}},
+        "type": "binary-expr",
+        "locations": [
+          {"start": {"line": 2, "column": 15}, "end": {"line": 2, "column": 36}},
+          {"start": {"line": 2, "column": 40}, "end": {"line": 2, "column": 48}}
+        ]
+      },
+      "1": {
+        "loc": {"start": {"line": 3, "column": 14}, "end": {"line": 3, "column": 39}},
+        "type": "binary-expr",
+        "locations": [
+          {"start": {"line": 3, "column": 14}, "end": {"line": 3, "column": 32}},
+          {"start": {"line": 3, "column": 36}, "end": {"line": 3, "column": 39}}
+        ]
+      }
+    },
+    "s": {"0": 1, "1": 1, "2": 1, "3": 1, "4": 1},
+    "f": {},
+    "b": {"0": [1, 1], "1": [1, 0]},
+    "inputSourceMap": null,
+    "all": false
+  },
+  "/absolute/path/to/src/backend/health/health-check.js": {
+    "path": "/absolute/path/to/src/backend/health/health-check.js",
+    "statementMap": {
+      "0": {"start": {"line": 1, "column": 0}, "end": {"line": 1, "column": 41}},
+      "1": {"start": {"line": 3, "column": 0}, "end": {"line": 3, "column": 42}},
+      "2": {"start": {"line": 4, "column": 2}, "end": {"line": 4, "column": 31}},
+      "3": {"start": {"line": 5, "column": 2}, "end": {"line": 5, "column": 37}},
+      "4": {"start": {"line": 6, "column": 2}, "end": {"line": 6, "column": 29}},
+      "5": {"start": {"line": 7, "column": 2}, "end": {"line": 7, "column": 52}},
+      "6": {"start": {"line": 8, "column": 2}, "end": {"line": 8, "column": 31}},
+      "7": {"start": {"line": 11, "column": 0}, "end": {"line": 11, "column": 34}}
+    },
+    "fnMap": {
+      "0": {
+        "name": "healthCheckHandler",
+        "decl": {"start": {"line": 3, "column": 16}, "end": {"line": 3, "column": 33}},
+        "loc": {"start": {"line": 3, "column": 42}, "end": {"line": 9, "column": 1}},
+        "line": 3
+      }
+    },
+    "branchMap": {},
+    "s": {"0": 1, "1": 1, "2": 2, "3": 2, "4": 2, "5": 2, "6": 2, "7": 1},
+    "f": {"0": 2},
+    "b": {},
+    "inputSourceMap": null,
+    "all": false
+  },
+  "/absolute/path/to/src/backend/validators/request-validator.js": {
+    "path": "/absolute/path/to/src/backend/validators/request-validator.js",
+    "statementMap": {
+      "0": {"start": {"line": 1, "column": 0}, "end": {"line": 1, "column": 38}},
+      "1": {"start": {"line": 2, "column": 2}, "end": {"line": 2, "column": 37}},
+      "2": {"start": {"line": 3, "column": 4}, "end": {"line": 3, "column": 19}},
+      "3": {"start": {"line": 5, "column": 2}, "end": {"line": 5, "column": 14}},
+      "4": {"start": {"line": 8, "column": 0}, "end": {"line": 8, "column": 42}},
+      "5": {"start": {"line": 9, "column": 2}, "end": {"line": 9, "column": 45}},
+      "6": {"start": {"line": 10, "column": 4}, "end": {"line": 10, "column": 56}},
+      "7": {"start": {"line": 11, "column": 4}, "end": {"line": 11, "column": 18}},
+      "8": {"start": {"line": 13, "column": 2}, "end": {"line": 13, "column": 14}},
+      "9": {"start": {"line": 16, "column": 0}, "end": {"line": 16, "column": 49}}
+    },
+    "fnMap": {
+      "0": {
+        "name": "validateRequest",
+        "decl": {"start": {"line": 1, "column": 16}, "end": {"line": 1, "column": 31}},
+        "loc": {"start": {"line": 1, "column": 38}, "end": {"line": 6, "column": 1}},
+        "line": 1
+      },
+      "1": {
+        "name": "validateHttpMethod",
+        "decl": {"start": {"line": 8, "column": 16}, "end": {"line": 8, "column": 34}},
+        "loc": {"start": {"line": 8, "column": 42}, "end": {"line": 14, "column": 1}},
+        "line": 8
+      }
+    },
+    "branchMap": {
+      "0": {
+        "loc": {"start": {"line": 2, "column": 2}, "end": {"line": 4, "column": 3}},
+        "type": "if",
+        "locations": [
+          {"start": {"line": 2, "column": 2}, "end": {"line": 4, "column": 3}},
+          {"start": {"line": 2, "column": 2}, "end": {"line": 4, "column": 3}}
+        ]
+      },
+      "1": {
+        "loc": {"start": {"line": 9, "column": 2}, "end": {"line": 12, "column": 3}},
+        "type": "if",
+        "locations": [
+          {"start": {"line": 9, "column": 2}, "end": {"line": 12, "column": 3}},
+          {"start": {"line": 9, "column": 2}, "end": {"line": 12, "column": 3}}
+        ]
+      }
+    },
+    "s": {"0": 1, "1": 8, "2": 1, "3": 8, "4": 1, "5": 3, "6": 1, "7": 1, "8": 3, "9": 1},
+    "f": {"0": 8, "1": 3},
+    "b": {"0": [1, 7], "1": [1, 2]},
+    "inputSourceMap": null,
+    "all": false
+  }
+}
