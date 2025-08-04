@@ -1,0 +1,212 @@
+# =============================================================================
+# Node.js Tutorial Project - Comprehensive .gitignore
+# Comprehensive Git ignore patterns for Node.js tutorial demonstrating
+# Express.js v5.1.0, PM2 cluster deployment, Jest/Mocha testing, and Flask migration
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Node.js Core Dependencies and Cache
+# -----------------------------------------------------------------------------
+
+# npm dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# npm cache and local configuration
+.npm
+.npmrc_local
+npm-shrinkwrap.json
+
+# Lock files (include in production, exclude in tutorial)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# -----------------------------------------------------------------------------
+# Node.js Runtime and Process Artifacts
+# -----------------------------------------------------------------------------
+
+# Runtime process files
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage and testing output
+lib-cov
+coverage/
+!coverage/.gitkeep
+nyc_output/
+.nyc_output/
+
+# -----------------------------------------------------------------------------
+# Express.js Framework Temporary Files
+# -----------------------------------------------------------------------------
+
+# Express middleware temporary storage
+uploads/
+tmp/*
+!tmp/.gitkeep
+temp/
+
+# Express session storage
+sessions/
+.sessions/
+connect.sid
+
+# -----------------------------------------------------------------------------
+# PM2 Production Process Management
+# -----------------------------------------------------------------------------
+
+# PM2 logs and runtime data
+logs/
+!logs/.gitkeep
+*.log
+pm2-*.log
+.pm2/
+
+# PM2 cluster artifacts
+cluster-*.log
+worker-*.log
+pm2-error.log
+pm2-out.log
+
+# PM2 runtime configuration
+ecosystem.config.production.js
+pm2.json
+
+# -----------------------------------------------------------------------------
+# Testing Framework Output (Jest & Mocha)
+# -----------------------------------------------------------------------------
+
+# Jest testing output
+jest-coverage/
+test-results/
+
+# Mocha testing artifacts
+mocha-coverage/
+.mocha/
+test-output/
+mochawesome-report/
+
+# Test temporary data
+test/tmp/
+test/fixtures/generated/
+test-temp/
+.test-cache/
+
+# -----------------------------------------------------------------------------
+# Security Sensitive Configuration
+# -----------------------------------------------------------------------------
+
+# Environment configuration files
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# SSL certificates and private keys
+certificates/*.key
+certificates/*.pem
+certificates/*.p12
+ssl/
+certs/
+
+# Authentication tokens and keys
+*.token
+auth/
+.auth
+jwt-keys/
+oauth/
+
+# -----------------------------------------------------------------------------
+# Development Tools and IDE Configuration
+# -----------------------------------------------------------------------------
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts and cache
+dist/
+build/
+out/
+.cache/
+.parcel-cache/
+.next/
+
+# Linting and formatting cache
+.eslintcache
+.stylelintcache
+.prettiercache
+
+# -----------------------------------------------------------------------------
+# Flask Cross-Platform Compatibility
+# -----------------------------------------------------------------------------
+
+# Python artifacts for Flask migration
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+
+# Flask temporary files
+instance/
+.webassets-cache
+flask-session/
+
+# -----------------------------------------------------------------------------
+# Operating System Artifacts
+# -----------------------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# General temporary and backup files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.rej
+
+# -----------------------------------------------------------------------------
+# Docker and Container Development
+# -----------------------------------------------------------------------------
+
+# Docker override and local configurations
+docker-compose.override.yml
+.docker/
+
+# -----------------------------------------------------------------------------
+# Educational Tutorial Specific Exclusions
+# -----------------------------------------------------------------------------
+
+# Tutorial exercise solutions (if applicable)
+solutions/
+answers/
+
+# Student work directories (if applicable)
+student-work/
+my-solution/
+
+# End of .gitignore
