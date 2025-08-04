@@ -1,0 +1,373 @@
+# Docker Compose Configuration for Node.js Tutorial Project
+# Version 3.8 for modern container orchestration features and advanced service configuration
+version: '3.8'
+
+# Project name for container and network naming consistency
+x-project-name: &project-name 'nodejs-tutorial'
+
+# Common environment variables shared across services using YAML anchors for DRY configuration
+x-common-env: &common-env
+  NODE_ENV: ${NODE_ENV:-development}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  LOG_FORMAT: ${LOG_FORMAT:-combined}
+  HELMET_ENABLED: ${HELMET_ENABLED:-true}
+  MONITORING_ENABLED: ${MONITORING_ENABLED:-false}
+  HEALTH_CHECK_ENABLED: ${HEALTH_CHECK_ENABLED:-true}
+
+# Common logging configuration for consistent log management across services
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+    compress: 'true'
+
+# Common resource limits to prevent resource exhaustion and ensure stability
+x-resource-limits: &resource-limits
+  cpus: '${CPU_LIMIT:-1.0}'
+  memory: '${MEMORY_LIMIT:-1G}'
+
+# Common restart policy for high availability and fault tolerance
+x-restart-policy: &restart-policy
+  condition: on-failure
+  delay: 5s
+  max_attempts: 3
+  window: 120s
+
+services:
+  # Main Node.js application service with Express.js v5.1.0, PM2 cluster management, and comprehensive monitoring
+  app:
+    # Build configuration using multi-stage Dockerfile with production optimization
+    build:
+      context: ..  # Build context points to backend directory for full project access
+      dockerfile: ./docker/Dockerfile  # Multi-stage Dockerfile with dependencies, build, and production stages
+      target: production  # Target production stage for optimized deployment
+      args:
+        # Build-time arguments for configuration and metadata
+        NODE_ENV: ${NODE_ENV:-development}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VCS_REF: ${VCS_REF:-}
+        VERSION: ${VERSION:-latest}
+        # Node.js and PM2 version control for reproducible builds
+        NODE_VERSION: 22
+        PM2_VERSION: 6.0.8
+        # Security and optimization flags
+        SECURITY_HARDENING: 'true'
+        PERFORMANCE_OPTIMIZATION: 'true'
+      # Build cache configuration for improved build performance
+      cache_from:
+        - node:22-alpine
+        - ${REGISTRY:-}nodejs-tutorial:cache
+    
+    # Container image and naming configuration
+    image: nodejs-tutorial:${VERSION:-latest}
+    container_name: nodejs-tutorial-app
+    hostname: tutorial-app
+    
+    # Container restart policy for high availability
+    restart: unless-stopped
+    
+    # Security configuration with non-root user execution
+    user: 'node:node'  # Non-root user following principle of least privilege
+    working_dir: /app
+    
+    # Container initialization and command configuration
+    entrypoint: ['./docker/entrypoint.sh']  # Custom entrypoint for sophisticated lifecycle management
+    command: ['pm2-runtime', 'start', 'ecosystem.config.js', '--env', '${NODE_ENV:-development}']
+    
+    # Port mapping for HTTP traffic with configurable host port
+    ports:
+      - '${PORT:-3000}:3000'  # HTTP port for Express.js application with PM2 process management
+    
+    # Comprehensive environment variable configuration
+    environment:
+      <<: *common-env  # Inherit common environment variables
+      # Core application configuration
+      PORT: ${PORT:-3000}
+      HOST: ${HOST:-0.0.0.0}
+      
+      # PM2 cluster configuration for horizontal scaling
+      PM2_INSTANCES: ${PM2_INSTANCES:-max}
+      PM2_EXEC_MODE: ${PM2_EXEC_MODE:-cluster}
+      PM2_CLUSTER_MODE: 'true'
+      PM2_LOAD_BALANCER: 'round_robin'
+      
+      # Express.js v5.1.0 configuration
+      EXPRESS_VERSION: '5.1.0'
+      EXPRESS_TRUST_PROXY: ${EXPRESS_TRUST_PROXY:-false}
+      
+      # Security middleware configuration
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-1000}
+      RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:-900000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      CORS_CREDENTIALS: ${CORS_CREDENTIALS:-true}
+      
+      # Health monitoring and observability
+      HEALTH_CHECK_PATH: ${HEALTH_CHECK_PATH:-/health}
+      HEALTH_CHECK_TIMEOUT: ${HEALTH_CHECK_TIMEOUT:-5000}
+      METRICS_ENABLED: ${METRICS_ENABLED:-false}
+      
+      # Node.js runtime optimization
+      NODE_OPTIONS: ${NODE_OPTIONS:---max-old-space-size=1024}
+      UV_THREADPOOL_SIZE: ${UV_THREADPOOL_SIZE:-4}
+      
+      # Educational and development features
+      TUTORIAL_MODE: ${TUTORIAL_MODE:-true}
+      EDUCATIONAL_LOGGING: ${EDUCATIONAL_LOGGING:-true}
+      DEBUG_MODE: ${DEBUG_MODE:-false}
+    
+    # Volume mounts for persistent data, configuration, and performance optimization
+    volumes:
+      # Configuration files (read-only for security)
+      - ../package.json:/app/package.json:ro
+      - ../package-lock.json:/app/package-lock.json:ro
+      - ../ecosystem.config.js:/app/ecosystem.config.js:ro
+      
+      # Application source code (development hot-reload support)
+      - ../src:/app/src:ro
+      - ../config:/app/config:ro
+      
+      # Docker scripts and configuration
+      - ./entrypoint.sh:/app/docker/entrypoint.sh:ro
+      - ./healthcheck.sh:/app/docker/healthcheck.sh:ro
+      
+      # Persistent data volumes
+      - app_logs:/app/logs  # Centralized log storage for PM2 and application logs
+      - node_modules_cache:/app/node_modules  # Dependency cache for performance
+      - pm2_logs:/root/.pm2/logs  # PM2 process manager logs
+      
+      # SSL certificates (if HTTPS enabled)
+      - ssl_certificates:/app/ssl:ro
+    
+    # Temporary filesystem for secure temporary file handling
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=100m
+      - /var/tmp:rw,noexec,nosuid,size=50m
+    
+    # Process and file descriptor limits for production stability
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    
+    # Resource allocation and limits for optimal performance
+    deploy:
+      resources:
+        limits:
+          <<: *resource-limits
+        reservations:
+          cpus: '${CPU_RESERVATION:-0.25}'
+          memory: '${MEMORY_RESERVATION:-256M}'
+      restart_policy:
+        <<: *restart-policy
+    
+    # Comprehensive health check using custom healthcheck script
+    healthcheck:
+      test: ['CMD-SHELL', './docker/healthcheck.sh']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s  # Allow extra time for PM2 cluster initialization
+    
+    # Network configuration for service isolation and communication
+    networks:
+      - app-network
+      - monitoring-network
+    
+    # Container labels for metadata and educational documentation
+    labels:
+      # Docker Compose metadata
+      com.docker.compose.service: 'nodejs-tutorial-app'
+      com.docker.compose.project: *project-name
+      com.docker.compose.version: '3.8'
+      
+      # Technology stack labels for educational reference
+      tutorial.express.version: '5.1.0'
+      tutorial.node.version: '22.x'
+      tutorial.pm2.version: '6.0.8'
+      tutorial.pm2.enabled: 'true'
+      tutorial.helmet.enabled: 'true'
+      
+      # Educational and deployment metadata
+      tutorial.phase: 'Advanced Phase 8: Container Orchestration'
+      tutorial.complexity: 'Advanced'
+      tutorial.deployment.strategy: 'PM2 Cluster with Docker'
+      
+      # Monitoring and operational labels
+      monitoring.health.endpoint: '/health'
+      monitoring.metrics.enabled: '${MONITORING_ENABLED:-false}'
+      security.non-root: 'true'
+      security.helmet: 'true'
+    
+    # Service dependencies and startup order
+    depends_on: []  # Self-contained service with no external dependencies
+    
+    # Logging configuration for centralized log management
+    logging:
+      <<: *default-logging
+    
+    # Development-specific overrides (activated via profiles)
+    profiles:
+      - development
+      - production
+
+  # Development helper service for enhanced developer experience (optional)
+  dev-tools:
+    # Only active in development profile
+    profiles:
+      - development
+    
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+      target: development  # Use development stage with debugging tools
+    
+    image: nodejs-tutorial:dev-${VERSION:-latest}
+    container_name: nodejs-tutorial-dev-tools
+    
+    # Development-specific configuration
+    environment:
+      <<: *common-env
+      NODE_ENV: development
+      DEBUG: '*'
+      FORCE_COLOR: '1'
+      PM2_INSTANCES: 1
+      PM2_EXEC_MODE: fork
+    
+    # Development volume mounts with hot reload capability
+    volumes:
+      - ../:/app  # Full source code mount for development
+      - dev_node_modules:/app/node_modules
+      - dev_logs:/app/logs
+    
+    # Development ports for debugging
+    ports:
+      - '9229:9229'  # Node.js debugger port
+      - '9615:9615'  # PM2 monitoring dashboard
+    
+    # Simplified health check for development
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:3000/health || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 2
+      start_period: 20s
+    
+    networks:
+      - app-network
+    
+    labels:
+      tutorial.mode: 'development'
+      tutorial.debugging: 'enabled'
+      tutorial.hot-reload: 'enabled'
+
+# Network configuration for service isolation and communication
+networks:
+  # Main application network for service communication
+  app-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: 'nodejs-tutorial'
+      com.docker.network.bridge.enable_icc: 'true'
+      com.docker.network.bridge.enable_ip_masquerade: 'true'
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+    labels:
+      network.purpose: 'Main application network for service communication and isolation'
+      network.security: 'Isolated from host and other Docker networks'
+      network.educational: 'Demonstrates container networking concepts'
+  
+  # Monitoring network for health checks and observability tools
+  monitoring-network:
+    driver: bridge
+    attachable: true
+    labels:
+      network.purpose: 'Monitoring network for health checks and metrics collection'
+      network.attachable: 'External monitoring tools can connect'
+      network.educational: 'Demonstrates monitoring network isolation'
+
+# Volume configuration for persistent data and performance optimization
+volumes:
+  # Application logs with persistent storage across container restarts
+  app_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_DIRECTORY:-./logs}
+    labels:
+      volume.purpose: 'Persistent application and PM2 log storage'
+      volume.rotation: 'Supports log rotation and retention policies'
+      volume.educational: 'Demonstrates persistent logging in containers'
+  
+  # Node.js modules cache for improved build and startup performance
+  node_modules_cache:
+    driver: local
+    labels:
+      volume.purpose: 'Node.js dependency cache for performance optimization'
+      volume.performance: 'Reduces container startup time and network usage'
+      volume.educational: 'Demonstrates dependency caching strategies'
+  
+  # PM2 process manager logs for monitoring and debugging
+  pm2_logs:
+    driver: local
+    labels:
+      volume.purpose: 'PM2 cluster process logs and monitoring data'
+      volume.monitoring: 'Essential for cluster mode debugging and optimization'
+      volume.educational: 'Shows PM2 cluster logging patterns'
+  
+  # SSL certificate storage for HTTPS encryption
+  ssl_certificates:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${SSL_CERT_DIRECTORY:-./ssl}
+    labels:
+      volume.purpose: 'SSL certificate storage for HTTPS encryption'
+      volume.security: 'Secure certificate management outside container image'
+      volume.educational: 'Demonstrates SSL/TLS certificate handling'
+  
+  # Development-specific volumes
+  dev_node_modules:
+    driver: local
+    labels:
+      volume.purpose: 'Development dependency cache'
+      volume.mode: 'development'
+  
+  dev_logs:
+    driver: local
+    labels:
+      volume.purpose: 'Development log storage with verbose output'
+      volume.mode: 'development'
+
+# Global configuration and metadata
+x-educational-metadata:
+  project_description: 'Comprehensive Docker Compose configuration for Node.js tutorial project demonstrating modern containerization practices'
+  learning_objectives:
+    - 'Container orchestration with Docker Compose'
+    - 'Multi-stage Docker builds with production optimization'
+    - 'PM2 cluster mode integration in containerized environments'
+    - 'Network isolation and service communication patterns'
+    - 'Volume management for persistent data and performance'
+    - 'Health check implementation for container monitoring'
+    - 'Security best practices in container deployment'
+    - 'Environment-specific configuration management'
+  technology_stack:
+    runtime: 'Node.js v22.x LTS'
+    framework: 'Express.js v5.1.0'
+    process_manager: 'PM2 v6.0.8'
+    container_runtime: 'Docker 20.10+'
+    orchestration: 'Docker Compose v3.8'
+    security: 'Helmet.js, CORS, CSP'
+  deployment_strategies:
+    development: 'Single container with hot reload and debugging'
+    production: 'PM2 cluster mode with health monitoring and scaling'
+    monitoring: 'Comprehensive health checks and observability'
+  educational_value:
+    complexity: 'Advanced'
+    prerequisites: ['Docker basics', 'Node.js fundamentals', 'PM2 process management']
+    next_steps: ['Kubernetes deployment', 'CI/CD integration', 'Advanced monitoring']
