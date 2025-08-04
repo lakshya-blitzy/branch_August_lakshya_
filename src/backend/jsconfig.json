@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json.schemastore.org/jsconfig",
+  "compilerOptions": {
+    // Target Configuration for Node.js v22.x LTS with Modern JavaScript Features
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "lib": ["ES2022"],
+    
+    // JavaScript Language Service Configuration for Enhanced IntelliSense
+    "allowJs": true,
+    "checkJs": false,
+    "maxNodeModuleJsDepth": 1,
+    
+    // ES Modules Support and Interoperability for Express.js v5.1.0
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": false,
+    "isolatedModules": false,
+    
+    // Advanced IntelliSense and Development Experience Optimization
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "noResolve": false,
+    "noLib": false,
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
+    
+    // Path Mapping for Comprehensive Project Structure Navigation
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@backend/*": ["./*"],
+      "@config/*": ["./config/*"],
+      "@middleware/*": ["./middleware/*"],
+      "@routes/*": ["./routes/*"],
+      "@controllers/*": ["./controllers/*"],
+      "@services/*": ["./services/*"],
+      "@utils/*": ["./utils/*"],
+      "@security/*": ["./security/*"],
+      "@pm2/*": ["./pm2/*"],
+      "@monitoring/*": ["./monitoring/*"],
+      "@test/*": ["./test/*"],
+      "@benchmarks/*": ["./benchmarks/*"],
+      "@scripts/*": ["./scripts/*"],
+      "@examples/*": ["./examples/*"],
+      "@templates/*": ["./templates/*"],
+      "@jest/*": ["./jest/*"],
+      "@mocha/*": ["./mocha/*"],
+      "@flask/*": ["./flask-app/*"],
+      "@docs/*": ["./docs/*"]
+    }
+  },
+  
+  // File Inclusion Patterns for JavaScript Language Services
+  "include": [
+    "**/*.js",
+    "**/*.mjs",
+    "**/*.jsx",
+    "**/*.json",
+    "**/*.ts",
+    "**/*.tsx",
+    "server.js",
+    "app.js",
+    "ecosystem.config.js"
+  ],
+  
+  // File Exclusion Patterns for Performance Optimization
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "logs",
+    "tmp",
+    "uploads",
+    "certificates",
+    "public",
+    "views",
+    "docker",
+    ".github",
+    "**/*.min.js",
+    "**/*.bundle.js",
+    "**/.tsbuildinfo"
+  ],
+  
+  // Automatic Type Acquisition for Enhanced IntelliSense
+  "typeAcquisition": {
+    "enable": true,
+    "include": [
+      "express",
+      "node",
+      "jest",
+      "mocha",
+      "helmet",
+      "compression",
+      "cors",
+      "morgan",
+      "winston",
+      "supertest",
+      "chai",
+      "sinon",
+      "pm2"
+    ],
+    "exclude": [
+      "jquery",
+      "angular",
+      "react",
+      "vue",
+      "lodash"
+    ],
+    "disableFilenameBasedTypeAcquisition": false
+  },
+  
+  // VS Code Workspace Configuration for Enhanced Development Experience
+  "preferences": {
+    "includePackageJsonAutoImports": "on",
+    "lazyConfiguredProjectsFromExternalProject": true,
+    "disableAutomaticTypingAcquisition": false
+  }
+}
