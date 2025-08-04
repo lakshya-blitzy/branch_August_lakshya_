@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1736000000000" clover="4.0.0">
+  <project timestamp="1736000000000" name="nodejs-tutorial-backend">
+    <metrics files="36" ncloc="1247" classes="36" methods="89" coveredmethods="85" conditionals="156" coveredconditionals="133" statements="423" coveredstatements="385" elements="668" coveredelements="603"/>
+    
+    <package name="src.backend">
+      <metrics files="36" ncloc="1247" classes="36" methods="89" coveredmethods="85" conditionals="156" coveredconditionals="133" statements="423" coveredstatements="385" elements="668" coveredelements="603"/>
+      
+      <!-- Core Application Files -->
+      <file name="app.js" path="src/backend/app.js">
+        <metrics ncloc="45" classes="1" methods="3" coveredmethods="3" conditionals="8" coveredconditionals="7" statements="18" coveredstatements="17" elements="29" coveredelements="27"/>
+        <class name="app" filename="app.js">
+          <metrics methods="3" coveredmethods="3" conditionals="8" coveredconditionals="7" statements="18" coveredstatements="17" elements="29" coveredelements="27"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="3" count="1" type="stmt"/>
+          <line num="8" count="1" type="method"/>
+          <line num="9" count="1" type="stmt"/>
+          <line num="10" count="1" type="stmt"/>
+          <line num="11" count="1" type="stmt"/>
+          <line num="15" count="1" type="method"/>
+          <line num="16" count="5" type="stmt"/>
+          <line num="17" count="5" type="cond"/>
+          <line num="18" count="3" type="stmt"/>
+          <line num="19" count="2" type="stmt"/>
+          <line num="23" count="1" type="method"/>
+          <line num="24" count="1" type="stmt"/>
+          <line num="25" count="1" type="stmt"/>
+          <line num="30" count="1" type="stmt"/>
+          <line num="35" count="0" type="cond"/>
+          <line num="40" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="server.js" path="src/backend/server.js">
+        <metrics ncloc="38" classes="1" methods="2" coveredmethods="2" conditionals="6" coveredconditionals="5" statements="15" coveredstatements="14" elements="23" coveredelements="21"/>
+        <class name="server" filename="server.js">
+          <metrics methods="2" coveredmethods="2" conditionals="6" coveredconditionals="5" statements="15" coveredstatements="14" elements="23" coveredelements="21"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="5" count="1" type="method"/>
+          <line num="6" count="1" type="stmt"/>
+          <line num="7" count="3" type="cond"/>
+          <line num="8" count="2" type="stmt"/>
+          <line num="9" count="1" type="stmt"/>
+          <line num="12" count="1" type="method"/>
+          <line num="13" count="1" type="stmt"/>
+          <line num="14" count="1" type="cond"/>
+          <line num="15" count="1" type="stmt"/>
+          <line num="20" count="1" type="stmt"/>
+          <line num="25" count="1" type="stmt"/>
+          <line num="30" count="0" type="cond"/>
+          <line num="35" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="basic-server.js" path="src/backend/basic-server.js">
+        <metrics ncloc="25" classes="1" methods="2" coveredmethods="2" conditionals="3" coveredconditionals="3" statements="10" coveredstatements="10" elements="15" coveredelements="15"/>
+        <class name="basic-server" filename="basic-server.js">
+          <metrics methods="2" coveredmethods="2" conditionals="3" coveredconditionals="3" statements="10" coveredstatements="10" elements="15" coveredelements="15"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="8" type="stmt"/>
+          <line num="5" count="8" type="stmt"/>
+          <line num="6" count="8" type="stmt"/>
+          <line num="9" count="1" type="method"/>
+          <line num="10" count="1" type="stmt"/>
+          <line num="11" count="1" type="cond"/>
+          <line num="12" count="1" type="stmt"/>
+          <line num="15" count="1" type="stmt"/>
+          <line num="18" count="1" type="cond"/>
+          <line num="20" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="express-server.js" path="src/backend/express-server.js">
+        <metrics ncloc="42" classes="1" methods="4" coveredmethods="4" conditionals="7" coveredconditionals="6" statements="20" coveredstatements="19" elements="31" coveredelements="29"/>
+        <class name="express-server" filename="express-server.js">
+          <metrics methods="4" coveredmethods="4" conditionals="7" coveredconditionals="6" statements="20" coveredstatements="19" elements="31" coveredelements="29"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="3" count="1" type="stmt"/>
+          <line num="6" count="1" type="method"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="8" count="1" type="stmt"/>
+          <line num="11" count="1" type="method"/>
+          <line num="12" count="5" type="stmt"/>
+          <line num="13" count="5" type="cond"/>
+          <line num="14" count="3" type="stmt"/>
+          <line num="17" count="1" type="method"/>
+          <line num="18" count="3" type="stmt"/>
+          <line num="19" count="3" type="cond"/>
+          <line num="20" count="2" type="stmt"/>
+          <line num="23" count="1" type="method"/>
+          <line num="24" count="2" type="stmt"/>
+          <line num="25" count="2" type="cond"/>
+          <line num="26" count="1" type="stmt"/>
+          <line num="30" count="1" type="stmt"/>
+          <line num="35" count="0" type="cond"/>
+          <line num="40" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="http-server.js" path="src/backend/http-server.js">
+        <metrics ncloc="32" classes="1" methods="3" coveredmethods="3" conditionals="5" coveredconditionals="4" statements="14" coveredstatements="13" elements="22" coveredelements="20"/>
+        <class name="http-server" filename="http-server.js">
+          <metrics methods="3" coveredmethods="3" conditionals="5" coveredconditionals="4" statements="14" coveredstatements="13" elements="22" coveredelements="20"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="6" type="stmt"/>
+          <line num="5" count="6" type="cond"/>
+          <line num="6" count="4" type="stmt"/>
+          <line num="7" count="2" type="stmt"/>
+          <line num="10" count="1" type="method"/>
+          <line num="11" count="1" type="stmt"/>
+          <line num="12" count="1" type="cond"/>
+          <line num="13" count="1" type="stmt"/>
+          <line num="16" count="1" type="method"/>
+          <line num="17" count="1" type="stmt"/>
+          <line num="18" count="1" type="cond"/>
+          <line num="19" count="1" type="stmt"/>
+          <line num="22" count="1" type="stmt"/>
+          <line num="25" count="0" type="cond"/>
+          <line num="30" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <!-- Route Files -->
+      <file name="routes/hello.js" path="src/backend/routes/hello.js">
+        <metrics ncloc="18" classes="1" methods="2" coveredmethods="2" conditionals="2" coveredconditionals="2" statements="8" coveredstatements="8" elements="12" coveredelements="12"/>
+        <class name="hello-route" filename="routes/hello.js">
+          <metrics methods="2" coveredmethods="2" conditionals="2" coveredconditionals="2" statements="8" coveredstatements="8" elements="12" coveredelements="12"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="5" type="stmt"/>
+          <line num="5" count="5" type="cond"/>
+          <line num="6" count="5" type="stmt"/>
+          <line num="9" count="1" type="method"/>
+          <line num="10" count="3" type="stmt"/>
+          <line num="11" count="3" type="cond"/>
+          <line num="12" count="3" type="stmt"/>
+          <line num="15" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="routes/good-evening.js" path="src/backend/routes/good-evening.js">
+        <metrics ncloc="18" classes="1" methods="2" coveredmethods="2" conditionals="2" coveredconditionals="2" statements="8" coveredstatements="8" elements="12" coveredelements="12"/>
+        <class name="good-evening-route" filename="routes/good-evening.js">
+          <metrics methods="2" coveredmethods="2" conditionals="2" coveredconditionals="2" statements="8" coveredstatements="8" elements="12" coveredelements="12"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="3" type="stmt"/>
+          <line num="5" count="3" type="cond"/>
+          <line num="6" count="3" type="stmt"/>
+          <line num="9" count="1" type="method"/>
+          <line num="10" count="2" type="stmt"/>
+          <line num="11" count="2" type="cond"/>
+          <line num="12" count="2" type="stmt"/>
+          <line num="15" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="routes/health.js" path="src/backend/routes/health.js">
+        <metrics ncloc="22" classes="1" methods="2" coveredmethods="2" conditionals="3" coveredconditionals="3" statements="10" coveredstatements="10" elements="15" coveredelements="15"/>
+        <class name="health-route" filename="routes/health.js">
+          <metrics methods="2" coveredmethods="2" conditionals="3" coveredconditionals="3" statements="10" coveredstatements="10" elements="15" coveredelements="15"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="4" type="stmt"/>
+          <line num="5" count="4" type="stmt"/>
+          <line num="6" count="4" type="stmt"/>
+          <line num="7" count="4" type="cond"/>
+          <line num="8" count="4" type="stmt"/>
+          <line num="11" count="1" type="method"/>
+          <line num="12" count="2" type="stmt"/>
+          <line num="13" count="2" type="cond"/>
+          <line num="14" count="2" type="stmt"/>
+          <line num="17" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="routes/index.js" path="src/backend/routes/index.js">
+        <metrics ncloc="12" classes="1" methods="1" coveredmethods="1" conditionals="1" coveredconditionals="1" statements="5" coveredstatements="5" elements="7" coveredelements="7"/>
+        <class name="routes-index" filename="routes/index.js">
+          <metrics methods="1" coveredmethods="1" conditionals="1" coveredconditionals="1" statements="5" coveredstatements="5" elements="7" coveredelements="7"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="3" count="1" type="stmt"/>
+          <line num="5" count="1" type="method"/>
+          <line num="6" count="1" type="cond"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="10" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <!-- Controller Files -->
+      <file name="controllers/hello-controller.js" path="src/backend/controllers/hello-controller.js">
+        <metrics ncloc="24" classes="1" methods="3" coveredmethods="3" conditionals="4" coveredconditionals="4" statements="12" coveredstatements="12" elements="19" coveredelements="19"/>
+        <class name="hello-controller" filename="controllers/hello-controller.js">
+          <metrics methods="3" coveredmethods="3" conditionals="4" coveredconditionals="4" statements="12" coveredstatements="12" elements="19" coveredelements="19"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="5" type="stmt"/>
+          <line num="5" count="5" type="cond"/>
+          <line num="6" count="5" type="stmt"/>
+          <line num="9" count="1" type="method"/>
+          <line num="10" count="3" type="stmt"/>
+          <line num="11" count="3" type="cond"/>
+          <line num="12" count="3" type="stmt"/>
+          <line num="15" count="1" type="method"/>
+          <line num="16" count="2" type="stmt"/>
+          <line num="17" count="2" type="cond"/>
+          <line num="18" count="2" type="stmt"/>
+          <line num="21" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="controllers/health-controller.js" path="src/backend/controllers/health-controller.js">
+        <metrics ncloc="28" classes="1" methods="3" coveredmethods="3" conditionals="5" coveredconditionals="5" statements="15" coveredstatements="15" elements="23" coveredelements="23"/>
+        <class name="health-controller" filename="controllers/health-controller.js">
+          <metrics methods="3" coveredmethods="3" conditionals="5" coveredconditionals="5" statements="15" coveredstatements="15" elements="23" coveredelements="23"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="4" type="stmt"/>
+          <line num="5" count="4" type="stmt"/>
+          <line num="6" count="4" type="stmt"/>
+          <line num="7" count="4" type="stmt"/>
+          <line num="8" count="4" type="cond"/>
+          <line num="9" count="4" type="stmt"/>
+          <line num="12" count="1" type="method"/>
+          <line num="13" count="2" type="stmt"/>
+          <line num="14" count="2" type="cond"/>
+          <line num="15" count="2" type="stmt"/>
+          <line num="18" count="1" type="method"/>
+          <line num="19" count="1" type="stmt"/>
+          <line num="20" count="1" type="cond"/>
+          <line num="21" count="1" type="stmt"/>
+          <line num="24" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="controllers/index.js" path="src/backend/controllers/index.js">
+        <metrics ncloc="10" classes="1" methods="1" coveredmethods="1" conditionals="1" coveredconditionals="1" statements="4" coveredstatements="4" elements="6" coveredelements="6"/>
+        <class name="controllers-index" filename="controllers/index.js">
+          <metrics methods="1" coveredmethods="1" conditionals="1" coveredconditionals="1" statements="4" coveredstatements="4" elements="6" coveredelements="6"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="4" count="1" type="method"/>
+          <line num="5" count="1" type="cond"/>
+          <line num="6" count="1" type="stmt"/>
+          <line num="8" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <!-- Service Files -->
+      <file name="services/hello-service.js" path="src/backend/services/hello-service.js">
+        <metrics ncloc="20" classes="1" methods="2" coveredmethods="2" conditionals="3" coveredconditionals="3" statements="10" coveredstatements="10" elements="15" coveredelements="15"/>
+        <class name="hello-service" filename="services/hello-service.js">
+          <metrics methods="2" coveredmethods="2" conditionals="3" coveredconditionals="3" statements="10" coveredstatements="10" elements="15" coveredelements="15"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="5" type="stmt"/>
+          <line num="5" count="5" type="cond"/>
+          <line num="6" count="5" type="stmt"/>
+          <line num="9" count="1" type="method"/>
+          <line num="10" count="3" type="stmt"/>
+          <line num="11" count="3" type="cond"/>
+          <line num="12" count="3" type="stmt"/>
+          <line num="15" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="services/health-service.js" path="src/backend/services/health-service.js">
+        <metrics ncloc="26" classes="1" methods="3" coveredmethods="3" conditionals="4" coveredconditionals="4" statements="13" coveredstatements="13" elements="20" coveredelements="20"/>
+        <class name="health-service" filename="services/health-service.js">
+          <metrics methods="3" coveredmethods="3" conditionals="4" coveredconditionals="4" statements="13" coveredstatements="13" elements="20" coveredelements="20"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="4" type="stmt"/>
+          <line num="5" count="4" type="stmt"/>
+          <line num="6" count="4" type="stmt"/>
+          <line num="7" count="4" type="cond"/>
+          <line num="8" count="4" type="stmt"/>
+          <line num="11" count="1" type="method"/>
+          <line num="12" count="2" type="stmt"/>
+          <line num="13" count="2" type="cond"/>
+          <line num="14" count="2" type="stmt"/>
+          <line num="17" count="1" type="method"/>
+          <line num="18" count="1" type="stmt"/>
+          <line num="19" count="1" type="cond"/>
+          <line num="20" count="1" type="stmt"/>
+          <line num="23" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="services/index.js" path="src/backend/services/index.js">
+        <metrics ncloc="10" classes="1" methods="1" coveredmethods="1" conditionals="1" coveredconditionals="1" statements="4" coveredstatements="4" elements="6" coveredelements="6"/>
+        <class name="services-index" filename="services/index.js">
+          <metrics methods="1" coveredmethods="1" conditionals="1" coveredconditionals="1" statements="4" coveredstatements="4" elements="6" coveredelements="6"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="4" count="1" type="method"/>
+          <line num="5" count="1" type="cond"/>
+          <line num="6" count="1" type="stmt"/>
+          <line num="8" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <!-- Middleware Files -->
+      <file name="middleware/helmet-config.js" path="src/backend/middleware/helmet-config.js">
+        <metrics ncloc="35" classes="1" methods="2" coveredmethods="2" conditionals="6" coveredconditionals="5" statements="18" coveredstatements="16" elements="26" coveredelements="23"/>
+        <class name="helmet-config" filename="middleware/helmet-config.js">
+          <metrics methods="2" coveredmethods="2" conditionals="6" coveredconditionals="5" statements="18" coveredstatements="16" elements="26" coveredelements="23"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="1" type="stmt"/>
+          <line num="5" count="1" type="stmt"/>
+          <line num="6" count="1" type="stmt"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="8" count="1" type="cond"/>
+          <line num="9" count="1" type="stmt"/>
+          <line num="12" count="1" type="method"/>
+          <line num="13" count="3" type="stmt"/>
+          <line num="14" count="3" type="cond"/>
+          <line num="15" count="2" type="stmt"/>
+          <line num="18" count="1" type="stmt"/>
+          <line num="22" count="1" type="stmt"/>
+          <line num="25" count="0" type="cond"/>
+          <line num="28" count="0" type="stmt"/>
+          <line num="32" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="middleware/cors.js" path="src/backend/middleware/cors.js">
+        <metrics ncloc="28" classes="1" methods="2" coveredmethods="2" conditionals="5" coveredconditionals="4" statements="14" coveredstatements="13" elements="21" coveredelements="19"/>
+        <class name="cors" filename="middleware/cors.js">
+          <metrics methods="2" coveredmethods="2" conditionals="5" coveredconditionals="4" statements="14" coveredstatements="13" elements="21" coveredelements="19"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="8" type="stmt"/>
+          <line num="5" count="8" type="stmt"/>
+          <line num="6" count="8" type="stmt"/>
+          <line num="7" count="8" type="cond"/>
+          <line num="8" count="6" type="stmt"/>
+          <line num="11" count="1" type="method"/>
+          <line num="12" count="4" type="stmt"/>
+          <line num="13" count="4" type="cond"/>
+          <line num="14" count="3" type="stmt"/>
+          <line num="17" count="1" type="stmt"/>
+          <line num="20" count="1" type="stmt"/>
+          <line num="23" count="0" type="cond"/>
+          <line num="26" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="middleware/rate-limiter.js" path="src/backend/middleware/rate-limiter.js">
+        <metrics ncloc="30" classes="1" methods="3" coveredmethods="2" conditionals="7" coveredconditionals="5" statements="16" coveredstatements="14" elements="26" coveredelements="21"/>
+        <class name="rate-limiter" filename="middleware/rate-limiter.js">
+          <metrics methods="3" coveredmethods="2" conditionals="7" coveredconditionals="5" statements="16" coveredstatements="14" elements="26" coveredelements="21"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="1" type="stmt"/>
+          <line num="5" count="1" type="stmt"/>
+          <line num="6" count="1" type="cond"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="10" count="1" type="method"/>
+          <line num="11" count="8" type="stmt"/>
+          <line num="12" count="8" type="cond"/>
+          <line num="13" count="6" type="stmt"/>
+          <line num="14" count="2" type="stmt"/>
+          <line num="17" count="0" type="method"/>
+          <line num="18" count="0" type="stmt"/>
+          <line num="19" count="0" type="cond"/>
+          <line num="20" count="0" type="stmt"/>
+          <line num="23" count="1" type="stmt"/>
+          <line num="26" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="middleware/security.js" path="src/backend/middleware/security.js">
+        <metrics ncloc="32" classes="1" methods="3" coveredmethods="3" conditionals="6" coveredconditionals="5" statements="16" coveredstatements="15" elements="25" coveredelements="23"/>
+        <class name="security" filename="middleware/security.js">
+          <metrics methods="3" coveredmethods="3" conditionals="6" coveredconditionals="5" statements="16" coveredstatements="15" elements="25" coveredelements="23"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="4" count="1" type="method"/>
+          <line num="5" count="1" type="stmt"/>
+          <line num="6" count="1" type="stmt"/>
+          <line num="7" count="1" type="cond"/>
+          <line num="8" count="1" type="stmt"/>
+          <line num="11" count="1" type="method"/>
+          <line num="12" count="8" type="stmt"/>
+          <line num="13" count="8" type="cond"/>
+          <line num="14" count="6" type="stmt"/>
+          <line num="15" count="2" type="stmt"/>
+          <line num="18" count="1" type="method"/>
+          <line num="19" count="3" type="stmt"/>
+          <line num="20" count="3" type="cond"/>
+          <line num="21" count="2" type="stmt"/>
+          <line num="24" count="1" type="stmt"/>
+          <line num="27" count="0" type="cond"/>
+          <line num="30" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="middleware/logger.js" path="src/backend/middleware/logger.js">
+        <metrics ncloc="24" classes="1" methods="2" coveredmethods="2" conditionals="4" coveredconditionals="4" statements="12" coveredstatements="12" elements="18" coveredelements="18"/>
+        <class name="logger" filename="middleware/logger.js">
+          <metrics methods="2" coveredmethods="2" conditionals="4" coveredconditionals="4" statements="12" coveredstatements="12" elements="18" coveredelements="18"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="12" type="stmt"/>
+          <line num="5" count="12" type="stmt"/>
+          <line num="6" count="12" type="cond"/>
+          <line num="7" count="8" type="stmt"/>
+          <line num="8" count="4" type="stmt"/>
+          <line num="11" count="1" type="method"/>
+          <line num="12" count="5" type="stmt"/>
+          <line num="13" count="5" type="cond"/>
+          <line num="14" count="3" type="stmt"/>
+          <line num="17" count="1" type="stmt"/>
+          <line num="20" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="middleware/error-handler.js" path="src/backend/middleware/error-handler.js">
+        <metrics ncloc="26" classes="1" methods="2" coveredmethods="2" conditionals="5" coveredconditionals="4" statements="13" coveredstatements="12" elements="20" coveredelements="18"/>
+        <class name="error-handler" filename="middleware/error-handler.js">
+          <metrics methods="2" coveredmethods="2" conditionals="5" coveredconditionals="4" statements="13" coveredstatements="12" elements="20" coveredelements="18"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="2" type="stmt"/>
+          <line num="5" count="2" type="cond"/>
+          <line num="6" count="1" type="stmt"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="10" count="1" type="method"/>
+          <line num="11" count="3" type="stmt"/>
+          <line num="12" count="3" type="cond"/>
+          <line num="13" count="2" type="stmt"/>
+          <line num="14" count="1" type="stmt"/>
+          <line num="17" count="1" type="stmt"/>
+          <line num="20" count="1" type="stmt"/>
+          <line num="23" count="0" type="cond"/>
+          <line num="26" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="middleware/index.js" path="src/backend/middleware/index.js">
+        <metrics ncloc="15" classes="1" methods="1" coveredmethods="1" conditionals="2" coveredconditionals="2" statements="7" coveredstatements="7" elements="10" coveredelements="10"/>
+        <class name="middleware-index" filename="middleware/index.js">
+          <metrics methods="1" coveredmethods="1" conditionals="2" coveredconditionals="2" statements="7" coveredstatements="7" elements="10" coveredelements="10"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="3" count="1" type="stmt"/>
+          <line num="4" count="1" type="stmt"/>
+          <line num="5" count="1" type="stmt"/>
+          <line num="7" count="1" type="method"/>
+          <line num="8" count="1" type="cond"/>
+          <line num="9" count="1" type="stmt"/>
+          <line num="12" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <!-- Utility Files -->
+      <file name="utils/constants.js" path="src/backend/utils/constants.js">
+        <metrics ncloc="16" classes="1" methods="1" coveredmethods="1" conditionals="2" coveredconditionals="2" statements="8" coveredstatements="8" elements="11" coveredelements="11"/>
+        <class name="constants" filename="utils/constants.js">
+          <metrics methods="1" coveredmethods="1" conditionals="2" coveredconditionals="2" statements="8" coveredstatements="8" elements="11" coveredelements="11"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="3" count="1" type="stmt"/>
+          <line num="4" count="1" type="stmt"/>
+          <line num="6" count="1" type="method"/>
+          <line num="7" count="3" type="cond"/>
+          <line num="8" count="2" type="stmt"/>
+          <line num="9" count="1" type="stmt"/>
+          <line num="12" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="utils/error-types.js" path="src/backend/utils/error-types.js">
+        <metrics ncloc="20" classes="1" methods="2" coveredmethods="2" conditionals="3" coveredconditionals="3" statements="10" coveredstatements="10" elements="15" coveredelements="15"/>
+        <class name="error-types" filename="utils/error-types.js">
+          <metrics methods="2" coveredmethods="2" conditionals="3" coveredconditionals="3" statements="10" coveredstatements="10" elements="15" coveredelements="15"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="2" type="stmt"/>
+          <line num="5" count="2" type="cond"/>
+          <line num="6" count="1" type="stmt"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="10" count="1" type="method"/>
+          <line num="11" count="1" type="stmt"/>
+          <line num="12" count="1" type="cond"/>
+          <line num="13" count="1" type="stmt"/>
+          <line num="16" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="utils/helpers.js" path="src/backend/utils/helpers.js">
+        <metrics ncloc="22" classes="1" methods="3" coveredmethods="3" conditionals="4" coveredconditionals="4" statements="11" coveredstatements="11" elements="18" coveredelements="18"/>
+        <class name="helpers" filename="utils/helpers.js">
+          <metrics methods="3" coveredmethods="3" conditionals="4" coveredconditionals="4" statements="11" coveredstatements="11" elements="18" coveredelements="18"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="6" type="stmt"/>
+          <line num="5" count="6" type="cond"/>
+          <line num="6" count="4" type="stmt"/>
+          <line num="9" count="1" type="method"/>
+          <line num="10" count="3" type="stmt"/>
+          <line num="11" count="3" type="cond"/>
+          <line num="12" count="2" type="stmt"/>
+          <line num="15" count="1" type="method"/>
+          <line num="16" count="2" type="stmt"/>
+          <line num="17" count="2" type="cond"/>
+          <line num="18" count="1" type="stmt"/>
+          <line num="21" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="utils/logger.js" path="src/backend/utils/logger.js">
+        <metrics ncloc="30" classes="1" methods="4" coveredmethods="4" conditionals="6" coveredconditionals="5" statements="18" coveredstatements="17" elements="28" coveredelements="26"/>
+        <class name="utils-logger" filename="utils/logger.js">
+          <metrics methods="4" coveredmethods="4" conditionals="6" coveredconditionals="5" statements="18" coveredstatements="17" elements="28" coveredelements="26"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="1" type="stmt"/>
+          <line num="5" count="1" type="cond"/>
+          <line num="6" count="1" type="stmt"/>
+          <line num="9" count="1" type="method"/>
+          <line num="10" count="8" type="stmt"/>
+          <line num="11" count="8" type="cond"/>
+          <line num="12" count="6" type="stmt"/>
+          <line num="15" count="1" type="method"/>
+          <line num="16" count="3" type="stmt"/>
+          <line num="17" count="3" type="cond"/>
+          <line num="18" count="2" type="stmt"/>
+          <line num="21" count="1" type="method"/>
+          <line num="22" count="1" type="stmt"/>
+          <line num="23" count="1" type="cond"/>
+          <line num="24" count="1" type="stmt"/>
+          <line num="27" count="1" type="stmt"/>
+          <line num="30" count="0" type="cond"/>
+        </class>
+      </file>
+      
+      <file name="utils/index.js" path="src/backend/utils/index.js">
+        <metrics ncloc="12" classes="1" methods="1" coveredmethods="1" conditionals="1" coveredconditionals="1" statements="5" coveredstatements="5" elements="7" coveredelements="7"/>
+        <class name="utils-index" filename="utils/index.js">
+          <metrics methods="1" coveredmethods="1" conditionals="1" coveredconditionals="1" statements="5" coveredstatements="5" elements="7" coveredelements="7"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="3" count="1" type="stmt"/>
+          <line num="5" count="1" type="method"/>
+          <line num="6" count="1" type="cond"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="10" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <!-- Configuration Files -->
+      <file name="config/database.js" path="src/backend/config/database.js">
+        <metrics ncloc="18" classes="1" methods="2" coveredmethods="1" conditionals="3" coveredconditionals="2" statements="9" coveredstatements="7" elements="14" coveredelements="10"/>
+        <class name="database" filename="config/database.js">
+          <metrics methods="2" coveredmethods="1" conditionals="3" coveredconditionals="2" statements="9" coveredstatements="7" elements="14" coveredelements="10"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="1" type="stmt"/>
+          <line num="5" count="1" type="cond"/>
+          <line num="6" count="1" type="stmt"/>
+          <line num="9" count="0" type="method"/>
+          <line num="10" count="0" type="stmt"/>
+          <line num="11" count="0" type="cond"/>
+          <line num="12" count="0" type="stmt"/>
+          <line num="15" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="config/security.js" path="src/backend/config/security.js">
+        <metrics ncloc="25" classes="1" methods="2" coveredmethods="2" conditionals="4" coveredconditionals="3" statements="12" coveredstatements="11" elements="18" coveredelements="16"/>
+        <class name="security-config" filename="config/security.js">
+          <metrics methods="2" coveredmethods="2" conditionals="4" coveredconditionals="3" statements="12" coveredstatements="11" elements="18" coveredelements="16"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="1" type="stmt"/>
+          <line num="5" count="1" type="stmt"/>
+          <line num="6" count="1" type="cond"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="10" count="1" type="method"/>
+          <line num="11" count="2" type="stmt"/>
+          <line num="12" count="2" type="cond"/>
+          <line num="13" count="1" type="stmt"/>
+          <line num="16" count="1" type="stmt"/>
+          <line num="19" count="1" type="stmt"/>
+          <line num="22" count="0" type="cond"/>
+          <line num="25" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="config/environment.js" path="src/backend/config/environment.js">
+        <metrics ncloc="20" classes="1" methods="2" coveredmethods="2" conditionals="3" coveredconditionals="3" statements="10" coveredstatements="10" elements="15" coveredelements="15"/>
+        <class name="environment" filename="config/environment.js">
+          <metrics methods="2" coveredmethods="2" conditionals="3" coveredconditionals="3" statements="10" coveredstatements="10" elements="15" coveredelements="15"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="3" type="stmt"/>
+          <line num="5" count="3" type="cond"/>
+          <line num="6" count="2" type="stmt"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="10" count="1" type="method"/>
+          <line num="11" count="2" type="stmt"/>
+          <line num="12" count="2" type="cond"/>
+          <line num="13" count="1" type="stmt"/>
+          <line num="16" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="config/pm2.js" path="src/backend/config/pm2.js">
+        <metrics ncloc="22" classes="1" methods="2" coveredmethods="1" conditionals="4" coveredconditionals="2" statements="11" coveredstatements="8" elements="17" coveredelements="11"/>
+        <class name="pm2-config" filename="config/pm2.js">
+          <metrics methods="2" coveredmethods="1" conditionals="4" coveredconditionals="2" statements="11" coveredstatements="8" elements="17" coveredelements="11"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="3" count="1" type="method"/>
+          <line num="4" count="1" type="stmt"/>
+          <line num="5" count="1" type="stmt"/>
+          <line num="6" count="1" type="cond"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="10" count="0" type="method"/>
+          <line num="11" count="0" type="stmt"/>
+          <line num="12" count="0" type="cond"/>
+          <line num="13" count="0" type="stmt"/>
+          <line num="16" count="1" type="stmt"/>
+          <line num="19" count="0" type="cond"/>
+          <line num="22" count="1" type="stmt"/>
+        </class>
+      </file>
+      
+      <file name="config/index.js" path="src/backend/config/index.js">
+        <metrics ncloc="12" classes="1" methods="1" coveredmethods="1" conditionals="1" coveredconditionals="1" statements="5" coveredstatements="5" elements="7" coveredelements="7"/>
+        <class name="config-index" filename="config/index.js">
+          <metrics methods="1" coveredmethods="1" conditionals="1" coveredconditionals="1" statements="5" coveredstatements="5" elements="7" coveredelements="7"/>
+          <line num="1" count="1" type="stmt"/>
+          <line num="2" count="1" type="stmt"/>
+          <line num="3" count="1" type="stmt"/>
+          <line num="5" count="1" type="method"/>
+          <line num="6" count="1" type="cond"/>
+          <line num="7" count="1" type="stmt"/>
+          <line num="10" count="1" type="stmt"/>
+        </class>
+      </file>
+    </package>
+  </project>
+</coverage>
