@@ -1,0 +1,55 @@
+# Educational robots.txt for Node.js tutorial application
+# Demonstrates standard robots.txt protocol implementation following RFC 9309
+# Provides web crawler management and SEO optimization for tutorial learning objectives
+# Located in Express.js static files directory for HTTP GET access at /robots.txt
+
+# Universal crawler rules - applies to all web crawlers and automated bots
+User-agent: *
+
+# Allow crawling of public educational content and API endpoints
+Allow: /
+Allow: /hello
+Allow: /good-evening
+Allow: /public/
+
+# Block crawling of health monitoring endpoints to prevent unauthorized system information disclosure
+Disallow: /health
+Disallow: /health/
+
+# Block crawling of administrative interfaces and management endpoints
+Disallow: /admin
+Disallow: /admin/
+
+# Block crawling of internal API endpoints not intended for public consumption
+Disallow: /api/internal/
+
+# Block crawling of log files and logging interfaces to protect operational information
+Disallow: /logs
+Disallow: /logs/
+Disallow: /*.log
+
+# Block crawling of test coverage reports and development metrics
+Disallow: /coverage
+Disallow: /coverage/
+
+# Block crawling of test files and testing infrastructure
+Disallow: /test
+Disallow: /test/
+
+# Block crawling of temporary files and cache directories
+Disallow: /tmp
+Disallow: /tmp/
+
+# Recommend 1-second delay between requests for responsible crawler behavior
+# Demonstrates considerate crawler management and server resource protection
+Crawl-delay: 1
+
+# Optional sitemap reference for educational demonstration
+# Sitemap: https://example.com/sitemap.xml
+
+# Educational Notes:
+# - This robots.txt follows RFC 9309 specifications for web crawler management
+# - Allows search engines to index public API endpoints and educational content
+# - Protects sensitive operational endpoints through security by obscurity
+# - Demonstrates production-ready web application crawler management practices
+# - Serves as educational example of proper SEO and web standards implementation
