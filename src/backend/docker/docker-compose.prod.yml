@@ -1,0 +1,668 @@
+# Production-Optimized Docker Compose Configuration for Node.js Tutorial Project
+# Version: 3.8 - Advanced production features including health checks, resource limits, and deployment configurations
+# Description: Enterprise-grade Docker Compose configuration specifically designed for production deployment
+# of the Node.js v22.x LTS tutorial project with Express.js v5.1.0, PM2 cluster mode optimization,
+# comprehensive security hardening, performance monitoring, and zero-downtime deployment capabilities.
+#
+# Features:
+# - PM2 cluster mode with 'max' instances for optimal CPU utilization and horizontal scaling
+# - NGINX reverse proxy with SSL/TLS termination and load balancing
+# - Redis session storage and caching for stateless architecture
+# - Comprehensive security hardening with Helmet.js integration and network segmentation
+# - Advanced health monitoring with performance tracking and alerting
+# - Production-grade logging with aggregation and rotation
+# - Zero-downtime deployment with graceful shutdown and health validation
+# - Resource optimization with CPU and memory limits
+# - Network isolation with frontend, backend, and monitoring tiers
+# - Persistent volume management for logs, SSL certificates, and data
+#
+# Educational Value:
+# - Demonstrates production-ready Docker Compose patterns for enterprise deployment
+# - Showcases multi-tier network architecture with security isolation
+# - Illustrates PM2 cluster mode deployment within containerized environments
+# - Provides comprehensive monitoring and observability implementation
+# - Shows SSL/TLS configuration and certificate management
+# - Demonstrates performance optimization and resource management
+
+version: '3.8'
+
+# Global environment variables for production deployment configuration
+x-environment: &default-environment
+  NODE_ENV: production
+  TZ: UTC
+  DOCKER_BUILDKIT: 1
+  COMPOSE_PROJECT_NAME: nodejs-tutorial-prod
+  PRODUCTION_DOMAIN: ${PRODUCTION_DOMAIN:-localhost}
+  SSL_ENABLED: ${SSL_ENABLED:-true}
+  MONITORING_ENABLED: ${MONITORING_ENABLED:-true}
+
+# Shared logging configuration for consistent log management across services
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+    tag: "nodejs-tutorial-prod-{{.Name}}"
+    compress: "true"
+
+# Common resource limits for production deployment optimization
+x-resources: &default-resources
+  deploy:
+    resources:
+      limits:
+        cpus: '${CPU_LIMIT:-2.0}'
+        memory: '${MEMORY_LIMIT:-2G}'
+      reservations:
+        cpus: '${CPU_RESERVATION:-1.0}'
+        memory: '${MEMORY_RESERVATION:-1G}'
+    restart_policy:
+      condition: on-failure
+      delay: 10s
+      max_attempts: 5
+      window: 300s
+
+# Production services configuration with enterprise-grade features
+services:
+  # Node.js application service with PM2 cluster mode and production optimizations
+  app:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile.prod
+      target: production
+      args:
+        NODE_VERSION: 22
+        PM2_VERSION: 6.0.8
+        NODE_ENV: production
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
+        VERSION: ${VERSION:-latest}
+        BUILDKIT_INLINE_CACHE: 1
+      cache_from:
+        - nodejs-tutorial:cache-prod
+      labels:
+        - "tutorial.build.date=${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}"
+        - "tutorial.vcs.ref=${VCS_REF:-$(git rev-parse --short HEAD)}"
+        - "tutorial.version=${VERSION:-latest}"
+
+    image: nodejs-tutorial:${VERSION:-latest}
+    container_name: nodejs-tutorial-prod
+    hostname: tutorial-app-prod
+    restart: always
+    
+    # Security hardening with non-root user and read-only filesystem
+    user: nodejs:nodejs
+    working_dir: /app
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+
+    # Temporary filesystem mounts for writable directories
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=100m
+      - /app/tmp:rw,noexec,nosuid,size=50m
+
+    # Production environment variables with PM2 cluster configuration
+    environment:
+      <<: *default-environment
+      PORT: 3000
+      HOST: 0.0.0.0
+      
+      # PM2 cluster mode configuration for horizontal scaling
+      PM2_INSTANCES: max
+      PM2_EXEC_MODE: cluster
+      PM2_MAX_MEMORY_RESTART: 1G
+      PM2_MERGE_LOGS: 'true'
+      PM2_CLUSTER_MODE: 'true'
+      PM2_LOAD_BALANCER: round_robin
+      
+      # Logging configuration for production environment
+      LOG_LEVEL: warn
+      LOG_FORMAT: json
+      LOG_FILE: /app/logs/application.log
+      ERROR_LOG_FILE: /app/logs/error.log
+      
+      # Security configuration with Helmet.js integration
+      HELMET_ENABLED: 'true'
+      HELMET_CSP_ENABLED: 'true'
+      HELMET_HSTS_MAX_AGE: '31536000'
+      HELMET_CONTENT_TYPE_OPTIONS: 'true'
+      HELMET_FRAME_GUARD: 'true'
+      HELMET_XSS_FILTER: 'true'
+      
+      # Rate limiting for DDoS protection
+      RATE_LIMIT_MAX: 1000
+      RATE_LIMIT_WINDOW: 900000
+      RATE_LIMIT_ENABLED: 'true'
+      
+      # CORS security configuration
+      CORS_ORIGIN: ${CORS_ORIGIN:-false}
+      CORS_CREDENTIALS: 'true'
+      CORS_METHODS: 'GET,POST,PUT,DELETE,OPTIONS'
+      CORS_ALLOWED_HEADERS: 'Content-Type,Authorization,X-Requested-With'
+      
+      # SSL/TLS configuration
+      SSL_ENABLED: ${SSL_ENABLED:-true}
+      SSL_CERT_PATH: /app/certificates/server.crt
+      SSL_KEY_PATH: /app/certificates/server.key
+      SSL_CA_PATH: /app/certificates/ca.crt
+      
+      # Health monitoring configuration
+      HEALTH_CHECK_ENABLED: 'true'
+      HEALTH_CHECK_ENDPOINT: /health
+      HEALTH_CHECK_TIMEOUT: 5000
+      HEALTH_CHECK_INTERVAL: 30000
+      
+      # Monitoring and observability
+      MONITORING_ENABLED: 'true'
+      METRICS_ENABLED: 'true'
+      METRICS_ENDPOINT: /metrics
+      
+      # Redis configuration for session storage and caching
+      REDIS_URL: redis://redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SESSION_STORE: redis
+      SESSION_SECRET: ${SESSION_SECRET}
+      SESSION_SECURE: 'true'
+      SESSION_HTTP_ONLY: 'true'
+      SESSION_SAME_SITE: strict
+      
+      # JWT authentication configuration
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      
+      # Database configuration (if needed for future extensions)
+      DATABASE_URL: ${DATABASE_URL:-}
+      DATABASE_SSL: 'true'
+      
+      # Performance optimization
+      NODE_OPTIONS: '--max-old-space-size=1024 --optimize-for-size'
+      UV_THREADPOOL_SIZE: 16
+      
+      # Application metadata
+      APP_NAME: nodejs-tutorial-prod
+      APP_VERSION: ${VERSION:-latest}
+      DEPLOY_TIMESTAMP: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+
+    # Network configuration - only expose to backend networks
+    expose:
+      - "3000"
+    networks:
+      - backend-network
+      - monitoring-network
+
+    # Volume mounts for logs, certificates, and temporary files
+    volumes:
+      - type: volume
+        source: app_logs_prod
+        target: /app/logs
+        read_only: false
+      - type: volume
+        source: ssl_certificates
+        target: /app/certificates
+        read_only: true
+      - type: tmpfs
+        target: /app/tmp
+        tmpfs:
+          size: 50m
+
+    # Service dependencies with health check conditions
+    depends_on:
+      redis:
+        condition: service_healthy
+
+    # Advanced health check with application-specific validation
+    healthcheck:
+      test: ["CMD-SHELL", "node scripts/health-check.js --type quick --format json || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    # Resource limits and deployment configuration
+    <<: *default-resources
+    deploy:
+      resources:
+        limits:
+          cpus: '${CPU_LIMIT:-2.0}'
+          memory: '${MEMORY_LIMIT:-2G}'
+        reservations:
+          cpus: '${CPU_RESERVATION:-1.0}'
+          memory: '${MEMORY_RESERVATION:-1G}'
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 300s
+      update_config:
+        parallelism: 1
+        delay: 30s
+        failure_action: rollback
+        monitor: 60s
+        max_failure_ratio: 0.1
+
+    # Container labels for metadata and monitoring
+    labels:
+      com.docker.compose.service: nodejs-tutorial-app-prod
+      com.docker.compose.project: nodejs-tutorial-prod
+      tutorial.environment: production
+      tutorial.express.version: 5.1.0
+      tutorial.node.version: 22.x
+      tutorial.pm2.cluster: 'true'
+      tutorial.security.helmet: 'true'
+      tutorial.ssl.enabled: 'true'
+      tutorial.monitoring.enabled: 'true'
+      tutorial.tier: application
+      tutorial.scaling.strategy: horizontal
+
+    # Production logging configuration
+    logging: *default-logging
+
+  # NGINX reverse proxy for load balancing and SSL termination
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nodejs-tutorial-nginx-prod
+    hostname: tutorial-nginx-prod
+    restart: always
+
+    # External ports for HTTP and HTTPS traffic
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+
+    # NGINX configuration and SSL certificate mounts
+    volumes:
+      - type: bind
+        source: ./nginx/nginx.prod.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+      - type: bind
+        source: ./nginx/conf.d/
+        target: /etc/nginx/conf.d/
+        read_only: true
+      - type: volume
+        source: ssl_certificates
+        target: /etc/nginx/ssl
+        read_only: true
+      - type: volume
+        source: nginx_logs
+        target: /var/log/nginx
+      - type: volume
+        source: nginx_cache
+        target: /var/cache/nginx
+
+    # Network configuration for frontend and backend access
+    networks:
+      - frontend-network
+      - backend-network
+
+    # Service dependencies
+    depends_on:
+      app:
+        condition: service_healthy
+
+    # NGINX health check
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+    # Environment variables for NGINX configuration
+    environment:
+      NGINX_WORKER_PROCESSES: auto
+      NGINX_WORKER_CONNECTIONS: 1024
+      NGINX_KEEPALIVE_TIMEOUT: 65
+      NGINX_CLIENT_MAX_BODY_SIZE: 10m
+      NGINX_PROXY_CONNECT_TIMEOUT: 60s
+      NGINX_PROXY_SEND_TIMEOUT: 60s
+      NGINX_PROXY_READ_TIMEOUT: 60s
+      NGINX_GZIP: 'on'
+      NGINX_GZIP_TYPES: 'text/plain text/css application/json application/javascript text/xml application/xml'
+
+    # Container labels
+    labels:
+      com.docker.compose.service: nginx-reverse-proxy-prod
+      tutorial.role: reverse-proxy
+      tutorial.ssl.termination: 'true'
+      tutorial.load.balancer: 'true'
+      tutorial.tier: frontend
+
+    # Logging configuration
+    logging: *default-logging
+
+  # Redis for session storage and caching
+  redis:
+    image: redis:7-alpine
+    container_name: nodejs-tutorial-redis-prod
+    hostname: tutorial-redis-prod
+    restart: always
+
+    # Redis configuration with persistence and authentication
+    command: [
+      "redis-server",
+      "--appendonly", "yes",
+      "--appendfsync", "everysec",
+      "--requirepass", "${REDIS_PASSWORD}",
+      "--maxmemory", "512mb",
+      "--maxmemory-policy", "allkeys-lru",
+      "--tcp-keepalive", "60",
+      "--timeout", "300",
+      "--save", "900 1 300 10 60 10000"
+    ]
+
+    # Network configuration - internal access only
+    expose:
+      - "6379"
+    networks:
+      - backend-network
+
+    # Persistent volume for Redis data
+    volumes:
+      - type: volume
+        source: redis_data
+        target: /data
+      - type: volume
+        source: redis_logs
+        target: /var/log/redis
+
+    # Environment variables
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DATABASES: 16
+      REDIS_MAXMEMORY: 512mb
+      REDIS_MAXMEMORY_POLICY: allkeys-lru
+
+    # Redis health check with authentication
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a $REDIS_PASSWORD ping | grep PONG"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+    # Resource limits for Redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+    # Container labels
+    labels:
+      com.docker.compose.service: redis-cache-prod
+      tutorial.role: cache
+      tutorial.data.persistence: 'true'
+      tutorial.tier: backend
+
+    # Logging configuration
+    logging: *default-logging
+
+  # Prometheus for metrics collection (optional monitoring service)
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: nodejs-tutorial-prometheus-prod
+    hostname: tutorial-prometheus-prod
+    restart: always
+    profiles:
+      - monitoring
+
+    # Prometheus configuration
+    volumes:
+      - type: bind
+        source: ./monitoring/prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+        read_only: true
+      - type: volume
+        source: prometheus_data
+        target: /prometheus
+
+    # Network configuration
+    expose:
+      - "9090"
+    networks:
+      - monitoring-network
+
+    # Prometheus command configuration
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    # Container labels
+    labels:
+      com.docker.compose.service: prometheus-monitoring-prod
+      tutorial.role: monitoring
+      tutorial.metrics.collector: 'true'
+      tutorial.tier: monitoring
+
+    # Logging configuration
+    logging: *default-logging
+
+  # Grafana for metrics visualization (optional monitoring service)
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: nodejs-tutorial-grafana-prod
+    hostname: tutorial-grafana-prod
+    restart: always
+    profiles:
+      - monitoring
+
+    # Environment variables for Grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+      GF_SECURITY_SECRET_KEY: ${GRAFANA_SECRET_KEY}
+
+    # Grafana data persistence
+    volumes:
+      - type: volume
+        source: grafana_data
+        target: /var/lib/grafana
+      - type: bind
+        source: ./monitoring/grafana/
+        target: /etc/grafana/provisioning/
+        read_only: true
+
+    # Network configuration
+    expose:
+      - "3000"
+    networks:
+      - monitoring-network
+
+    # Service dependencies
+    depends_on:
+      prometheus:
+        condition: service_healthy
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Container labels
+    labels:
+      com.docker.compose.service: grafana-dashboard-prod
+      tutorial.role: monitoring
+      tutorial.metrics.visualization: 'true'
+      tutorial.tier: monitoring
+
+    # Logging configuration
+    logging: *default-logging
+
+# Production network configuration with security isolation
+networks:
+  # Frontend network for external traffic and reverse proxy
+  frontend-network:
+    driver: bridge
+    name: tutorial-frontend-prod
+    driver_opts:
+      com.docker.network.bridge.name: tutorial-frontend
+      com.docker.network.bridge.enable_icc: 'false'
+      com.docker.network.bridge.enable_ip_masquerade: 'true'
+    ipam:
+      config:
+        - subnet: 172.30.1.0/24
+          gateway: 172.30.1.1
+    labels:
+      tutorial.network.tier: frontend
+      tutorial.security.level: dmz
+
+  # Backend network for internal service communication
+  backend-network:
+    driver: bridge
+    name: tutorial-backend-prod
+    internal: true
+    driver_opts:
+      com.docker.network.bridge.name: tutorial-backend
+      com.docker.network.bridge.enable_icc: 'true'
+    ipam:
+      config:
+        - subnet: 172.30.2.0/24
+          gateway: 172.30.2.1
+    labels:
+      tutorial.network.tier: backend
+      tutorial.security.level: internal
+
+  # Monitoring network for observability services
+  monitoring-network:
+    driver: bridge
+    name: tutorial-monitoring-prod
+    attachable: true
+    driver_opts:
+      com.docker.network.bridge.name: tutorial-monitoring
+    ipam:
+      config:
+        - subnet: 172.30.3.0/24
+          gateway: 172.30.3.1
+    labels:
+      tutorial.network.tier: monitoring
+      tutorial.security.level: observability
+
+# Production volume configuration for persistent data
+volumes:
+  # Application logs with retention policy
+  app_logs_prod:
+    driver: local
+    name: tutorial-app-logs-prod
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_VOLUME_PATH:-./logs/production}
+    labels:
+      tutorial.volume.type: logs
+      tutorial.data.retention: 30d
+
+  # SSL certificates for HTTPS encryption
+  ssl_certificates:
+    driver: local
+    name: tutorial-ssl-certificates-prod
+    driver_opts:
+      type: none
+      o: bind
+      device: ${SSL_CERT_PATH:-./certificates}
+    labels:
+      tutorial.volume.type: security
+      tutorial.security.level: high
+
+  # Redis data persistence
+  redis_data:
+    driver: local
+    name: tutorial-redis-data-prod
+    labels:
+      tutorial.volume.type: cache
+      tutorial.data.persistence: 'true'
+
+  # Redis logs
+  redis_logs:
+    driver: local
+    name: tutorial-redis-logs-prod
+    labels:
+      tutorial.volume.type: logs
+      tutorial.data.retention: 7d
+
+  # NGINX access and error logs
+  nginx_logs:
+    driver: local
+    name: tutorial-nginx-logs-prod
+    labels:
+      tutorial.volume.type: access-logs
+      tutorial.data.retention: 7d
+
+  # NGINX cache for static content
+  nginx_cache:
+    driver: local
+    name: tutorial-nginx-cache-prod
+    labels:
+      tutorial.volume.type: cache
+      tutorial.performance.optimization: 'true'
+
+  # Prometheus metrics data (optional monitoring)
+  prometheus_data:
+    driver: local
+    name: tutorial-prometheus-data-prod
+    labels:
+      tutorial.volume.type: metrics
+      tutorial.data.retention: 30d
+
+  # Grafana dashboard data (optional monitoring)
+  grafana_data:
+    driver: local
+    name: tutorial-grafana-data-prod
+    labels:
+      tutorial.volume.type: dashboard
+      tutorial.data.persistence: 'true'
+
+# Production configuration secrets (can be overridden with external secrets)
+configs:
+  nginx_prod_config:
+    file: ./nginx/nginx.prod.conf
+    labels:
+      tutorial.config.type: reverse-proxy
+      tutorial.environment: production
+
+  prometheus_config:
+    file: ./monitoring/prometheus.yml
+    labels:
+      tutorial.config.type: monitoring
+      tutorial.metrics.collector: prometheus
+
+# Environment-specific secrets (use Docker secrets in production)
+secrets:
+  redis_password:
+    external: true
+    name: tutorial_redis_password_prod
+  session_secret:
+    external: true
+    name: tutorial_session_secret_prod
+  jwt_secret:
+    external: true
+    name: tutorial_jwt_secret_prod
+  grafana_secret_key:
+    external: true
+    name: tutorial_grafana_secret_prod
