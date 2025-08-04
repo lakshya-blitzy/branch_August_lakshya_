@@ -1,0 +1,184 @@
+{
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "quoteProps": "as-needed",
+  "jsxSingleQuote": true,
+  "trailingComma": "es5",
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "arrowParens": "avoid",
+  "endOfLine": "lf",
+  "embeddedLanguageFormatting": "auto",
+  "htmlWhitespaceSensitivity": "css",
+  "insertPragma": false,
+  "requirePragma": false,
+  "proseWrap": "preserve",
+  "vueIndentScriptAndStyle": false,
+  "singleAttributePerLine": false,
+  "overrides": [
+    {
+      "files": [
+        "ecosystem.*.js",
+        "**/pm2/*.js",
+        "pm2.config.js",
+        "cluster.config.js",
+        "monitoring.config.js"
+      ],
+      "options": {
+        "printWidth": 100,
+        "tabWidth": 2,
+        "singleQuote": true,
+        "trailingComma": "es5",
+        "semi": true,
+        "bracketSpacing": true,
+        "arrowParens": "avoid"
+      }
+    },
+    {
+      "files": [
+        "**/*.test.js",
+        "**/*.spec.js",
+        "**/test/**/*.js",
+        "**/__tests__/**/*.js",
+        "**/jest/**/*.js"
+      ],
+      "options": {
+        "printWidth": 120,
+        "tabWidth": 2,
+        "singleQuote": true,
+        "trailingComma": "es5",
+        "semi": true,
+        "bracketSpacing": true,
+        "arrowParens": "avoid"
+      }
+    },
+    {
+      "files": [
+        "*.config.js",
+        ".eslintrc.js",
+        "jest.config.js",
+        "babel.config.js",
+        "webpack.config.js",
+        "rollup.config.js",
+        "vite.config.js"
+      ],
+      "options": {
+        "printWidth": 100,
+        "tabWidth": 2,
+        "singleQuote": true,
+        "trailingComma": "es5",
+        "semi": true,
+        "bracketSpacing": true,
+        "arrowParens": "avoid"
+      }
+    },
+    {
+      "files": [
+        "package.json",
+        "package-lock.json",
+        "yarn.lock",
+        "pnpm-lock.yaml"
+      ],
+      "options": {
+        "printWidth": 80,
+        "tabWidth": 2,
+        "trailingComma": "none",
+        "parser": "json"
+      }
+    },
+    {
+      "files": [
+        "*.md",
+        "*.markdown"
+      ],
+      "options": {
+        "printWidth": 80,
+        "proseWrap": "preserve",
+        "tabWidth": 2,
+        "useTabs": false,
+        "singleQuote": false,
+        "trailingComma": "none"
+      }
+    },
+    {
+      "files": [
+        "*.json",
+        "*.jsonc"
+      ],
+      "options": {
+        "printWidth": 80,
+        "tabWidth": 2,
+        "trailingComma": "none",
+        "parser": "json"
+      }
+    },
+    {
+      "files": [
+        "*.ts",
+        "*.tsx"
+      ],
+      "options": {
+        "printWidth": 80,
+        "tabWidth": 2,
+        "singleQuote": true,
+        "trailingComma": "es5",
+        "semi": true,
+        "bracketSpacing": true,
+        "arrowParens": "avoid",
+        "parser": "typescript"
+      }
+    },
+    {
+      "files": [
+        "**/middleware/*.js",
+        "**/routes/*.js",
+        "**/controllers/*.js",
+        "**/services/*.js",
+        "**/security/*.js"
+      ],
+      "options": {
+        "printWidth": 80,
+        "tabWidth": 2,
+        "singleQuote": true,
+        "trailingComma": "es5",
+        "semi": true,
+        "bracketSpacing": true,
+        "arrowParens": "avoid"
+      }
+    },
+    {
+      "files": [
+        "server.js",
+        "app.js",
+        "**/index.js"
+      ],
+      "options": {
+        "printWidth": 80,
+        "tabWidth": 2,
+        "singleQuote": true,
+        "trailingComma": "es5",
+        "semi": true,
+        "bracketSpacing": true,
+        "arrowParens": "avoid"
+      }
+    },
+    {
+      "files": [
+        "**/scripts/*.js",
+        "scripts/**/*.js"
+      ],
+      "options": {
+        "printWidth": 100,
+        "tabWidth": 2,
+        "singleQuote": true,
+        "trailingComma": "es5",
+        "semi": true,
+        "bracketSpacing": true,
+        "arrowParens": "avoid"
+      }
+    }
+  ]
+}
