@@ -45,7 +45,7 @@ app.use((req, res, next) => {
  * Returns "Hello world" response as specified in user requirements.
  * This represents the existing endpoint from the tutorial example.
  */
-app.get('/', (req, res) => {
+app.get('/', (req, res, next) => {
     try {
         res.send('Hello world');
     } catch (error) {
@@ -60,7 +60,7 @@ app.get('/', (req, res) => {
  * Returns "Good evening" response as specified in user requirements.
  * This is the new endpoint requested to be added to the tutorial server.
  */
-app.get('/evening', (req, res) => {
+app.get('/evening', (req, res, next) => {
     try {
         res.send('Good evening');
     } catch (error) {
