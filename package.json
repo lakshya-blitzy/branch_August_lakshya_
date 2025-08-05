@@ -1,0 +1,39 @@
+{
+  "name": "nodejs-tutorial-server",
+  "version": "1.0.0",
+  "description": "Node.js tutorial server with Express.js framework providing HTTP endpoints for 'Hello world' and 'Good evening' responses",
+  "main": "server.js",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"No tests specified yet\" && exit 0"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "tutorial",
+    "server",
+    "http",
+    "api",
+    "endpoints"
+  ],
+  "author": "Blitzy Platform",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "private": true
+}
