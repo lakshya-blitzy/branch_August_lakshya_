@@ -1185,7 +1185,7 @@ export function displayDevelopmentInfo(serverInfo, devFeatures) {
  * @param {Object} debugConfig - Development debugging configuration
  * @returns {Object} Development debugging configuration result with enhanced error reporting and tracing capabilities
  */
-export function setupDevelopmentDebugging(app, debugConfig) {
+export async function setupDevelopmentDebugging(app, debugConfig) {
   try {
     devLogger.info('Configuring comprehensive development debugging features', {
       hasApp: !!app,
@@ -2743,15 +2743,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 // Export all development server functions for external use and testing
-export {
-  parseDevArguments,
-  setupDevelopmentEnvironment,
-  createDevelopmentServer,
-  startDevelopmentServer,
-  setupHotReload,
-  displayDevelopmentInfo,
-  setupDevelopmentDebugging,
-  handleDevelopmentErrors,
-  setupDevelopmentTesting,
-  main as default
-};

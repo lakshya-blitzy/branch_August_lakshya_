@@ -38,6 +38,7 @@
 // Node.js built-in module imports with version comments
 import http from 'node:http'; // Node.js built-in - Core HTTP server functionality for creating web servers
 import url from 'node:url'; // Node.js built-in - URL parsing utilities for request path and query extraction
+import os from 'node:os'; // Node.js built-in - Operating system related utilities
 
 // Internal module imports for logging and configuration
 import logger, { generateRequestId } from './utils/logger.js';
@@ -625,7 +626,7 @@ export function logServerStats() {
     const performanceMetrics = {
       cpuUsage: process.cpuUsage(),
       resourceUsage: process.resourceUsage ? process.resourceUsage() : null,
-      loadAverage: process.platform !== 'win32' ? require('os').loadavg() : null
+      loadAverage: process.platform !== 'win32' ? os.loadavg() : null
     };
 
     // Server status information

@@ -374,7 +374,7 @@ export function createCustomKeyGenerator(keyOptions = {}) {
         keyPrefix = 'rl:'
     } = keyOptions;
 
-    return (req) => {
+    return async (req) => {
         try {
             // Start with client IP as base identifier
             const clientIp = getClientIp(req);
@@ -1000,17 +1000,7 @@ export const rateLimiter = createRateLimiterMiddleware({
     }
 });
 
-// Export all functions for comprehensive rate limiting capabilities
-export {
-    createRateLimiterMiddleware,
-    createCustomKeyGenerator,
-    createRateLimitHandler,
-    createEnvironmentSpecificLimiter,
-    createEndpointSpecificLimiter,
-    validateRateLimiterConfig,
-    getRateLimiterStatus,
-    resetRateLimiter
-};
+// All functions are individually exported above
 
 // Export default middleware for standard Express.js integration
 export default rateLimiter;

@@ -1765,10 +1765,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 // Export all functions and variables for external use and testing
 export {
   expressApp,
-  createExpressServer,
-  startExpressServer,
-  validateExpressConfiguration,
-  compareWithBasicServer,
-  prepareFlaskMigration,
   serverInstance
-};
+};;

@@ -128,7 +128,7 @@ const DEVELOPMENT_CERT_PATH = './certificates';
  * @param {string} [certOptions.organization='Development'] - Certificate organization
  * @returns {Object} Generated certificate object with cert, key, and metadata for development HTTPS setup
  */
-export function generateSelfSignedCertificate(certOptions = {}) {
+export async function generateSelfSignedCertificate(certOptions = {}) {
   // Set up certificate generation request ID for tracking and correlation
   const requestId = generateRequestId({ prefix: 'ssl-gen' });
   

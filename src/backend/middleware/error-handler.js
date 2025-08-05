@@ -1654,29 +1654,10 @@ function updatePM2Metrics(error, context, impact) {
 const errorHandler = createErrorHandler();
 
 export {
-    // Main error handler middleware
-    errorHandler as default,
-    
-    // Factory and utility functions
-    createErrorHandler,
-    handleAsyncError,
-    processError,
-    generateErrorResponse,
-    logErrorDetails,
-    
-    // Specialized error handlers
-    handleSecurityError,
-    handleValidationError,
-    handlePM2Error,
-    
-    // Metrics and validation
-    updateErrorMetrics,
-    validateErrorHandling,
-    
-    // Error handler metrics for monitoring
-    ERROR_HANDLER_METRICS,
-    PERFORMANCE_METRICS
-};
+  errorHandler,
+  ERROR_HANDLER_METRICS,
+  PERFORMANCE_METRICS
+};;
 
 // Initialize error handler system
 logger.info('Express.js error handling middleware initialized', {

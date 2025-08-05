@@ -1561,14 +1561,7 @@ export const fixtures = {
 };
 
 // Export main fixture management functions
-export {
-  initializeAllFixtures,
-  getFixtureByType,
-  createFixtureBundle,
-  validateFixtures,
-  cleanupAllFixtures,
-  generateFixtureDocumentation
-};
+
 
 /**
  * Module Summary and Educational Notes:

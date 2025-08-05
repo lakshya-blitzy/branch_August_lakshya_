@@ -1720,19 +1720,8 @@ function generateSecurityCorrelationId() {
 // Export the main security middleware and utility functions
 export {
   // Main middleware factory
-  createSecurityMiddleware as default,
-  
-  // Core security functions
-  createSecurityMiddleware,
-  validateRequest,
-  detectThreats,
-  enforceSecurityPolicies,
-  createSecurityHeaders,
-  monitorSecurityMetrics,
-  sanitizeSecurityContext,
-  createSecurityReport,
-  handleSecurityViolation,
-  optimizeSecurityPerformance
+  createSecurityMiddleware as default
+  // All other core security functions are individually exported above
 };
 
 // Export security middleware as default for easy import

@@ -65,7 +65,7 @@ import {
     performanceBenchmarks,
     securityTestData,
     errorScenarios
-} from '../../fixtures/test-data.json' assert { type: 'json' };
+} from '../../fixtures/test-data.json' with { type: 'json' };
 
 // Internal Constants and Configuration - API endpoints and testing thresholds
 import {
@@ -1352,16 +1352,7 @@ if (IS_MOCHA) {
 }
 
 // Export test functions for external usage and educational purposes
-export {
-    setupGoodEveningTests,
-    testGoodEveningBasicResponse,
-    testGoodEveningSecurityHeaders,
-    testGoodEveningPerformance,
-    testGoodEveningErrorHandling,
-    testGoodEveningCrossPlatformCompatibility,
-    testGoodEveningIntegration,
-    cleanupGoodEveningTests
-};
+
 
 /**
  * Module Summary and Educational Value:

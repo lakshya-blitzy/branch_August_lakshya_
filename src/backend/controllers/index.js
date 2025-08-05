@@ -1989,7 +1989,7 @@ export function generateControllerDocumentation(documentationOptions = {}) {
  * @param {boolean} [optimizationOptions.generateReport=true] - Generate optimization report
  * @returns {Object} Controller performance optimization results with recommendations and educational insights
  */
-export function optimizeControllerPerformance(optimizationOptions = {}) {
+export async function optimizeControllerPerformance(optimizationOptions = {}) {
   const startTime = Date.now();
   const requestId = generateRequestId({ prefix: 'optimize' });
   const requestLogger = createRequestLogger(requestId);

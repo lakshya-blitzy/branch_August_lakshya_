@@ -50,18 +50,15 @@ import {
 
 import { 
   createSecurityConfig, 
-  securityConfig, 
   validateSecurityConfig 
 } from './security.js';
 
 import { 
-  environmentConfig, 
   loadEnvironmentConfig, 
   validateEnvironment 
 } from './environment.js';
 
 import { 
-  pm2Config, 
   createPM2Config, 
   validatePM2Config 
 } from './pm2.js';
@@ -980,7 +977,7 @@ export async function createEnvironmentConfig(targetEnvironment, customSettings 
     const envPM2Config = await createEnvironmentPM2Config(targetEnvironment);
 
     // Apply custom settings overrides if provided
-    const environmentConfig = {
+    const envConfig = {
       environment: {
         ...baseTemplate,
         ...customSettings.environment
@@ -1007,7 +1004,7 @@ export async function createEnvironmentConfig(targetEnvironment, customSettings 
 
     // Validate complete environment configuration
     const environmentValidation = await validateEnvironmentConfiguration(
-      environmentConfig, 
+      envConfig, 
       targetEnvironment
     );
     
@@ -1019,7 +1016,7 @@ export async function createEnvironmentConfig(targetEnvironment, customSettings 
     }
 
     // Add environment metadata
-    environmentConfig.metadata = {
+    envConfig.metadata = {
       createdAt: new Date().toISOString(),
       targetEnvironment,
       creationMethod: 'createEnvironmentConfig',
@@ -1031,12 +1028,12 @@ export async function createEnvironmentConfig(targetEnvironment, customSettings 
     logInfo('Environment configuration created successfully', {
       targetEnvironment,
       modules: Object.keys(environmentConfiguration).filter(key => key !== 'metadata'),
-      customSettingsApplied: environmentConfig.metadata.customSettingsApplied,
-      creationTime: environmentConfig.metadata.createdAt
+      customSettingsApplied: envConfig.metadata.customSettingsApplied,
+      creationTime: envConfig.metadata.createdAt
     });
 
     // Return environment-ready configuration object
-    return environmentConfig;
+    return envConfig;
 
   } catch (error) {
     const envError = new ConfigurationError(
@@ -1919,7 +1916,7 @@ export const pm2Config = config.pm2;
 // Export factory and utility functions
 export const loadConfiguration = initializeConfiguration;
 export const validateConfiguration = validateAllConfigurations;
-export { getConfiguration, updateConfiguration, createEnvironmentConfig, exportConfigurationFiles };
+// Functions are exported as individual declarations above
 
 // Export configuration health and monitoring
 export const configHealth = await getConfigurationHealth();

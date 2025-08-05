@@ -1739,10 +1739,5 @@ logger.info('Good-evening route module loaded successfully', {
 export default goodEveningRouter;
 
 export {
-    goodEveningRouter,
-    createGoodEveningRouter as createGoodEveningRoute,
-    initializeGoodEveningRoute,
-    validateGoodEveningRoute,
-    getGoodEveningRouteHealth,
-    optimizeGoodEveningRoutePerformance
+  goodEveningRouter
 };

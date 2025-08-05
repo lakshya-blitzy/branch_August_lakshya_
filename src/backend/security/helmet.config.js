@@ -1840,21 +1840,8 @@ logInfo('Helmet.js security configuration system initialized', {
   timestamp: new Date().toISOString()
 });
 
-// Export all functions and configurations
+// Export global constants
 export {
-  createCustomSecurityHeaders,
-  createBaseHelmetConfig,
-  createDevelopmentHelmetConfig,
-  createProductionHelmetConfig,
-  createStagingHelmetConfig,
-  validateHelmetConfig,
-  createHelmetConfig,
-  getSecurityHeaders,
-  optimizeHelmetConfig,
-  createHelmetDocumentation,
-  helmetDefaults,
-  
-  // Global constants
   HELMET_CONFIG_CACHE,
   DEFAULT_HSTS_MAX_AGE,
   DEVELOPMENT_CSP_REPORT_ONLY

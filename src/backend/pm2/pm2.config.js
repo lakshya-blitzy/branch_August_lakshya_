@@ -1714,20 +1714,7 @@ export const developmentConfig = {
 };
 
 // Export all functions and configurations
-export {
-  createPM2Config,
-  generateInstanceConfig,
-  configureRestartPolicy,
-  setupMonitoringConfig,
-  configureLogManagement,
-  createEnvironmentConfig,
-  validatePM2Config,
-  optimizeForEnvironment,
-  pm2Config,
-  defaultProcessConfig,
-  productionConfig,
-  developmentConfig
-};
+// All functions are individually exported above;
 
 // Initialize PM2 configuration logging
 logger.info('PM2 configuration module initialized', {

@@ -373,7 +373,7 @@ function createMockRequest(requestOptions = {}) {
  * @param {Object} responseOptions - Response configuration options
  * @returns {Object} Mock Express.js response object with Jest spies and validation methods
  */
-function createMockResponse(responseOptions = {}) {
+function createLocalMockResponse(responseOptions = {}) {
   const defaultOptions = {
     statusCode: 200,
     headers: {},
@@ -616,7 +616,7 @@ async function measureHealthControllerPerformance(healthControllerFunction, perf
     for (let i = 0; i < options.warmupIterations; i++) {
       try {
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
         await healthControllerFunction(mockReq, mockRes, mockNext);
       } catch (warmupError) {
@@ -634,7 +634,7 @@ async function measureHealthControllerPerformance(healthControllerFunction, perf
       try {
         // Execute health controller function with performance tracking
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
         
         await healthControllerFunction(mockReq, mockRes, mockNext);
@@ -1089,7 +1089,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
           path: '/health',
           headers: { 'Accept': 'application/json' }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act - Execute health status controller function
@@ -1135,7 +1135,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         HEALTH_SERVICE_MOCK.performHealthCheck.mockResolvedValue(detailedHealthData);
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1162,7 +1162,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         );
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1193,7 +1193,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         HEALTH_SERVICE_MOCK.getQuickHealth.mockResolvedValue(quickHealthData);
 
         const mockReq = createMockRequest({ path: '/health/quick' });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act - Execute quick health check
@@ -1228,7 +1228,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         HEALTH_SERVICE_MOCK.getQuickHealth.mockResolvedValue(minimalHealthData);
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1281,7 +1281,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
           path: '/health/metrics',
           query: { timeRange: '24h', includeTrends: 'true' }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1324,7 +1324,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         const mockReq = createMockRequest({
           query: { timeRange: '1h' }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1367,7 +1367,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
           path: '/health/monitoring/start',
           body: monitoringConfig
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1402,7 +1402,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
           path: '/health/monitoring/stop',
           body: { saveState: true, generateFinalReport: true }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1428,7 +1428,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         HEALTH_SERVICE_MOCK.createFlaskHealthResponse.mockResolvedValue(flaskCompatibleData);
 
         const mockReq = createMockRequest({ path: '/health/flask-compatibility' });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1460,7 +1460,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         const mockReq = createMockRequest({
           query: { includeEducational: 'true' }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1488,7 +1488,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         await simulateHealthServiceFailure('timeout', { delay: 1000 });
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1507,7 +1507,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         await simulateHealthServiceFailure('network_error');
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1525,7 +1525,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         await simulateHealthServiceFailure('service_unavailable');
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1546,7 +1546,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         await simulateHealthServiceFailure('data_corruption');
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1564,7 +1564,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
             format: 'unsupported_format'
           }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Mock validateHealthRequest to simulate validation failure
@@ -1589,7 +1589,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
             'Authorization': 'Bearer invalid_token'
           }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1609,7 +1609,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         await simulateHealthServiceFailure('resource_exhaustion');
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1632,7 +1632,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         testError.statusCode = 500;
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1775,7 +1775,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
           const mockReq = createMockRequest({ 
             correlationId: `concurrent-${i}-${TEST_REQUEST_CONTEXT.correlationId}`
           });
-          const mockRes = createMockResponse();
+          const mockRes = createLocalMockResponse();
           const mockNext = createMockNext();
           
           requestPromises.push(getHealthStatus(mockReq, mockRes, mockNext));
@@ -1818,7 +1818,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         // Act - Generate sustained load
         while (Date.now() - startTime < loadTestDuration) {
           const mockReq = createMockRequest();
-          const mockRes = createMockResponse();
+          const mockRes = createLocalMockResponse();
           const mockNext = createMockNext();
           
           requests.push(getQuickHealth(mockReq, mockRes, mockNext));
@@ -1856,7 +1856,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         );
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1893,7 +1893,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         );
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1917,7 +1917,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
 
         for (const maliciousQuery of maliciousQueries) {
           const mockReq = createMockRequest({ query: maliciousQuery });
-          const mockRes = createMockResponse();
+          const mockRes = createLocalMockResponse();
           const mockNext = createMockNext();
 
           // Act
@@ -1945,7 +1945,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         };
 
         const mockReq = createMockRequest({ headers: suspiciousHeaders });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1967,7 +1967,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         );
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -1998,7 +1998,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         // Act - Generate rapid requests
         for (let i = 0; i < rapidRequests; i++) {
           const mockReq = createMockRequest();
-          const mockRes = createMockResponse();
+          const mockRes = createLocalMockResponse();
           const mockNext = createMockNext();
           
           requestPromises.push(getQuickHealth(mockReq, mockRes, mockNext));
@@ -2032,7 +2032,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
           path: '/health/flask-compatibility',
           headers: { 'Accept': 'application/json' }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -2068,7 +2068,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
           HEALTH_SERVICE_MOCK.createFlaskHealthResponse.mockResolvedValue(flaskData);
 
           const mockReq = createMockRequest();
-          const mockRes = createMockResponse();
+          const mockRes = createLocalMockResponse();
           const mockNext = createMockNext();
 
           // Act
@@ -2093,7 +2093,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         HEALTH_SERVICE_MOCK.createFlaskHealthResponse.mockResolvedValue(flaskResponse);
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -2114,7 +2114,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         HEALTH_SERVICE_MOCK.createFlaskHealthResponse.mockResolvedValue(flaskData);
 
         const mockReq = createMockRequest();
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -2174,7 +2174,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         const mockReq = createMockRequest({
           query: { validateFeatureParity: 'true' }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -2229,7 +2229,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
         const mockReq = createMockRequest({
           query: { includeMigrationGuidance: 'true' }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act
@@ -2283,7 +2283,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
             format: 'detailed'
           }
         });
-        const mockRes = createMockResponse();
+        const mockRes = createLocalMockResponse();
         const mockNext = createMockNext();
 
         // Act - Execute complete workflow
@@ -2334,7 +2334,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
           const mockReq = createMockRequest({
             headers: { 'X-Test-Scenario': scenario.type }
           });
-          const mockRes = createMockResponse();
+          const mockRes = createLocalMockResponse();
           const mockNext = createMockNext();
 
           // Act
@@ -2392,7 +2392,7 @@ describe('Health Controller - Comprehensive Test Suite', () => {
               path: `/health/${pattern.endpoint === 'quick' ? 'quick' : pattern.endpoint === 'metrics' ? 'metrics' : ''}`,
               headers: { 'X-Traffic-Pattern': pattern.endpoint }
             });
-            const mockRes = createMockResponse();
+            const mockRes = createLocalMockResponse();
             const mockNext = createMockNext();
 
             const startTime = performance.now();

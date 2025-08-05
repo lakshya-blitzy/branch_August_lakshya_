@@ -77,7 +77,6 @@
     "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^2.4.3",
     "validator": "^13.11.0",
-    "rate-limit-redis": "^4.2.0",
     "on-headers": "^1.0.2",
     "on-finished": "^2.4.1",
     "chalk": "^5.3.0",
@@ -87,9 +86,7 @@
     "axios": "^1.6.0",
     "deep-equal": "^2.2.0",
     "uuid": "^9.0.0",
-    "bleach": "^6.1.0",
     "email-validator": "^2.1.0",
-    "validators": "^0.22.0",
     "jsonschema": "^4.20.0"
   },
   "devDependencies": {
@@ -123,23 +120,17 @@
     "eslint-plugin-import": "^2.30.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
-    "@nearform/clinic": "^12.0.0",
+    "clinic": "^13.0.0",
     "cross-spawn": "^7.0.0",
     "glob": "^11.0.0",
     "rimraf": "^5.0.0",
-    "psutil": "^5.9.0",
     "@types/mocha": "^10.0.0",
     "@types/compression": "^1.7.0",
     "@types/cors": "^2.8.0",
     "eslint-plugin-mocha": "^10.5.0",
     "@typescript-eslint/parser": "^8.14.0",
     "@typescript-eslint/eslint-plugin": "^8.14.0",
-    "expect": "^29.0.0",
-    "pytest-mock": "^3.11.1",
-    "deepdiff": "^6.7.0",
-    "freezegun": "^1.2.0",
-    "factory-boy": ">=3.3.0,<4.0.0",
-    "watchdog": ">=3.0.0,<4.0.0"
+    "expect": "^29.0.0"
   },
   "keywords": [
     "nodejs",

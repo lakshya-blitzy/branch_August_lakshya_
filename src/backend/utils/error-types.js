@@ -765,6 +765,75 @@ export class ValidationError extends BaseError {
 }
 
 /**
+ * Configuration Error Class
+ * 
+ * Configuration-specific error class for environment setup failures, invalid configuration
+ * parameters, missing required settings, and configuration validation errors. Extends 
+ * ValidationError with configuration context and enhanced debugging capabilities.
+ * Designed for configuration management and environment setup error handling.
+ */
+export class ConfigurationError extends ValidationError {
+  /**
+   * Initializes ConfigurationError with configuration field, expected value, and context.
+   * Sets up comprehensive configuration error tracking and debugging information.
+   * 
+   * @param {string} message - Configuration error message
+   * @param {Object} options - Configuration error options
+   * @param {string} options.field - Configuration field that failed
+   * @param {*} options.value - Actual configuration value
+   * @param {*} options.expected - Expected configuration value or type
+   * @param {string} options.configFile - Configuration file path
+   * @param {string} options.environment - Environment where error occurred
+   * @param {Object} options.context - Additional configuration context
+   */
+  constructor(message, options = {}) {
+    super(message, {
+      ...options,
+      errorType: 'CONFIGURATION_ERROR',
+      statusCode: options.statusCode || 500,
+      validationField: options.field,
+      validationValue: options.value,
+      validationConstraints: { expected: options.expected }
+    });
+
+    this.configField = options.field;
+    this.configValue = options.value;
+    this.expectedValue = options.expected;
+    this.configFile = options.configFile;
+    this.environment = options.environment || process.env.NODE_ENV || 'unknown';
+    this.configContext = options.context || {};
+
+    // Enhanced error details for configuration debugging
+    this.details = {
+      ...this.details,
+      configField: this.configField,
+      configValue: this.configValue,
+      expectedValue: this.expectedValue,
+      configFile: this.configFile,
+      environment: this.environment,
+      configContext: this.configContext
+    };
+  }
+
+  /**
+   * Enhanced configuration error serialization for debugging and logging.
+   * 
+   * @returns {Object} Serialized configuration error
+   */
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      configField: this.configField,
+      configValue: this.configValue,
+      expectedValue: this.expectedValue,
+      configFile: this.configFile,
+      environment: this.environment,
+      configContext: this.configContext
+    };
+  }
+}
+
+/**
  * Security Error Class
  * 
  * Security-specific error class for authentication failures, authorization violations,
@@ -3136,19 +3205,6 @@ function getErrorOrigin(stack) {
 
 // Export all error classes and utility functions
 export {
-  BaseError,
-  HTTPError,
-  ValidationError,
-  SecurityError,
-  PM2Error,
-  createErrorResponse,
-  isOperationalError,
-  sanitizeErrorForResponse,
-  classifyErrorSeverity,
-  createErrorFromCode,
-  formatErrorForLogging,
-  validateErrorInstance,
-  
   // Global error tracking
   ERROR_REGISTRY,
   OPERATIONAL_ERROR_TYPES,

@@ -2352,26 +2352,14 @@ export {
   // Main configuration object
   environmentConfig,
   
-  // Factory functions
+  // Factory functions (aliased)
   createEnvironmentConfig as loadEnvironmentConfig,
   validateEnvironmentConfig as validateEnvironment,
   
   // Environment state
   CURRENT_ENVIRONMENT as currentEnvironment,
   IS_PRODUCTION as isProduction,
-  IS_DEVELOPMENT as isDevelopment,
-  
-  // Configuration factories
-  getServerConfig,
-  getSecurityConfig,
-  getLoggingConfig,
-  getPM2Config,
-  getTestingConfig,
-  
-  // Utility functions
-  detectEnvironment,
-  validateNodeVersion,
-  exportEnvironmentConfig
+  IS_DEVELOPMENT as isDevelopment
 };
 
 // Initialize environment configuration system

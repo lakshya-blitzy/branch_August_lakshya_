@@ -1396,29 +1396,11 @@ export function logServerStatistics() {
 
 // Export main server startup function and utility functions for testing and management
 export {
-  // Core server functions
-  startHTTPServer as default,
-  
-  // Request handling functions
-  createRequestHandler,
-  createRouter,
-  
-  // Endpoint handlers
-  handleHelloRequest,
-  handleGoodEveningRequest, 
-  handleHealthRequest,
-  
-  // Utility functions
-  setupSecurityHeaders,
-  setupGracefulShutdown,
-  logServerStatistics,
-  
-  // Helper functions (implemented locally since helpers.js doesn't exist)
   formatHTTPResponse,
-  generateRequestCorrelationId as generateRequestId,
+  generateRequestCorrelationId,
   measurePerformance,
   createHealthCheck
-};
+};;
 
 // Initialize logging for module loading
 info('Enhanced HTTP server module loaded', {

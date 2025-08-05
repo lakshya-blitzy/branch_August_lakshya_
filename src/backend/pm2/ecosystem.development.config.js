@@ -89,7 +89,7 @@ const DEV_NODE_ARGS = '--inspect --max-old-space-size=512';
  * @returns {Object} Complete development ecosystem configuration with single instance, 
  *                   file watching, debugging, and development-optimized settings
  */
-export function createDevelopmentEcosystem(devOptions = {}) {
+export async function createLocalDevelopmentEcosystem(devOptions = {}) {
   try {
     logger.info('Creating development PM2 ecosystem configuration', {
       environment: environmentConfig.currentEnvironment,
@@ -274,7 +274,7 @@ export function createDevelopmentEcosystem(devOptions = {}) {
  * @returns {Object} Complete development application configuration with debugging, 
  *                   file watching, hot reload, and development-specific optimizations
  */
-export function configureDevelopmentApp(appName, scriptPath, devAppOptions = {}) {
+export function configureLocalDevelopmentApp(appName, scriptPath, devAppOptions = {}) {
   try {
     logger.debug('Configuring development application settings', {
       appName,
@@ -1582,7 +1582,7 @@ function optimizeIgnorePatterns(currentPatterns = [], options = {}) {
 }
 
 // Create and export default development ecosystem configuration
-const developmentEcosystem = await createDevelopmentEcosystem({
+const developmentEcosystem = await createLocalDevelopmentEcosystem({
   appName: DEV_APP_NAME,
   scriptPath: DEV_SCRIPT_PATH,
   enableWatching: true,
@@ -1591,7 +1591,7 @@ const developmentEcosystem = await createDevelopmentEcosystem({
 });
 
 // Pre-configured development application definition optimized for debugging, file watching, and hot reload functionality
-export const developmentApp = await configureDevelopmentApp(DEV_APP_NAME, DEV_SCRIPT_PATH, {
+export const localDevelopmentApp = await configureLocalDevelopmentApp(DEV_APP_NAME, DEV_SCRIPT_PATH, {
   watch: true,
   debug: '*',
   maxOldSpaceSize: 512,
@@ -1599,7 +1599,7 @@ export const developmentApp = await configureDevelopmentApp(DEV_APP_NAME, DEV_SC
 });
 
 // Development file watching configuration with comprehensive patterns and intelligent ignore rules for hot reload functionality
-export const devWatchConfig = await setupDevelopmentWatching({
+export const localDevWatchConfig = await setupDevelopmentWatching({
   enabled: true,
   patterns: DEV_WATCH_PATTERNS,
   ignorePatterns: DEV_IGNORE_PATTERNS,
@@ -1637,15 +1637,7 @@ export const devEnvironmentConfig = {
 
 // Export all development ecosystem components and utilities
 export {
-  developmentEcosystem,
-  createDevelopmentEcosystem,
-  configureDevelopmentApp,
-  setupDevelopmentWatching,
-  configureDevelopmentDebugging,
-  createDevelopmentLogging,
-  validateDevelopmentConfig,
-  optimizeDevelopmentPerformance,
-  generateDevelopmentScripts
+  developmentEcosystem
 };
 
 // Export default development ecosystem configuration

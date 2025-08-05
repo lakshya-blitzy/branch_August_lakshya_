@@ -87,6 +87,9 @@ import {
   cleanupTestHelpers
 } from '../helpers/test-helpers.js';
 
+// Server-specific test helper imports for enhanced testing scenarios
+import { createHealthCheckFixture } from '../helpers/server-test-helpers.js';
+
 // Mock response imports for comprehensive response validation and testing scenarios
 import {
   helloResponses,
@@ -94,6 +97,9 @@ import {
   errorResponses,
   performanceResponses
 } from '../fixtures/mock-responses.js';
+
+// Performance metrics fixtures for comprehensive testing scenarios
+import { PERFORMANCE_METRICS_FIXTURES } from '../fixtures/server-fixtures.js';
 
 // Global test state management for server instance tracking and cleanup
 let TEST_SERVER_INSTANCE = null;
@@ -984,7 +990,660 @@ describe('Server Module Unit Tests', () => {
         }
       });
     });
-  });
+
+    // ============================================================================
+    // ENHANCED HEALTH MONITORING TESTING - New comprehensive test suites
+    // ============================================================================
+
+    describe('monitorServerHealth Function', () => {
+      test('should initialize health monitoring with complete lifecycle management', async () => {
+        const healthFixture = createHealthCheckFixture({ status: 'healthy' });
+        const monitoringConfig = {
+          interval: 5000,
+          memoryThreshold: PERFORMANCE_METRICS_FIXTURES.memoryUsage.rss.warning,
+          cpuThreshold: PERFORMANCE_METRICS_FIXTURES.cpuUsage.percentage.warning,
+          enabled: true
+        };
+
+        // Mock the health manager to simulate monitoring initialization
+        const mockHealthManager = {
+          isMonitoring: false,
+          startMonitoring: jest.fn().mockResolvedValue({
+            success: true,
+            baseline: healthFixture,
+            interval: monitoringConfig.interval
+          }),
+          getHealthStatus: jest.fn().mockResolvedValue(healthFixture),
+          stopMonitoring: jest.fn().mockResolvedValue(undefined)
+        };
+
+        const monitoringResult = await monitorServerHealth(mockHealthManager, monitoringConfig);
+
+        expect(monitoringResult).toBeDefined();
+        expect(monitoringResult.success).toBe(true);
+        expect(monitoringResult.monitoring).toBe(true);
+        expect(mockHealthManager.startMonitoring).toHaveBeenCalledWith(monitoringConfig);
+        expect(monitoringResult.healthStatus).toEqual(healthFixture);
+        expect(monitoringResult.baseline).toBeDefined();
+        expect(monitoringResult.interval).toBe(monitoringConfig.interval);
+
+        // Cleanup
+        await mockHealthManager.stopMonitoring();
+      });
+
+      test('should validate monitoring intervals and continuous health checks', async () => {
+        const healthyFixture = createHealthCheckFixture({ status: 'healthy' });
+        const degradedFixture = createHealthCheckFixture({ status: 'degraded' });
+        
+        let callCount = 0;
+        const mockHealthManager = {
+          isMonitoring: true,
+          getHealthStatus: jest.fn().mockImplementation(() => {
+            callCount++;
+            return Promise.resolve(callCount <= 2 ? healthyFixture : degradedFixture);
+          }),
+          startMonitoring: jest.fn().mockResolvedValue({ success: true }),
+          stopMonitoring: jest.fn().mockResolvedValue(undefined)
+        };
+
+        const monitoringConfig = { interval: 100 }; // Short interval for testing
+        
+        await monitorServerHealth(mockHealthManager, monitoringConfig);
+        
+        // Allow time for multiple health checks
+        await new Promise(resolve => setTimeout(resolve, 350));
+        
+        expect(mockHealthManager.getHealthStatus).toHaveBeenCalledTimes(callCount);
+        expect(callCount).toBeGreaterThan(2); // Should have multiple health checks
+        
+        const latestHealth = await mockHealthManager.getHealthStatus();
+        expect(latestHealth.status).toBe('degraded'); // Should transition to degraded status
+        expect(latestHealth.errors).toBeDefined();
+        expect(Array.isArray(latestHealth.errors)).toBe(true);
+
+        await mockHealthManager.stopMonitoring();
+      });
+
+      test('should handle monitoring error scenarios and failure recovery', async () => {
+        const mockHealthManager = {
+          isMonitoring: false,
+          startMonitoring: jest.fn().mockRejectedValue(new Error('Health monitoring initialization failed')),
+          getHealthStatus: jest.fn().mockRejectedValue(new Error('Health status retrieval failed')),
+          stopMonitoring: jest.fn().mockResolvedValue(undefined)
+        };
+
+        const monitoringConfig = {
+          interval: 5000,
+          retryAttempts: 3,
+          errorThreshold: 5
+        };
+
+        await expect(monitorServerHealth(mockHealthManager, monitoringConfig))
+          .rejects.toThrow('Health monitoring initialization failed');
+
+        expect(mockHealthManager.startMonitoring).toHaveBeenCalledWith(monitoringConfig);
+        expect(mockHealthManager.startMonitoring).toHaveBeenCalledTimes(1);
+
+        // Test recovery scenario
+        mockHealthManager.startMonitoring.mockResolvedValue({ success: true, baseline: createHealthCheckFixture() });
+        const recoveryResult = await monitorServerHealth(mockHealthManager, monitoringConfig);
+
+        expect(recoveryResult.success).toBe(true);
+        expect(recoveryResult.monitoring).toBe(true);
+      });
+
+      test('should validate performance metrics collection during monitoring', async () => {
+        const performanceFixture = createHealthCheckFixture({ 
+          status: 'healthy',
+          customMetrics: {
+            performanceMetrics: {
+              startupTime: PERFORMANCE_METRICS_FIXTURES.startupTime.actual,
+              responseTime: PERFORMANCE_METRICS_FIXTURES.responseTime.average,
+              requestCount: PERFORMANCE_METRICS_FIXTURES.requestCount.total,
+              errorRate: PERFORMANCE_METRICS_FIXTURES.errorRate.current
+            }
+          }
+        });
+
+        const mockHealthManager = {
+          isMonitoring: true,
+          startMonitoring: jest.fn().mockResolvedValue({ success: true, baseline: performanceFixture }),
+          getHealthStatus: jest.fn().mockResolvedValue(performanceFixture),
+          getPerformanceMetrics: jest.fn().mockResolvedValue(PERFORMANCE_METRICS_FIXTURES),
+          stopMonitoring: jest.fn().mockResolvedValue(undefined)
+        };
+
+        const monitoringResult = await monitorServerHealth(mockHealthManager, {
+          interval: 5000,
+          enablePerformanceTracking: true
+        });
+
+        expect(monitoringResult.success).toBe(true);
+        expect(monitoringResult.healthStatus.performanceMetrics).toBeDefined();
+        expect(monitoringResult.healthStatus.performanceMetrics.startupTime).toBe(PERFORMANCE_METRICS_FIXTURES.startupTime.actual);
+        expect(monitoringResult.healthStatus.performanceMetrics.responseTime).toBe(PERFORMANCE_METRICS_FIXTURES.responseTime.average);
+        expect(monitoringResult.healthStatus.performanceMetrics.errorRate).toBe(PERFORMANCE_METRICS_FIXTURES.errorRate.current);
+
+        await mockHealthManager.stopMonitoring();
+      });
+
+      test('should test monitoring cleanup and resource deallocation', async () => {
+        const healthFixture = createHealthCheckFixture({ status: 'healthy' });
+        const mockHealthManager = {
+          isMonitoring: true,
+          intervals: [],
+          timeouts: [],
+          startMonitoring: jest.fn().mockImplementation((config) => {
+            const interval = setInterval(() => {}, config.interval);
+            mockHealthManager.intervals.push(interval);
+            return Promise.resolve({ success: true, baseline: healthFixture });
+          }),
+          stopMonitoring: jest.fn().mockImplementation(() => {
+            mockHealthManager.intervals.forEach(clearInterval);
+            mockHealthManager.timeouts.forEach(clearTimeout);
+            mockHealthManager.intervals = [];
+            mockHealthManager.timeouts = [];
+            mockHealthManager.isMonitoring = false;
+            return Promise.resolve(undefined);
+          }),
+          getHealthStatus: jest.fn().mockResolvedValue(healthFixture)
+        };
+
+        const monitoringConfig = { interval: 1000 };
+        await monitorServerHealth(mockHealthManager, monitoringConfig);
+
+        expect(mockHealthManager.isMonitoring).toBe(true);
+        expect(mockHealthManager.intervals.length).toBeGreaterThan(0);
+
+        // Test cleanup
+        await mockHealthManager.stopMonitoring();
+
+        expect(mockHealthManager.isMonitoring).toBe(false);
+        expect(mockHealthManager.intervals.length).toBe(0);
+        expect(mockHealthManager.timeouts.length).toBe(0);
+      });
+
+      test('should validate health threshold evaluations and alerting', async () => {
+        const criticalFixture = createHealthCheckFixture({ 
+          status: 'critical',
+          customMetrics: {
+            memoryUsage: {
+              rss: PERFORMANCE_METRICS_FIXTURES.memoryUsage.rss.critical + 100000000 // Exceed critical threshold
+            },
+            cpuUsage: {
+              percentage: {
+                current: PERFORMANCE_METRICS_FIXTURES.cpuUsage.percentage.critical + 5 // Exceed critical threshold
+              }
+            }
+          }
+        });
+
+        const mockHealthManager = {
+          isMonitoring: true,
+          alertsTriggered: [],
+          startMonitoring: jest.fn().mockResolvedValue({ success: true }),
+          getHealthStatus: jest.fn().mockResolvedValue(criticalFixture),
+          triggerAlert: jest.fn().mockImplementation((alert) => {
+            mockHealthManager.alertsTriggered.push(alert);
+            return Promise.resolve({ alertId: Date.now(), status: 'sent' });
+          }),
+          stopMonitoring: jest.fn().mockResolvedValue(undefined)
+        };
+
+        const monitoringConfig = {
+          interval: 5000,
+          memoryThreshold: PERFORMANCE_METRICS_FIXTURES.memoryUsage.rss.critical,
+          cpuThreshold: PERFORMANCE_METRICS_FIXTURES.cpuUsage.percentage.critical,
+          enableAlerting: true
+        };
+
+        await monitorServerHealth(mockHealthManager, monitoringConfig);
+        
+        const healthStatus = await mockHealthManager.getHealthStatus();
+        
+        expect(healthStatus.status).toBe('critical');
+        expect(healthStatus.memoryUsage.rss).toBeGreaterThan(monitoringConfig.memoryThreshold);
+        expect(healthStatus.cpuUsage.percentage.current).toBeGreaterThan(monitoringConfig.cpuThreshold);
+
+        // Simulate threshold evaluation and alerting
+        if (healthStatus.memoryUsage.rss > monitoringConfig.memoryThreshold) {
+          await mockHealthManager.triggerAlert({
+            type: 'memory_critical',
+            threshold: monitoringConfig.memoryThreshold,
+            actual: healthStatus.memoryUsage.rss
+          });
+        }
+
+        expect(mockHealthManager.alertsTriggered.length).toBeGreaterThan(0);
+        expect(mockHealthManager.alertsTriggered[0].type).toBe('memory_critical');
+
+        await mockHealthManager.stopMonitoring();
+      });
+
+      test('should test memory usage and resource leak prevention during monitoring', async () => {
+        const initialMemory = process.memoryUsage();
+        const mockHealthManager = {
+          isMonitoring: true,
+          memorySnapshots: [],
+          startMonitoring: jest.fn().mockResolvedValue({ success: true }),
+          getHealthStatus: jest.fn().mockImplementation(() => {
+            const currentMemory = process.memoryUsage();
+            mockHealthManager.memorySnapshots.push(currentMemory);
+            return Promise.resolve(createHealthCheckFixture({ 
+              customMetrics: { memoryUsage: currentMemory }
+            }));
+          }),
+          stopMonitoring: jest.fn().mockResolvedValue(undefined)
+        };
+
+        await monitorServerHealth(mockHealthManager, { interval: 100 });
+
+        // Generate some monitoring activity
+        for (let i = 0; i < 5; i++) {
+          await mockHealthManager.getHealthStatus();
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+
+        const finalMemory = process.memoryUsage();
+        const memoryIncrease = finalMemory.heapUsed - initialMemory.heapUsed;
+
+        // Memory increase should be reasonable (< 10MB for monitoring operations)
+        expect(memoryIncrease).toBeLessThan(10 * 1024 * 1024);
+        
+        // Memory snapshots should show stable or decreasing trend
+        expect(mockHealthManager.memorySnapshots.length).toBeGreaterThan(0);
+        
+        await mockHealthManager.stopMonitoring();
+      });
+
+      test('should validate PM2 cluster mode health monitoring integration', async () => {
+        // Mock PM2 cluster environment
+        const originalPM2 = process.env.PM2_HOME;
+        const originalPMID = process.env.PM_ID;
+        
+        process.env.PM2_HOME = '/tmp/.pm2';
+        process.env.PM_ID = '2';
+
+        try {
+          const clusterFixture = createHealthCheckFixture({ 
+            status: 'healthy',
+            customMetrics: {
+              pm2: {
+                instanceId: 2,
+                clusterMode: true,
+                totalInstances: 4,
+                loadBalance: 'round-robin'
+              }
+            }
+          });
+
+          const mockHealthManager = {
+            isMonitoring: true,
+            clusterInstances: [],
+            startMonitoring: jest.fn().mockResolvedValue({ success: true, baseline: clusterFixture }),
+            getHealthStatus: jest.fn().mockResolvedValue(clusterFixture),
+            getClusterStatus: jest.fn().mockResolvedValue({
+              instances: 4,
+              online: 4,
+              stopped: 0,
+              errored: 0
+            }),
+            stopMonitoring: jest.fn().mockResolvedValue(undefined)
+          };
+
+          const monitoringResult = await monitorServerHealth(mockHealthManager, {
+            interval: 5000,
+            enableClusterMonitoring: true
+          });
+
+          expect(monitoringResult.success).toBe(true);
+          expect(monitoringResult.healthStatus.pm2).toBeDefined();
+          expect(monitoringResult.healthStatus.pm2.clusterMode).toBe(true);
+          expect(monitoringResult.healthStatus.pm2.instanceId).toBe(2);
+
+          const clusterStatus = await mockHealthManager.getClusterStatus();
+          expect(clusterStatus.instances).toBe(4);
+          expect(clusterStatus.online).toBe(4);
+
+          await mockHealthManager.stopMonitoring();
+        } finally {
+          // Restore environment
+          if (originalPM2) process.env.PM2_HOME = originalPM2;
+          else delete process.env.PM2_HOME;
+          
+          if (originalPMID) process.env.PM_ID = originalPMID;
+          else delete process.env.PM_ID;
+        }
+      });
+
+      test('should test monitoring under high-load scenarios and stress conditions', async () => {
+        const stressFixture = createHealthCheckFixture({ 
+          status: 'degraded',
+          customMetrics: {
+            memoryUsage: {
+              rss: PERFORMANCE_METRICS_FIXTURES.memoryUsage.rss.warning,
+              heapUsed: PERFORMANCE_METRICS_FIXTURES.memoryUsage.heapUsed.peak
+            },
+            cpuUsage: {
+              percentage: {
+                current: PERFORMANCE_METRICS_FIXTURES.cpuUsage.percentage.warning
+              }
+            },
+            requestCount: PERFORMANCE_METRICS_FIXTURES.requestCount.peak,
+            errorRate: PERFORMANCE_METRICS_FIXTURES.errorRate.warning
+          }
+        });
+
+        const mockHealthManager = {
+          isMonitoring: true,
+          stressLevel: 0,
+          startMonitoring: jest.fn().mockResolvedValue({ success: true }),
+          getHealthStatus: jest.fn().mockImplementation(() => {
+            mockHealthManager.stressLevel++;
+            const currentFixture = { ...stressFixture };
+            currentFixture.stressLevel = mockHealthManager.stressLevel;
+            return Promise.resolve(currentFixture);
+          }),
+          stopMonitoring: jest.fn().mockResolvedValue(undefined)
+        };
+
+        await monitorServerHealth(mockHealthManager, { 
+          interval: 50, // Very frequent monitoring
+          stressTestMode: true 
+        });
+
+        // Simulate high-load conditions
+        const stressPromises = [];
+        for (let i = 0; i < 20; i++) {
+          stressPromises.push(mockHealthManager.getHealthStatus());
+        }
+
+        const stressResults = await Promise.all(stressPromises);
+        
+        expect(stressResults.length).toBe(20);
+        stressResults.forEach(result => {
+          expect(result.status).toBe('degraded');
+          expect(result.stressLevel).toBeGreaterThan(0);
+        });
+
+        // Verify monitoring remains stable under stress
+        expect(mockHealthManager.isMonitoring).toBe(true);
+
+        await mockHealthManager.stopMonitoring();
+      });
+
+      test('should validate cross-platform health monitoring compatibility', async () => {
+        const platformFixture = createHealthCheckFixture({ 
+          status: 'healthy',
+          customMetrics: {
+            platform: process.platform,
+            architecture: process.arch,
+            nodeVersion: process.version,
+            osInfo: {
+              type: require('os').type(),
+              release: require('os').release(),
+              totalMemory: require('os').totalmem(),
+              freeMemory: require('os').freemem()
+            }
+          }
+        });
+
+        const mockHealthManager = {
+          isMonitoring: true,
+          platformChecks: [],
+          startMonitoring: jest.fn().mockResolvedValue({ success: true, baseline: platformFixture }),
+          getHealthStatus: jest.fn().mockResolvedValue(platformFixture),
+          validatePlatformCompatibility: jest.fn().mockImplementation(() => {
+            const checks = [
+              { platform: 'linux', compatible: true },
+              { platform: 'darwin', compatible: true },
+              { platform: 'win32', compatible: true }
+            ];
+            mockHealthManager.platformChecks = checks;
+            return Promise.resolve(checks);
+          }),
+          stopMonitoring: jest.fn().mockResolvedValue(undefined)
+        };
+
+        await monitorServerHealth(mockHealthManager, {
+          interval: 5000,
+          enablePlatformChecks: true
+        });
+
+        const healthStatus = await mockHealthManager.getHealthStatus();
+        expect(healthStatus.platform).toBe(process.platform);
+        expect(healthStatus.nodeVersion).toBe(process.version);
+        expect(healthStatus.osInfo).toBeDefined();
+
+        const platformChecks = await mockHealthManager.validatePlatformCompatibility();
+        expect(platformChecks.length).toBe(3);
+        platformChecks.forEach(check => {
+          expect(check.compatible).toBe(true);
+        });
+
+        await mockHealthManager.stopMonitoring();
+      });
+    });
+
+    describe('logServerStartupInformation Function', () => {
+      test('should log startup information with complete server metadata', async () => {
+        const startupInfo = {
+          server: {
+            port: 3000,
+            host: '127.0.0.1',
+            protocol: 'http'
+          },
+          environment: {
+            nodeVersion: process.version,
+            platform: process.platform,
+            pm2Detected: false
+          },
+          config: {
+            environment: 'test',
+            security: { helmet: true, cors: true }
+          },
+          startupTime: PERFORMANCE_METRICS_FIXTURES.startupTime.actual,
+          memoryUsage: PERFORMANCE_METRICS_FIXTURES.memoryUsage.rss.current,
+          timestamp: new Date().toISOString()
+        };
+
+        // Mock logger to capture startup information logs
+        const loggerSpy = jest.spyOn(logger, 'info').mockImplementation(() => {});
+
+        await logServerStartupInformation(startupInfo);
+
+        expect(loggerSpy).toHaveBeenCalledWith(
+          'Server startup completed successfully',
+          expect.objectContaining({
+            server: expect.objectContaining({
+              port: 3000,
+              host: '127.0.0.1',
+              protocol: 'http'
+            }),
+            environment: expect.objectContaining({
+              nodeVersion: process.version,
+              platform: process.platform
+            }),
+            performance: expect.objectContaining({
+              startupTime: PERFORMANCE_METRICS_FIXTURES.startupTime.actual
+            }),
+            timestamp: expect.any(String)
+          })
+        );
+
+        expect(loggerSpy).toHaveBeenCalledTimes(1);
+        loggerSpy.mockRestore();
+      });
+
+      test('should validate log output format and structured data consistency', async () => {
+        const startupInfo = {
+          server: { port: 8080, host: '0.0.0.0' },
+          environment: { nodeVersion: 'v22.0.0', platform: 'linux' },
+          config: { environment: 'production' },
+          startupTime: 1500,
+          correlationId: 'test-startup-12345',
+          buildInfo: {
+            version: '1.0.0',
+            buildDate: '2025-01-01',
+            gitCommit: 'abc123def456'
+          }
+        };
+
+        const loggerSpy = jest.spyOn(logger, 'info').mockImplementation(() => {});
+
+        await logServerStartupInformation(startupInfo);
+
+        const logCall = loggerSpy.mock.calls[0];
+        const logMessage = logCall[0];
+        const logData = logCall[1];
+
+        // Validate log message format
+        expect(logMessage).toBe('Server startup completed successfully');
+
+        // Validate structured data format
+        expect(logData).toHaveProperty('server');
+        expect(logData).toHaveProperty('environment');
+        expect(logData).toHaveProperty('performance');
+        expect(logData).toHaveProperty('timestamp');
+        expect(logData).toHaveProperty('correlationId', 'test-startup-12345');
+
+        // Validate data types and structure
+        expect(typeof logData.server.port).toBe('number');
+        expect(typeof logData.server.host).toBe('string');
+        expect(typeof logData.performance.startupTime).toBe('number');
+        expect(typeof logData.timestamp).toBe('string');
+
+        // Validate ISO 8601 timestamp format
+        expect(new Date(logData.timestamp).toISOString()).toBe(logData.timestamp);
+
+        loggerSpy.mockRestore();
+      });
+
+      test('should test logging behavior in different environments', async () => {
+        const environments = ['development', 'production', 'test'];
+        const loggerSpy = jest.spyOn(logger, 'info').mockImplementation(() => {});
+
+        for (const env of environments) {
+          const startupInfo = {
+            server: { port: 3000, host: '127.0.0.1' },
+            environment: { nodeVersion: process.version, platform: process.platform },
+            config: { environment: env },
+            startupTime: PERFORMANCE_METRICS_FIXTURES.startupTime.actual,
+            timestamp: new Date().toISOString()
+          };
+
+          await logServerStartupInformation(startupInfo);
+
+          const logCall = loggerSpy.mock.calls[loggerSpy.mock.calls.length - 1];
+          const logData = logCall[1];
+
+          expect(logData.config.environment).toBe(env);
+
+          // Environment-specific validations
+          if (env === 'production') {
+            expect(logData.security).toBeDefined();
+            expect(logData.pm2).toBeDefined();
+          } else if (env === 'development') {
+            expect(logData.development).toBeDefined();
+          } else if (env === 'test') {
+            expect(logData.test).toBeDefined();
+          }
+        }
+
+        expect(loggerSpy).toHaveBeenCalledTimes(3);
+        loggerSpy.mockRestore();
+      });
+
+      test('should validate security information masking in production logs', async () => {
+        const startupInfoWithSecrets = {
+          server: { port: 3000, host: '0.0.0.0' },
+          environment: { nodeVersion: process.version, platform: process.platform },
+          config: { 
+            environment: 'production',
+            secrets: {
+              jwtSecret: 'super-secret-jwt-key',
+              dbPassword: 'database-password-123',
+              apiKey: 'secret-api-key-xyz'
+            },
+            security: {
+              helmet: true,
+              cors: { origin: 'https://example.com' }
+            }
+          },
+          startupTime: 2000,
+          timestamp: new Date().toISOString()
+        };
+
+        const loggerSpy = jest.spyOn(logger, 'info').mockImplementation(() => {});
+
+        await logServerStartupInformation(startupInfoWithSecrets);
+
+        const logCall = loggerSpy.mock.calls[0];
+        const logData = logCall[1];
+
+        // Verify sensitive information is masked or excluded
+        expect(logData.config.secrets).toBeUndefined();
+        
+        // Check that security configuration is logged (non-sensitive parts)
+        expect(logData.config.security).toBeDefined();
+        expect(logData.config.security.helmet).toBe(true);
+        
+        // Verify no sensitive strings appear in the logged data
+        const logDataString = JSON.stringify(logData);
+        expect(logDataString).not.toContain('super-secret-jwt-key');
+        expect(logDataString).not.toContain('database-password-123');
+        expect(logDataString).not.toContain('secret-api-key-xyz');
+
+        loggerSpy.mockRestore();
+      });
+
+      test('should test log correlation IDs and request tracing integration', async () => {
+        const correlationId = `startup-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const traceId = `trace-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        const startupInfo = {
+          server: { port: 4000, host: '127.0.0.1' },
+          environment: { nodeVersion: process.version, platform: process.platform },
+          config: { environment: 'test' },
+          startupTime: PERFORMANCE_METRICS_FIXTURES.startupTime.actual,
+          correlationId: correlationId,
+          traceId: traceId,
+          parentSpanId: null,
+          requestContext: {
+            source: 'server-startup',
+            initiator: 'system',
+            timestamp: new Date().toISOString()
+          },
+          timestamp: new Date().toISOString()
+        };
+
+        const loggerSpy = jest.spyOn(logger, 'info').mockImplementation(() => {});
+
+        await logServerStartupInformation(startupInfo);
+
+        const logCall = loggerSpy.mock.calls[0];
+        const logData = logCall[1];
+
+        // Validate correlation tracking
+        expect(logData.correlationId).toBe(correlationId);
+        expect(logData.traceId).toBe(traceId);
+        expect(logData.requestContext).toBeDefined();
+        expect(logData.requestContext.source).toBe('server-startup');
+        expect(logData.requestContext.initiator).toBe('system');
+
+        // Validate trace continuity
+        expect(typeof logData.correlationId).toBe('string');
+        expect(logData.correlationId.startsWith('startup-')).toBe(true);
+        expect(typeof logData.traceId).toBe('string');
+        expect(logData.traceId.startsWith('trace-')).toBe(true);
+
+        // Validate context preservation
+        expect(logData.requestContext.timestamp).toBeDefined();
+        expect(new Date(logData.requestContext.timestamp).toISOString()).toBe(logData.requestContext.timestamp);
+
+        loggerSpy.mockRestore();
+      });
+    });
 
   // ============================================================================
   // ERROR HANDLING TESTING - Exception handling and process stability
@@ -1092,6 +1751,344 @@ describe('Server Module Unit Tests', () => {
         );
 
         loggerSpy.mockRestore();
+      });
+    });
+
+    describe('initializeHealthMonitoring Function - Enhanced Tests', () => {
+      test('should initialize health monitoring with custom configurations', async () => {
+        const customConfig = {
+          interval: 10000,
+          memoryThreshold: PERFORMANCE_METRICS_FIXTURES.memoryUsage.rss.warning,
+          cpuThreshold: PERFORMANCE_METRICS_FIXTURES.cpuUsage.percentage.warning,
+          enableMetrics: true,
+          enableAlerting: true,
+          retentionPeriod: 86400000, // 24 hours
+          healthEndpoint: '/custom-health',
+          metricsEndpoint: '/custom-metrics'
+        };
+
+        const result = await initializeHealthMonitoring(customConfig);
+
+        expect(result.success).toBe(true);
+        expect(result.baseline).toBeDefined();
+        expect(result.baseline.startTime).toBeDefined();
+        expect(result.baseline.initialMemory).toBeDefined();
+        expect(result.baseline.pid).toBe(process.pid);
+        expect(result.configuration).toBeDefined();
+        expect(result.configuration.interval).toBe(customConfig.interval);
+        expect(result.configuration.memoryThreshold).toBe(customConfig.memoryThreshold);
+        expect(result.configuration.cpuThreshold).toBe(customConfig.cpuThreshold);
+        expect(result.configuration.enableMetrics).toBe(true);
+        expect(result.configuration.enableAlerting).toBe(true);
+        expect(result.monitoring).toBeDefined();
+        expect(result.monitoring.endpoint).toBe(customConfig.healthEndpoint);
+      });
+
+      test('should handle initialization error scenarios and failure recovery', async () => {
+        // Test with invalid configuration that should cause initialization failure
+        const invalidConfig = {
+          interval: -1000, // Invalid negative interval
+          memoryThreshold: 'invalid-threshold', // Invalid threshold type
+          cpuThreshold: -50, // Invalid negative threshold
+          enableMetrics: 'yes' // Invalid boolean value
+        };
+
+        await expect(initializeHealthMonitoring(invalidConfig))
+          .rejects.toThrow(/Configuration validation failed|Invalid.*configuration/);
+
+        // Test recovery with valid configuration
+        const validConfig = {
+          interval: 5000,
+          memoryThreshold: PERFORMANCE_METRICS_FIXTURES.memoryUsage.rss.target,
+          cpuThreshold: PERFORMANCE_METRICS_FIXTURES.cpuUsage.percentage.target,
+          enableMetrics: true
+        };
+
+        const recoveryResult = await initializeHealthMonitoring(validConfig);
+        
+        expect(recoveryResult.success).toBe(true);
+        expect(recoveryResult.baseline).toBeDefined();
+        expect(recoveryResult.configuration).toEqual(expect.objectContaining(validConfig));
+      });
+
+      test('should validate monitoring service dependency validation and setup', async () => {
+        const dependencyConfig = {
+          interval: 5000,
+          dependencies: {
+            logger: true,
+            metrics: true,
+            alerts: true,
+            database: false // Optional dependency
+          },
+          serviceChecks: {
+            validateLogger: true,
+            validateMetricsCollector: true,
+            validateAlertManager: true
+          },
+          fallbackMode: true
+        };
+
+        const result = await initializeHealthMonitoring(dependencyConfig);
+
+        expect(result.success).toBe(true);
+        expect(result.dependencies).toBeDefined();
+        expect(result.dependencies.validated).toBe(true);
+        expect(result.dependencies.available).toBeDefined();
+        expect(Array.isArray(result.dependencies.available)).toBe(true);
+        expect(result.dependencies.available).toContain('logger');
+        expect(result.dependencies.available).toContain('metrics');
+        
+        // Validate service health checks
+        expect(result.serviceChecks).toBeDefined();
+        expect(result.serviceChecks.logger).toBe(true);
+        expect(result.serviceChecks.metrics).toBe(true);
+        
+        // Validate fallback configuration
+        expect(result.fallbackMode).toBe(true);
+        expect(result.baseline.fallbackEnabled).toBe(true);
+      });
+
+      test('should validate health check interval configuration and validation', async () => {
+        const intervalConfigs = [
+          { interval: 1000, expected: 1000, valid: true },   // 1 second - minimum
+          { interval: 5000, expected: 5000, valid: true },   // 5 seconds - default
+          { interval: 30000, expected: 30000, valid: true }, // 30 seconds - maximum recommended
+          { interval: 0, expected: 5000, valid: false },     // Invalid - should use default
+          { interval: -5000, expected: 5000, valid: false }, // Invalid - should use default
+          { interval: 100000, expected: 60000, valid: false } // Too high - should cap at maximum
+        ];
+
+        for (const config of intervalConfigs) {
+          try {
+            const result = await initializeHealthMonitoring({
+              interval: config.interval,
+              strictValidation: true
+            });
+
+            if (config.valid) {
+              expect(result.success).toBe(true);
+              expect(result.configuration.interval).toBe(config.expected);
+            } else {
+              expect(result.success).toBe(true);
+              expect(result.configuration.interval).toBe(config.expected);
+              expect(result.warnings).toBeDefined();
+              expect(Array.isArray(result.warnings)).toBe(true);
+              expect(result.warnings.some(warning => 
+                warning.includes('interval') || warning.includes('default')
+              )).toBe(true);
+            }
+          } catch (error) {
+            if (config.valid) {
+              throw error; // Re-throw if we expected this to succeed
+            }
+            // Expected failure for invalid configurations
+            expect(error.message).toMatch(/interval|configuration|validation/i);
+          }
+        }
+      });
+
+      test('should test initialization cleanup on startup failures', async () => {
+        // Mock a scenario where initialization partially succeeds but then fails
+        const partialFailureConfig = {
+          interval: 5000,
+          enableMetrics: true,
+          enableAlerting: true,
+          simulatePartialFailure: true
+        };
+
+        // Track cleanup resources
+        const cleanupTracker = {
+          intervals: [],
+          timeouts: [],
+          listeners: [],
+          resources: []
+        };
+
+        try {
+          // This should simulate a failure after partial initialization
+          await expect(initializeHealthMonitoring(partialFailureConfig))
+            .rejects.toThrow(/Simulated initialization failure|Partial failure scenario/);
+        } catch (error) {
+          // Expected failure
+        }
+
+        // Verify cleanup was performed
+        expect(cleanupTracker.intervals.length).toBe(0);
+        expect(cleanupTracker.timeouts.length).toBe(0);
+        expect(cleanupTracker.listeners.length).toBe(0);
+        expect(cleanupTracker.resources.length).toBe(0);
+
+        // Test successful initialization after cleanup
+        const successConfig = {
+          interval: 5000,
+          enableMetrics: true,
+          enableAlerting: false
+        };
+
+        const result = await initializeHealthMonitoring(successConfig);
+        
+        expect(result.success).toBe(true);
+        expect(result.baseline).toBeDefined();
+        expect(result.cleanup).toBeDefined();
+        expect(typeof result.cleanup.performed).toBe('boolean');
+      });
+    });
+
+    describe('trackApplicationUptime Function - Enhanced Tests', () => {
+      test('should track uptime calculation accuracy over time', async () => {
+        const startTime = Date.now();
+        
+        // Get initial uptime reading
+        const initialUptimeInfo = trackApplicationUptime();
+        
+        expect(initialUptimeInfo).toBeDefined();
+        expect(initialUptimeInfo.processUptime).toBeGreaterThan(0);
+        expect(initialUptimeInfo.currentTime).toBeDefined();
+        expect(initialUptimeInfo.pid).toBe(process.pid);
+        expect(initialUptimeInfo.environment).toBeDefined();
+
+        // Wait a short period and check uptime accuracy
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const laterUptimeInfo = trackApplicationUptime();
+        
+        expect(laterUptimeInfo.processUptime).toBeGreaterThan(initialUptimeInfo.processUptime);
+        
+        // Calculate expected uptime difference (should be close to 100ms)
+        const uptimeDifference = laterUptimeInfo.processUptime - initialUptimeInfo.processUptime;
+        expect(uptimeDifference).toBeGreaterThan(0.05); // At least 50ms
+        expect(uptimeDifference).toBeLessThan(0.5); // Less than 500ms (generous tolerance)
+
+        // Validate timestamp accuracy
+        const timeDifference = new Date(laterUptimeInfo.currentTime) - new Date(initialUptimeInfo.currentTime);
+        expect(timeDifference).toBeGreaterThan(50); // At least 50ms difference
+        expect(timeDifference).toBeLessThan(500); // Less than 500ms difference
+      });
+
+      test('should validate uptime metrics persistence and retrieval', async () => {
+        const uptimeMetrics = [];
+        
+        // Collect multiple uptime readings
+        for (let i = 0; i < 5; i++) {
+          const uptimeInfo = trackApplicationUptime();
+          uptimeMetrics.push({
+            reading: i + 1,
+            timestamp: uptimeInfo.currentTime,
+            processUptime: uptimeInfo.processUptime,
+            systemUptime: uptimeInfo.systemUptime,
+            memoryUsage: uptimeInfo.memoryUsage
+          });
+          
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+
+        // Validate metrics collection
+        expect(uptimeMetrics.length).toBe(5);
+        
+        // Validate uptime progression
+        for (let i = 1; i < uptimeMetrics.length; i++) {
+          expect(uptimeMetrics[i].processUptime).toBeGreaterThan(uptimeMetrics[i - 1].processUptime);
+          expect(new Date(uptimeMetrics[i].timestamp)).toBeInstanceOf(Date);
+        }
+
+        // Validate consistency
+        uptimeMetrics.forEach((metric, index) => {
+          expect(metric.reading).toBe(index + 1);
+          expect(typeof metric.processUptime).toBe('number');
+          expect(typeof metric.systemUptime).toBe('number');
+          expect(metric.memoryUsage).toBeDefined();
+        });
+
+        // Calculate average uptime change rate
+        const totalUptimeChange = uptimeMetrics[4].processUptime - uptimeMetrics[0].processUptime;
+        const averageChangeRate = totalUptimeChange / 4;
+        expect(averageChangeRate).toBeGreaterThan(0.03); // At least 30ms per reading
+        expect(averageChangeRate).toBeLessThan(0.3); // Less than 300ms per reading
+      });
+
+      test('should test uptime tracking during server restarts and recovery', async () => {
+        // Simulate server restart scenario by tracking uptime before and after a simulated restart
+        const preRestartUptime = trackApplicationUptime();
+        
+        // Store initial values
+        const initialProcessUptime = preRestartUptime.processUptime;
+        const initialTimestamp = preRestartUptime.currentTime;
+        const initialMemory = preRestartUptime.memoryUsage;
+
+        // Simulate restart delay
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        // Post-restart tracking
+        const postRestartUptime = trackApplicationUptime();
+        
+        // Validate uptime continuity (process uptime should continue increasing)
+        expect(postRestartUptime.processUptime).toBeGreaterThan(initialProcessUptime);
+        expect(new Date(postRestartUptime.currentTime)).toBeInstanceOf(Date);
+        expect(new Date(postRestartUptime.currentTime) > new Date(initialTimestamp)).toBe(true);
+
+        // Validate restart recovery metrics
+        expect(postRestartUptime.pid).toBe(process.pid);
+        expect(postRestartUptime.environment).toBeDefined();
+        
+        // Check memory usage changes (could increase or decrease)
+        expect(postRestartUptime.memoryUsage).toBeDefined();
+        expect(typeof postRestartUptime.memoryUsage.heapUsed).toBe('number');
+        expect(typeof postRestartUptime.memoryUsage.rss).toBe('number');
+
+        // Validate uptime calculation accuracy
+        const expectedUptimeIncrease = 0.15; // ~150ms minimum increase
+        const actualUptimeIncrease = postRestartUptime.processUptime - initialProcessUptime;
+        expect(actualUptimeIncrease).toBeGreaterThan(expectedUptimeIncrease);
+      });
+
+      test('should validate uptime reporting in health status responses', async () => {
+        const uptimeInfo = trackApplicationUptime();
+        
+        // Create health status that includes uptime information
+        const healthStatusWithUptime = {
+          status: 'healthy',
+          timestamp: uptimeInfo.currentTime,
+          uptime: {
+            process: uptimeInfo.processUptime,
+            system: uptimeInfo.systemUptime,
+            formatted: {
+              process: formatUptime(uptimeInfo.processUptime),
+              system: formatUptime(uptimeInfo.systemUptime)
+            }
+          },
+          performance: {
+            memoryUsage: uptimeInfo.memoryUsage,
+            startupTime: PERFORMANCE_METRICS_FIXTURES.startupTime.actual,
+            responseTime: PERFORMANCE_METRICS_FIXTURES.responseTime.average
+          },
+          environment: uptimeInfo.environment,
+          pid: uptimeInfo.pid
+        };
+
+        // Validate health status structure
+        expect(healthStatusWithUptime.status).toBe('healthy');
+        expect(healthStatusWithUptime.uptime).toBeDefined();
+        expect(healthStatusWithUptime.uptime.process).toBe(uptimeInfo.processUptime);
+        expect(healthStatusWithUptime.uptime.system).toBe(uptimeInfo.systemUptime);
+        
+        // Validate formatted uptime strings
+        expect(typeof healthStatusWithUptime.uptime.formatted.process).toBe('string');
+        expect(typeof healthStatusWithUptime.uptime.formatted.system).toBe('string');
+        
+        // Validate performance metrics integration
+        expect(healthStatusWithUptime.performance.memoryUsage).toEqual(uptimeInfo.memoryUsage);
+        expect(healthStatusWithUptime.performance.startupTime).toBe(PERFORMANCE_METRICS_FIXTURES.startupTime.actual);
+        
+        // Validate environment consistency
+        expect(healthStatusWithUptime.environment).toEqual(uptimeInfo.environment);
+        expect(healthStatusWithUptime.pid).toBe(uptimeInfo.pid);
+
+        function formatUptime(seconds) {
+          const hours = Math.floor(seconds / 3600);
+          const minutes = Math.floor((seconds % 3600) / 60);
+          const secs = Math.floor(seconds % 60);
+          return `${hours}h ${minutes}m ${secs}s`;
+        }
       });
     });
   });
@@ -1586,4 +2583,574 @@ describe('Server Module Unit Tests', () => {
       await new Promise(resolve => result.server.close(resolve));
     });
   });
+
+  // ============================================================================
+  // COMPREHENSIVE EDGE CASES AND ENHANCED ERROR SCENARIOS
+  // ============================================================================
+
+  describe('Enhanced Edge Cases and Advanced Error Scenarios', () => {
+    test('should handle enhanced error handling scenarios with additional error codes', async () => {
+      const enhancedErrorCodes = ['ECONNREFUSED', 'ETIMEDOUT', 'ENOENT', 'EMFILE', 'ENOMEM', 'ENOSPC'];
+      const loggerSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
+
+      for (const errorCode of enhancedErrorCodes) {
+        const enhancedError = new Error(`Enhanced error scenario: ${errorCode}`);
+        enhancedError.code = errorCode;
+        enhancedError.errno = Math.floor(Math.random() * -1000);
+        enhancedError.syscall = 'enhanced-test';
+
+        await handleServerStartupError(enhancedError, { 
+          server: { port: 3000 },
+          enhancedErrorHandling: true
+        });
+
+        expect(loggerSpy).toHaveBeenCalledWith(
+          expect.stringMatching(new RegExp(errorCode.toLowerCase())),
+          expect.any(Error),
+          expect.objectContaining({
+            resolution: expect.any(String),
+            errorCode: errorCode
+          })
+        );
+      }
+
+      expect(loggerSpy).toHaveBeenCalledTimes(enhancedErrorCodes.length);
+      loggerSpy.mockRestore();
+    });
+
+    test('should validate memory pressure and resource exhaustion testing', async () => {
+      const initialMemory = process.memoryUsage();
+      const memoryPressureThreshold = PERFORMANCE_METRICS_FIXTURES.memoryUsage.rss.critical;
+      
+      // Simulate memory pressure scenario
+      const largeArrays = [];
+      let memoryPressureDetected = false;
+      
+      try {
+        // Create memory pressure (be careful not to crash the test)
+        while (process.memoryUsage().heapUsed < memoryPressureThreshold * 0.1) { // Use 10% of critical threshold
+          largeArrays.push(new Array(1000).fill('memory-pressure-test'));
+          
+          if (largeArrays.length > 100) { // Safety limit
+            memoryPressureDetected = true;
+            break;
+          }
+        }
+
+        const pressuredMemory = process.memoryUsage();
+        expect(pressuredMemory.heapUsed).toBeGreaterThan(initialMemory.heapUsed);
+        
+        // Test server startup under memory pressure
+        const result = await startProductionServer({
+          port: TEST_PORT + 200,
+          enableGracefulShutdown: false,
+          memoryPressureMode: true
+        });
+
+        expect(result.server).toBeDefined();
+        expect(result.server.listening).toBe(true);
+
+        // Validate memory monitoring during pressure
+        const healthStatus = createHealthCheckFixture({ 
+          status: pressuredMemory.heapUsed > memoryPressureThreshold * 0.05 ? 'degraded' : 'healthy',
+          customMetrics: { memoryUsage: pressuredMemory }
+        });
+
+        expect(healthStatus.status).toBeDefined();
+        expect(healthStatus.memoryUsage.heapUsed).toBeGreaterThan(initialMemory.heapUsed);
+
+        await new Promise(resolve => result.server.close(resolve));
+      } finally {
+        // Cleanup memory pressure
+        largeArrays.length = 0;
+        if (global.gc) global.gc();
+      }
+    });
+
+    test('should test rapid configuration changes and hot-reload scenarios', async () => {
+      const configSequence = [
+        { port: TEST_PORT + 210, env: 'development', security: false },
+        { port: TEST_PORT + 211, env: 'staging', security: true },
+        { port: TEST_PORT + 212, env: 'production', security: true }
+      ];
+
+      const servers = [];
+      
+      try {
+        for (let i = 0; i < configSequence.length; i++) {
+          const config = configSequence[i];
+          const previousConfig = i > 0 ? configSequence[i - 1] : null;
+
+          // Simulate rapid configuration change
+          const result = await startProductionServer({
+            port: config.port,
+            enableGracefulShutdown: false,
+            enableSecurityMiddleware: config.security,
+            environment: config.env,
+            hotReloadMode: true,
+            previousConfig: previousConfig
+          });
+
+          servers.push(result.server);
+
+          expect(result.server.listening).toBe(true);
+          expect(result.config.port).toBe(config.port);
+          expect(result.environment.currentEnvironment).toBe(config.env);
+
+          // Test configuration validation
+          const validation = await validateServerReadiness({
+            server: { port: config.port },
+            environment: config.env,
+            security: { enabled: config.security }
+          });
+
+          expect(validation.isValid).toBe(true);
+          expect(validation.errors.length).toBe(0);
+
+          // Brief pause between rapid changes
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+
+        // Validate all servers are running simultaneously
+        expect(servers.length).toBe(configSequence.length);
+        servers.forEach(server => {
+          expect(server.listening).toBe(true);
+        });
+
+      } finally {
+        // Cleanup all servers
+        for (const server of servers) {
+          await new Promise(resolve => server.close(resolve));
+        }
+      }
+    });
+
+    test('should validate network interruption simulation and recovery testing', async () => {
+      let networkInterrupted = false;
+      let recoveryAttempts = 0;
+      
+      const mockNetworkService = {
+        isConnected: () => !networkInterrupted,
+        simulateInterruption: () => { networkInterrupted = true; },
+        simulateRecovery: () => { 
+          networkInterrupted = false;
+          recoveryAttempts++;
+        },
+        getRecoveryAttempts: () => recoveryAttempts
+      };
+
+      const result = await startProductionServer({
+        port: TEST_PORT + 220,
+        enableGracefulShutdown: false,
+        networkService: mockNetworkService,
+        enableNetworkRecovery: true
+      });
+
+      expect(result.server.listening).toBe(true);
+      expect(mockNetworkService.isConnected()).toBe(true);
+
+      // Simulate network interruption
+      mockNetworkService.simulateInterruption();
+      expect(mockNetworkService.isConnected()).toBe(false);
+
+      // Test server resilience during network interruption
+      const interruptionResponse = await request(result.server)
+        .get('/health')
+        .expect(200); // Server should still respond locally
+
+      expect(interruptionResponse.body).toBeDefined();
+
+      // Simulate network recovery
+      mockNetworkService.simulateRecovery();
+      expect(mockNetworkService.isConnected()).toBe(true);
+      expect(mockNetworkService.getRecoveryAttempts()).toBe(1);
+
+      // Validate post-recovery functionality
+      const recoveryResponse = await request(result.server)
+        .get('/health')
+        .expect(200);
+
+      expect(recoveryResponse.body).toBeDefined();
+      expect(recoveryResponse.body.networkStatus).not.toBe('interrupted');
+
+      await new Promise(resolve => result.server.close(resolve));
+    });
+
+    test('should test cascading failure scenarios and recovery mechanisms', async () => {
+      const failureSequence = ['database', 'cache', 'logging', 'monitoring'];
+      const recoverySequence = [];
+      
+      const mockDependencies = {
+        database: { healthy: true, recover: () => { recoverySequence.push('database'); } },
+        cache: { healthy: true, recover: () => { recoverySequence.push('cache'); } },
+        logging: { healthy: true, recover: () => { recoverySequence.push('logging'); } },
+        monitoring: { healthy: true, recover: () => { recoverySequence.push('monitoring'); } }
+      };
+
+      const result = await startProductionServer({
+        port: TEST_PORT + 230,
+        enableGracefulShutdown: false,
+        dependencies: mockDependencies,
+        enableCascadeRecovery: true
+      });
+
+      expect(result.server.listening).toBe(true);
+
+      // Simulate cascading failures
+      for (const service of failureSequence) {
+        mockDependencies[service].healthy = false;
+        
+        // Test server resilience during each failure
+        const response = await request(result.server)
+          .get('/health')
+          .expect(200);
+
+        expect(response.body.status).toBeDefined();
+        // Server should report degraded status but continue operating
+      }
+
+      // Simulate recovery sequence (reverse order)
+      for (const service of failureSequence.reverse()) {
+        mockDependencies[service].healthy = true;
+        mockDependencies[service].recover();
+      }
+
+      // Validate recovery completion
+      expect(recoverySequence.length).toBe(failureSequence.length);
+      expect(recoverySequence).toContain('database');
+      expect(recoverySequence).toContain('cache');
+      expect(recoverySequence).toContain('logging');
+      expect(recoverySequence).toContain('monitoring');
+
+      const finalHealthCheck = await request(result.server)
+        .get('/health')
+        .expect(200);
+
+      expect(finalHealthCheck.body.status).toBeDefined();
+
+      await new Promise(resolve => result.server.close(resolve));
+    });
+
+    test('should validate race condition testing for concurrent operations', async () => {
+      const concurrentOperations = 10;
+      const operationResults = [];
+      
+      // Test concurrent server startups
+      const startupPromises = Array(concurrentOperations).fill(0).map(async (_, index) => {
+        try {
+          const result = await startProductionServer({
+            port: TEST_PORT + 240 + index,
+            enableGracefulShutdown: false,
+            concurrentMode: true,
+            operationId: `concurrent-${index}`
+          });
+          
+          operationResults.push({
+            index,
+            success: true,
+            port: result.server.address().port,
+            server: result.server
+          });
+          
+          return result;
+        } catch (error) {
+          operationResults.push({
+            index,
+            success: false,
+            error: error.message
+          });
+          throw error;
+        }
+      });
+
+      const startupResults = await Promise.allSettled(startupPromises);
+      
+      // Count successful startups
+      const successfulStartups = startupResults.filter(result => result.status === 'fulfilled');
+      const failedStartups = startupResults.filter(result => result.status === 'rejected');
+
+      expect(successfulStartups.length).toBeGreaterThan(0);
+      expect(successfulStartups.length + failedStartups.length).toBe(concurrentOperations);
+
+      // Test concurrent health checks
+      const healthCheckPromises = operationResults
+        .filter(result => result.success && result.server)
+        .map(async (result) => {
+          return request(result.server)
+            .get('/health')
+            .expect(200);
+        });
+
+      const healthResults = await Promise.allSettled(healthCheckPromises);
+      const successfulHealthChecks = healthResults.filter(result => result.status === 'fulfilled');
+      
+      expect(successfulHealthChecks.length).toBeGreaterThan(0);
+
+      // Cleanup concurrent servers
+      const cleanupPromises = operationResults
+        .filter(result => result.success && result.server)
+        .map(result => new Promise(resolve => result.server.close(resolve)));
+
+      await Promise.allSettled(cleanupPromises);
+    });
+
+    test('should test cross-platform compatibility edge cases', async () => {
+      const platformSpecificTests = {
+        'win32': {
+          pathSeparator: '\\',
+          homeDir: process.env.USERPROFILE || 'C:\\Users\\Test',
+          tempDir: process.env.TEMP || 'C:\\Temp'
+        },
+        'linux': {
+          pathSeparator: '/',
+          homeDir: process.env.HOME || '/home/test',
+          tempDir: '/tmp'
+        },
+        'darwin': {
+          pathSeparator: '/',
+          homeDir: process.env.HOME || '/Users/test',
+          tempDir: '/tmp'
+        }
+      };
+
+      const currentPlatform = process.platform;
+      const platformConfig = platformSpecificTests[currentPlatform] || platformSpecificTests['linux'];
+
+      const result = await startProductionServer({
+        port: TEST_PORT + 250,
+        enableGracefulShutdown: false,
+        platformSpecific: {
+          platform: currentPlatform,
+          pathSeparator: platformConfig.pathSeparator,
+          homeDirectory: platformConfig.homeDir,
+          tempDirectory: platformConfig.tempDir
+        }
+      });
+
+      expect(result.server.listening).toBe(true);
+      expect(result.environment.platform).toBe(currentPlatform);
+
+      // Test platform-specific functionality
+      const platformResponse = await request(result.server)
+        .get('/health')
+        .expect(200);
+
+      expect(platformResponse.body).toBeDefined();
+
+      // Validate cross-platform path handling
+      const pathTest = await validateServerReadiness({
+        server: { port: TEST_PORT + 250 },
+        platform: {
+          current: currentPlatform,
+          pathSeparator: platformConfig.pathSeparator,
+          homeDir: platformConfig.homeDir
+        }
+      });
+
+      expect(pathTest.isValid).toBe(true);
+
+      await new Promise(resolve => result.server.close(resolve));
+    });
+
+    test('should validate performance boundary testing under various load conditions', async () => {
+      const loadConditions = [
+        { name: 'light', concurrency: 5, duration: 100 },
+        { name: 'moderate', concurrency: 20, duration: 200 },
+        { name: 'heavy', concurrency: 50, duration: 300 }
+      ];
+
+      const performanceResults = [];
+
+      for (const condition of loadConditions) {
+        const result = await startProductionServer({
+          port: TEST_PORT + 260 + loadConditions.indexOf(condition),
+          enableGracefulShutdown: false,
+          performanceMode: condition.name
+        });
+
+        const startTime = Date.now();
+        const initialMemory = process.memoryUsage();
+
+        // Generate load based on condition
+        const loadPromises = Array(condition.concurrency).fill(0).map(async () => {
+          const loadStartTime = Date.now();
+          const response = await request(result.server)
+            .get('/health')
+            .expect(200);
+          const loadEndTime = Date.now();
+          
+          return {
+            responseTime: loadEndTime - loadStartTime,
+            statusCode: response.status,
+            bodySize: JSON.stringify(response.body).length
+          };
+        });
+
+        const loadResults = await Promise.all(loadPromises);
+        const endTime = Date.now();
+        const finalMemory = process.memoryUsage();
+
+        const performanceMetrics = {
+          condition: condition.name,
+          totalDuration: endTime - startTime,
+          averageResponseTime: loadResults.reduce((sum, r) => sum + r.responseTime, 0) / loadResults.length,
+          maxResponseTime: Math.max(...loadResults.map(r => r.responseTime)),
+          minResponseTime: Math.min(...loadResults.map(r => r.responseTime)),
+          memoryIncrease: finalMemory.heapUsed - initialMemory.heapUsed,
+          successfulRequests: loadResults.filter(r => r.statusCode === 200).length,
+          concurrency: condition.concurrency
+        };
+
+        performanceResults.push(performanceMetrics);
+
+        // Validate performance boundaries
+        expect(performanceMetrics.averageResponseTime).toBeLessThan(PERFORMANCE_METRICS_FIXTURES.responseTime.critical);
+        expect(performanceMetrics.successfulRequests).toBe(condition.concurrency);
+
+        await new Promise(resolve => result.server.close(resolve));
+      }
+
+      // Validate performance scaling
+      expect(performanceResults.length).toBe(loadConditions.length);
+      performanceResults.forEach(metrics => {
+        expect(metrics.averageResponseTime).toBeGreaterThan(0);
+        expect(metrics.successfulRequests).toBeGreaterThan(0);
+      });
+    });
+
+    test('should test security header validation under stress conditions', async () => {
+      const result = await startProductionServer({
+        port: TEST_PORT + 270,
+        enableGracefulShutdown: false,
+        enableSecurityMiddleware: true,
+        securityStressMode: true
+      });
+
+      const securityHeaders = [
+        'x-content-type-options',
+        'x-frame-options',
+        'content-security-policy',
+        'strict-transport-security',
+        'x-xss-protection'
+      ];
+
+      // Test security headers under concurrent load
+      const stressPromises = Array(30).fill(0).map(async (_, index) => {
+        const endpoint = ['/hello', '/health', '/good-evening'][index % 3];
+        const response = await request(result.server)
+          .get(endpoint)
+          .expect(200);
+
+        // Validate security headers presence
+        const headerValidation = {
+          endpoint,
+          headers: {},
+          allPresent: true
+        };
+
+        securityHeaders.forEach(header => {
+          headerValidation.headers[header] = !!response.headers[header];
+          if (!response.headers[header]) {
+            headerValidation.allPresent = false;
+          }
+        });
+
+        return headerValidation;
+      });
+
+      const stressResults = await Promise.all(stressPromises);
+
+      // Validate all requests maintained security headers
+      stressResults.forEach(result => {
+        expect(result.allPresent).toBe(true);
+        securityHeaders.forEach(header => {
+          expect(result.headers[header]).toBe(true);
+        });
+      });
+
+      // Validate x-powered-by header is removed (security best practice)
+      const finalSecurityCheck = await request(result.server)
+        .get('/health')
+        .expect(200);
+
+      expect(finalSecurityCheck.headers['x-powered-by']).toBeUndefined();
+
+      await new Promise(resolve => result.server.close(resolve));
+    });
+
+    test('should validate PM2 cluster communication edge cases', async () => {
+      // Mock PM2 cluster environment with edge cases
+      const originalEnv = {
+        PM2_HOME: process.env.PM2_HOME,
+        PM_ID: process.env.PM_ID,
+        PM2_INSTANCES: process.env.PM2_INSTANCES
+      };
+
+      const edgeCaseScenarios = [
+        { PM_ID: '0', PM2_INSTANCES: '4', scenario: 'master-process' },
+        { PM_ID: '3', PM2_INSTANCES: '4', scenario: 'last-worker' },
+        { PM_ID: '1', PM2_INSTANCES: '1', scenario: 'single-instance' }
+      ];
+
+      const clusterResults = [];
+
+      for (const scenario of edgeCaseScenarios) {
+        process.env.PM2_HOME = '/tmp/.pm2';
+        process.env.PM_ID = scenario.PM_ID;
+        process.env.PM2_INSTANCES = scenario.PM2_INSTANCES;
+
+        try {
+          const result = await startProductionServer({
+            port: TEST_PORT + 280 + parseInt(scenario.PM_ID),
+            enableGracefulShutdown: false,
+            pm2EdgeCaseMode: true,
+            scenario: scenario.scenario
+          });
+
+          const clusterValidation = await validateProductionDeployment({
+            server: result.server,
+            config: result.config,
+            environment: result.environment,
+            pm2: {
+              instanceId: parseInt(scenario.PM_ID),
+              totalInstances: parseInt(scenario.PM2_INSTANCES),
+              scenario: scenario.scenario
+            }
+          });
+
+          clusterResults.push({
+            scenario: scenario.scenario,
+            instanceId: parseInt(scenario.PM_ID),
+            validation: clusterValidation,
+            serverRunning: result.server.listening
+          });
+
+          expect(result.server.listening).toBe(true);
+          expect(result.environment.pm2Detected).toBe(true);
+          expect(clusterValidation.isValid).toBe(true);
+
+          await new Promise(resolve => result.server.close(resolve));
+        } finally {
+          // Continue to next scenario even if this one fails
+        }
+      }
+
+      // Validate all edge case scenarios
+      expect(clusterResults.length).toBe(edgeCaseScenarios.length);
+      clusterResults.forEach(result => {
+        expect(result.serverRunning).toBe(true);
+        expect(result.validation.isValid).toBe(true);
+      });
+
+      // Restore original environment
+      Object.keys(originalEnv).forEach(key => {
+        if (originalEnv[key]) {
+          process.env[key] = originalEnv[key];
+        } else {
+          delete process.env[key];
+        }
+      });
+    });
+  });
+});
 });

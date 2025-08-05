@@ -2189,20 +2189,4 @@ export const middlewareStack = await createMiddlewareStack(
     config.environment.NODE_ENV || 'development'
 );
 
-// Export all factory functions and utilities for external use
-export {
-    // Factory functions for creating middleware stacks
-    createMiddlewareStack,
-    createDevelopmentMiddleware,
-    createProductionMiddleware,
-    
-    // System management functions
-    initializeMiddleware,
-    validateMiddlewareStack,
-    applyMiddlewareToApp,
-    refreshMiddleware,
-    createCustomMiddleware,
-    
-    // Information and monitoring functions
-    getMiddlewareInfo
-};
+// All middleware functions are individually exported above

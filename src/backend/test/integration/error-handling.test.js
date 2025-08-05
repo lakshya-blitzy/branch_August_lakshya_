@@ -2900,22 +2900,3 @@ function generateMonitoringRecommendations(report) {
 }
 
 // Export all test functions and utilities for comprehensive error handling testing
-export {
-    // Main test functions
-    testHTTPErrorHandling,
-    testValidationErrorHandling,
-    testSecurityErrorHandling,
-    testAsyncErrorHandling,
-    testPM2ErrorHandling,
-    testErrorHandlingEnvironments,
-    testCrossPlatformErrorCompatibility,
-    
-    // Utility functions
-    createTestErrorRoute,
-    validateErrorResponse,
-    generateErrorHandlingReport,
-    
-    // Setup and teardown
-    setupErrorHandlingTests,
-    teardownErrorHandlingTests
-};

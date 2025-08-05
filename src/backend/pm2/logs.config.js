@@ -2167,24 +2167,20 @@ export function createFlaskCompatibleLogConfig(pm2LogConfig, flaskOptions = {}) 
       LOGGING_CONFIG: flaskLoggingConfig,
       LOG_LEVEL: flaskLogLevel,
       LOG_FORMAT: selectedFormatter.format,
-      
-      # Flask-specific settings
+// Flask-specific settings
       SECRET_KEY: flaskOptions.secretKey || 'dev-secret-key',
       DEBUG: pm2LogConfig.environment?.type === ENV_CONSTANTS.ENVIRONMENT_TYPES.DEVELOPMENT,
       TESTING: false,
-      
-      # Logging paths
+// Logging paths
       LOG_DIR: pythonLogPaths.logDirectory,
       APP_LOG: pythonLogPaths.appLog,
       ERROR_LOG: pythonLogPaths.errorLog,
       ACCESS_LOG: pythonLogPaths.accessLog,
       SECURITY_LOG: pythonLogPaths.securityLog,
-      
-      # Performance monitoring
+// Performance monitoring
       PERFORMANCE_MONITORING: flaskPerformanceConfig.enabled,
       RESPONSE_TIME_THRESHOLD: pythonMonitoringConfig.alerting.thresholds.responseTime,
-      
-      # Security settings
+// Security settings
       SECURITY_LOGGING: flaskSecurityConfig.enabled,
       SANITIZE_LOGS: flaskSecurityConfig.sanitizeData
     };
@@ -2217,14 +2213,12 @@ export function createFlaskCompatibleLogConfig(pm2LogConfig, flaskOptions = {}) 
       // Paths and structure
       paths: pythonLogPaths,
       multiProcess: multiProcessConfig,
-      
-      # Monitoring and alerting
+// Monitoring and alerting
       monitoring: pythonMonitoringConfig,
       security: flaskSecurityConfig,
       performance: flaskPerformanceConfig,
       integration: flaskIntegration,
-      
-      # Metadata
+// Metadata
       metadata: {
         createdAt: new Date().toISOString(),
         sourceConfig: 'PM2 Node.js',
@@ -2342,21 +2336,6 @@ function getEnvironmentRotationSettings(environment) {
 
 // Export all functions and configuration objects
 export {
-  createPM2LogConfig,
-  configureLogRotation,
-  configureCentralizedLogging,
-  configureProductionLogging,
-  configureDevelopmentLogging,
-  setupLogDirectories,
-  configureLogFormatting,
-  configureLogMonitoring,
-  generateLogConfig,
-  validateLogConfig,
-  createFlaskCompatibleLogConfig,
-  
-  // Configuration objects
-  pm2LogConfig,
-  defaultLogConfig,
   productionLogConfig,
   developmentLogConfig
 };

@@ -1951,15 +1951,7 @@ export function createHealthRoutes(config = {}) {
 export const healthRouter = HEALTH_ROUTER_INSTANCE || createHealthRouter();
 
 // Export all utility functions for external integration and management
-export {
-    createHealthRouter,
-    createHealthRoutes,
-    initializeHealthRoutes,
-    validateHealthRoutes,
-    configureHealthMiddleware,
-    getHealthRouteInfo,
-    optimizeHealthRoutes
-};
+// All functions are individually exported above;
 
 // Log health router module initialization for monitoring and debugging
 logger.info('Health router module initialized successfully', {

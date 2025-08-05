@@ -76,7 +76,7 @@ import {
 
 import { 
   middlewareTestData 
-} from '../fixtures/test-data.json' assert { type: 'json' };
+} from '../fixtures/test-data.json' with { type: 'json' };
 
 import { 
   maliciousRequests 
@@ -2249,15 +2249,3 @@ describeTest('Comprehensive Middleware Stack Integration Tests', () => {
 /**
  * Export all test functions for external use and integration
  */
-export {
-  testMiddlewareOrchestration,
-  testSecurityMiddlewareIntegration,
-  testMiddlewarePerformance,
-  testCORSPolicyEnforcement,
-  testRateLimitingIntegration,
-  testErrorHandlingMiddleware,
-  testCrossPlatformCompatibility,
-  testPM2ClusterCompatibility,
-  generateMiddlewareTestReport,
-  cleanupMiddlewareTests
-};
