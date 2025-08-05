@@ -1328,19 +1328,7 @@ export function trackApplicationUptime(trackingOptions = {}) {
 // Main server startup and management functions
 export { startProductionServer as default };
 
-// Server lifecycle management functions
-export {
-  initializeServerEnvironment,
-  setupGracefulShutdownHandlers,
-  handleServerStartupError,
-  validateServerReadiness,
-  monitorServerHealth,
-  logServerStartupInformation,
-  createPM2CompatibleServer,
-  validateProductionDeployment,
-  initializeHealthMonitoring,
-  trackApplicationUptime
-};
+// Server lifecycle management functions are exported as individual function declarations above
 
 // Export server instance and health manager for external access
 export const server = SERVER_INSTANCE;
