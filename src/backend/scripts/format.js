@@ -2129,14 +2129,3 @@ function parseCliArguments(args) {
 }
 
 // Export all public functions for module usage
-export {
-  formatProject,
-  discoverFiles,
-  formatFile,
-  validateFormatting,
-  loadPrettierConfig,
-  generateReport,
-  handleFormatErrors,
-  checkDependencies,
-  setupFormatting
-};

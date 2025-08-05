@@ -159,11 +159,14 @@ export async function initializeConfiguration(environment, options = {}) {
     });
 
     // Initialize database configuration with stateless architecture settings
-    const databaseConfiguration = await getDatabaseConfig();
+    const databaseConfiguration = getDatabaseConfig();
     logDebug('Database configuration initialized', {
       enabled: databaseConfiguration.enabled,
       stateless: databaseConfiguration.stateless,
-      rationale: databaseConfiguration.rationale.summary
+      databaseConfigType: typeof databaseConfiguration,
+      databaseConfigKeys: Object.keys(databaseConfiguration || {}),
+      rationaleType: typeof databaseConfiguration?.rationale,
+      rationaleKeys: Object.keys(databaseConfiguration?.rationale || {})
     });
 
     // Create security configuration using createSecurityConfig with environment settings
@@ -175,7 +178,7 @@ export async function initializeConfiguration(environment, options = {}) {
     });
 
     // Generate PM2 configuration using createPM2Config for cluster mode setup
-    const pm2Configuration = await createPM2Config(detectedEnvironment);
+    const pm2Configuration = await createPM2Config(detectedEnvironment.currentEnvironment);
     logDebug('PM2 configuration generated', {
       apps: pm2Configuration.apps.length,
       cluster: pm2Configuration.cluster.enabled,
@@ -331,7 +334,7 @@ export async function loadAllConfigurations(environment, forceReload = false) {
 
     // Load PM2 configuration with cluster mode and process management
     logDebug('Loading PM2 configuration with cluster management');
-    const processConfig = await createPM2Config(envConfig);
+    const processConfig = await createPM2Config(targetEnvironment);
     await validatePM2Config(processConfig);
 
     // Resolve configuration dependencies and merge settings
@@ -1745,7 +1748,7 @@ async function createEnvironmentSecurityConfig(environment) {
  */
 async function createEnvironmentPM2Config(environment) {
   const envConfig = await loadEnvironmentConfig(environment);
-  return await createPM2Config(envConfig);
+  return await createPM2Config(environment);
 }
 
 /**

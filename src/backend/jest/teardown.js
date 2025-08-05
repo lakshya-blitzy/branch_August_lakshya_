@@ -1683,14 +1683,7 @@ export const TEST_FILE_TEARDOWN_RESULTS = {
 };
 
 // Export all cleanup functions for individual use if needed
-export {
-  cleanupJestMockFunctions,
-  cleanupTestIsolationResources,
-  finalizePerformanceMetrics,
-  cleanupSecurityTestingResources,
-  cleanupCrossPlatformTestingResources,
-  cleanupPM2TestingResources
-};
+
 
 // Set up automatic teardown execution if this module is imported
 if (typeof jest !== 'undefined') {

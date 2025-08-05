@@ -1399,18 +1399,7 @@ export {
   // Core server functions
   startHTTPServer as default,
   
-  // Request handling functions
-  createRequestHandler,
-  createRouter,
-  
-  // Endpoint handlers
-  handleHelloRequest,
-  handleGoodEveningRequest, 
-  handleHealthRequest,
-  
   // Utility functions
-  setupSecurityHeaders,
-  setupGracefulShutdown,
   logServerStatistics,
   
   // Helper functions (implemented locally since helpers.js doesn't exist)

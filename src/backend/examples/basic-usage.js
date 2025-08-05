@@ -1516,7 +1516,7 @@ export async function runPerformanceExample(performanceOptions = {}) {
  * @param {Object} [errorOptions={}] - Error handling demonstration options
  * @returns {Object} Error handling demonstration results with examples, patterns, and recovery strategies
  */
-export function runErrorHandlingExample(errorOptions = {}) {
+export async function runErrorHandlingExample(errorOptions = {}) {
   const config = {
     simulateErrors: errorOptions.simulateErrors !== false,
     showRecovery: errorOptions.showRecovery !== false,

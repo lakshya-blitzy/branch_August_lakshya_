@@ -1180,12 +1180,6 @@ export const productionDeployConfig = productionEcosystem.deploy.production;
 
 // Export all production configuration functions and objects
 export {
-  createProductionEcosystemConfig,
-  validateProductionReadiness,
-  optimizeProductionPerformance,
-  configureProductionSecurity,
-  setupProductionDeployment,
-  
   // Configuration constants
   PRODUCTION_APP_NAME,
   PRODUCTION_SCRIPT_PATH,

@@ -86,7 +86,11 @@ const PM2_METRICS = {
 const PERFORMANCE_CONSTANTS = {
   MEMORY_LIMITS: {
     WARNING: Math.floor(PM2_CONSTANTS.MEMORY_THRESHOLD * 0.7), // 70% of limit
-    CRITICAL: PM2_CONSTANTS.MEMORY_THRESHOLD // 100% of limit
+    CRITICAL: PM2_CONSTANTS.MEMORY_THRESHOLD, // 100% of limit
+    // Environment-specific memory limits based on PM2 instance configurations
+    DEVELOPMENT: 1024, // 1G in MB
+    PRODUCTION: 1024,  // 1G in MB  
+    STAGING: 512       // 512M in MB
   },
   CPU_THRESHOLDS: {
     WARNING: Math.floor(PM2_CONSTANTS.CPU_THRESHOLD * 0.75), // 75% of limit
@@ -138,7 +142,7 @@ export function createPM2Config(environment = CURRENT_ENVIRONMENT, options = {})
     });
 
     // Load environment-specific configuration from environment.js
-    const envConfig = environmentConfig[environment] || environmentConfig.production;
+    const envConfig = environmentConfig;
     const serverConfig = server;
     const pm2Config = pm2EnvConfig;
 
@@ -353,8 +357,18 @@ export function createPM2Config(environment = CURRENT_ENVIRONMENT, options = {})
       });
     }
 
+    // Add cluster metadata for external consumption
+    const configWithClusterInfo = {
+      ...optimizedConfig,
+      cluster: {
+        enabled: optimizedConfig.apps[0].exec_mode === 'cluster',
+        instances: optimizedConfig.apps[0].instances,
+        execMode: optimizedConfig.apps[0].exec_mode
+      }
+    };
+
     // Cache configuration for performance optimization and return complete config
-    PM2_CONFIG_CACHE.set(cacheKey, optimizedConfig);
+    PM2_CONFIG_CACHE.set(cacheKey, configWithClusterInfo);
     PM2_METRICS.configGenerations++;
 
     logInfo('PM2 configuration created successfully', {
@@ -365,7 +379,7 @@ export function createPM2Config(environment = CURRENT_ENVIRONMENT, options = {})
       validationResult: validationResult.status
     });
 
-    return optimizedConfig;
+    return configWithClusterInfo;
 
   } catch (error) {
     logError('Failed to create PM2 configuration', {
@@ -510,7 +524,9 @@ export function configureProcessManagement(baseConfig, environment) {
     logDebug('Configuring process management', { environment, baseConfig });
 
     // Configure automatic restart policies based on environment and failure patterns
-    const restartPolicies = PM2_CONSTANTS.RESTART_POLICIES[environment] || PM2_CONSTANTS.RESTART_POLICIES.production;
+    const restartPolicies = environment === 'production' ? 
+      PM2_CONSTANTS.RESTART_POLICIES.AUTO_RESTART : 
+      PM2_CONSTANTS.RESTART_POLICIES.AUTO_RESTART;
     
     // Set memory limits and restart thresholds per environment requirements
     const memoryConfig = PERFORMANCE_CONSTANTS.MEMORY_LIMITS;

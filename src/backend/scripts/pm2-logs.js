@@ -1834,17 +1834,6 @@ async function validateAndProcessLogOptions(logOptions, requestId) {
 
 // Export all log management functions for external use
 export {
-  viewLogs,
-  streamLogs,
-  rotateLogs,
-  analyzeLogs,
-  filterLogs,
-  exportLogs,
-  setupLogMonitoring,
-  searchLogs,
-  clearLogs,
-  configureLogs,
-  
   // Additional utility exports
   LOG_STATS,
   ACTIVE_LOG_STREAMS

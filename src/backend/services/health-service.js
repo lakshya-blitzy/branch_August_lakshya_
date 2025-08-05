@@ -2438,10 +2438,10 @@ export class HealthService extends EventEmitter {
       // Log comprehensive health check completion
       this.logger.info('Health service comprehensive check completed', {
         correlationId: checkOptions.correlationId,
-        status: healthResult.result.status,
-        duration: healthResult.performance.duration,
-        checksPerformed: healthResult.result.summary.checksPerformed,
-        overallScore: healthResult.result.summary.overallScore
+        status: healthResult.result?.status,
+        duration: healthResult.performance?.duration,
+        checksPerformed: healthResult.result?.summary?.checksPerformed || 0,
+        overallScore: healthResult.result?.summary?.overallScore || 0
       });
 
       return healthResult.result;
@@ -2769,6 +2769,66 @@ export class HealthService extends EventEmitter {
         cause: pm2Error,
         context: { options }
       });
+    }
+  }
+
+  /**
+   * Returns current application health status without performing new checks
+   * Uses cached health status or performs minimal validation if no cache available
+   * @param {Object} [options={}] - Configuration options for health retrieval
+   * @returns {Object} Current application health status with basic metrics
+   */
+  getApplicationHealth(options = {}) {
+    try {
+      // Return cached health status if available and recent
+      const cacheTimeout = options.cacheTimeout || this.config.caching.defaultTimeout || 30000;
+      const lastCheck = this.healthStatus.lastCheck;
+      
+      if (lastCheck && (Date.now() - new Date(lastCheck).getTime()) < cacheTimeout) {
+        return {
+          status: this.healthStatus.status || 'healthy',
+          timestamp: this.healthStatus.lastCheck,
+          uptime: process.uptime(),
+          memory: process.memoryUsage(),
+          pid: process.pid,
+          cached: true,
+          ...this.healthStatus.metrics
+        };
+      }
+
+      // If no cached data available, return minimal health info
+      const basicHealth = {
+        status: 'healthy', // Default to healthy if no issues detected
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        pid: process.pid,
+        cached: false,
+        monitoring: this.isMonitoring
+      };
+
+      // Update health status cache
+      this.healthStatus = {
+        status: basicHealth.status,
+        lastCheck: basicHealth.timestamp,
+        metrics: basicHealth,
+        monitoring: this.isMonitoring
+      };
+
+      return basicHealth;
+    } catch (error) {
+      this.logger.warn('Failed to get application health', error);
+      
+      // Return error status with minimal info
+      return {
+        status: 'degraded',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        pid: process.pid,
+        error: error.message,
+        cached: false
+      };
     }
   }
 

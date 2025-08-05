@@ -1391,18 +1391,7 @@ function isStyleRule(ruleId) {
  */
 
 // Export all functions for external use
-export {
-  lintProject,
-  discoverFiles,
-  lintFile,
-  processViolations,
-  applyFixes,
-  loadESLintConfig,
-  generateReport,
-  handleLintErrors,
-  checkDependencies,
-  setupLinting
-};
+
 
 // Initialize linting environment if run directly
 if (import.meta.url === `file://${process.argv[1]}`) {

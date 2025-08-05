@@ -43,6 +43,7 @@
 import express from 'express'; // v5.1.0 - Express.js web framework with enhanced security and performance
 import helmet from 'helmet'; // v8.1.0 - Security middleware for HTTP response headers and web security policies
 import cors from 'cors'; // latest - Cross-Origin Resource Sharing middleware for cross-origin request security
+import os from 'os'; // Node.js built-in - Operating system related utilities
 
 // Internal configuration imports for unified application configuration management
 import { 
@@ -68,7 +69,7 @@ import {
 } from './routes/index.js';
 
 // Service layer imports for business logic and application services
-import { HealthService } from './services/index.js';
+import { HealthService, startHealthMonitoring } from './services/index.js';
 
 // Controller layer imports for request handling and response management
 import { initializeAllControllers } from './controllers/index.js';
@@ -123,7 +124,7 @@ let isShuttingDown = false; // Graceful shutdown flag
  * @param {Object} [options.additionalMiddleware] - Additional middleware to apply
  * @returns {Object} Configured Express.js application instance ready for server startup
  */
-function createExpressApp(options = {}) {
+async function createExpressApp(options = {}) {
   const appConfig = {
     enableHealthMonitoring: options.enableHealthMonitoring !== false,
     enableSecurityMiddleware: options.enableSecurityMiddleware !== false,
@@ -157,8 +158,9 @@ function createExpressApp(options = {}) {
     });
 
     // Configure comprehensive middleware stack
-    configureMiddleware(app, {
+    await configureMiddleware(app, {
       security: finalConfig.security,
+      server: finalConfig.server,
       environment: finalConfig.environment,
       enableSecurity: appConfig.enableSecurityMiddleware,
       additionalMiddleware: appConfig.additionalMiddleware
@@ -172,7 +174,7 @@ function createExpressApp(options = {}) {
 
     // Initialize health monitoring system if enabled
     if (appConfig.enableHealthMonitoring) {
-      initializeHealthMonitoring(app);
+      await initializeHealthMonitoring(app);
     }
 
     // Set up error handling middleware for centralized error processing
@@ -180,9 +182,6 @@ function createExpressApp(options = {}) {
 
     // Configure 404 handler for unmatched routes
     setup404Handler(app);
-
-    // Log successful application creation with configuration summary
-    logApplicationStartup(finalConfig, app);
 
     logger.info('Express.js application created successfully', {
       middlewareCount: app._router ? app._router.stack.length : 0,
@@ -226,7 +225,7 @@ function createExpressApp(options = {}) {
  * @param {Array} middlewareConfig.additionalMiddleware - Additional middleware functions
  * @returns {void} No return value, modifies Express app instance with configured middleware stack
  */
-function configureMiddleware(app, middlewareConfig) {
+async function configureMiddleware(app, middlewareConfig) {
   try {
     logger.info('Configuring middleware stack', {
       securityEnabled: middlewareConfig.enableSecurity,
@@ -234,10 +233,13 @@ function configureMiddleware(app, middlewareConfig) {
     });
 
     // Initialize middleware stack using factory function
-    const middlewareStack = createMiddlewareStack({
-      environment: middlewareConfig.environment,
-      security: middlewareConfig.security
-    });
+    const middlewareStack = await createMiddlewareStack(
+      middlewareConfig.environment?.NODE_ENV || process.env.NODE_ENV || 'development',
+      {
+        enableSecurityValidation: middlewareConfig.enableSecurity,
+        customConfig: middlewareConfig.security || {}
+      }
+    );
 
     // Initialize middleware with environment-specific configuration
     initializeMiddleware(app, {
@@ -397,7 +399,7 @@ function mountRoutes(app, routeConfig) {
 
     // Create routes aggregator with configuration options
     const routesAggregator = createRoutesAggregator({
-      environment: routeConfig.environment,
+      environment: routeConfig.environment?.NODE_ENV || process.env.NODE_ENV || 'development',
       enableMetrics: true
     });
 
@@ -477,7 +479,7 @@ function mountRoutes(app, routeConfig) {
  * @param {Object} app - Express application instance
  * @returns {Object} Initialized health monitoring system with metrics collection and alerting
  */
-function initializeHealthMonitoring(app) {
+async function initializeHealthMonitoring(app) {
   try {
     logger.info('Initializing health monitoring system');
 
@@ -517,7 +519,15 @@ function initializeHealthMonitoring(app) {
     }
 
     // Start health service monitoring
-    healthService.startHealthMonitoring();
+    await startHealthMonitoring({
+      service: healthService,
+      interval: 30000,
+      thresholds: {
+        memory: 1024 * 1024 * 1024,
+        cpu: 80,
+        responseTime: 2000
+      }
+    });
 
     // Set up health metrics collection
     const healthMetricsInterval = setInterval(() => {
@@ -833,9 +843,14 @@ function startServer(expressApp, serverConfig = {}) {
       });
 
       // Validate server configuration
-      if (!config.port || config.port < 1 || config.port > 65535) {
+      // Port 0 is valid for dynamic port assignment
+      const portNumber = Number(config.port);
+      if (config.port === null || config.port === undefined || 
+          isNaN(portNumber) || portNumber < 0 || portNumber > 65535 || 
+          !Number.isInteger(portNumber)) {
         throw new Error(`Invalid port number: ${config.port}`);
       }
+      config.port = portNumber;
 
       // Start HTTP server with configured port and host
       httpServer = expressApp.listen(config.port, config.host, () => {
@@ -852,11 +867,11 @@ function startServer(expressApp, serverConfig = {}) {
         });
 
         // Log application startup summary
-        logApplicationStartup(config, server);
+        logApplicationStartup(config, httpServer);
 
         // Set up graceful shutdown if enabled
         if (config.enableGracefulShutdown) {
-          setupGracefulShutdown(server);
+          setupGracefulShutdown(httpServer);
         }
 
         // Validate application health after startup
@@ -1053,8 +1068,8 @@ async function validateApplicationHealth(expressApp) {
 
     // Validate system resources
     const memoryUsage = process.memoryUsage();
-    const freeMemory = require('os').freemem();
-    const totalMemory = require('os').totalmem();
+    const freeMemory = os.freemem();
+    const totalMemory = os.totalmem();
     
     if (memoryUsage.heapUsed > totalMemory * 0.8) {
       healthValidation.components.memory = {
@@ -1216,7 +1231,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     await initializeAllControllers();
     
     // Create and start the application
-    const application = createExpressApp({
+    const application = await createExpressApp({
       enableHealthMonitoring: true,
       enableSecurityMiddleware: true
     });

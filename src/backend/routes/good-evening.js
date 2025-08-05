@@ -58,7 +58,7 @@ import {
     HTTP_CONSTANTS
 } from '../utils/constants.js';
 
-import logger from '../utils/logger.js';
+import logger, { generateRequestId } from '../utils/logger.js';
 
 // Global Route State Management - Optimized for PM2 cluster mode compatibility
 let GOOD_EVENING_ROUTE_INITIALIZED = false;
@@ -113,7 +113,7 @@ let GOOD_EVENING_ROUTE_CONFIG = {
  */
 function createGoodEveningRouter(routerOptions = {}) {
     const startTime = Date.now();
-    const correlationId = logger.generateRequestId({ prefix: 'router' });
+    const correlationId = generateRequestId({ prefix: 'router' });
     
     try {
         logger.info('Creating good-evening router', {
@@ -394,7 +394,7 @@ function createGoodEveningRouter(routerOptions = {}) {
  */
 async function initializeGoodEveningRoute(initOptions = {}) {
     const startTime = Date.now();
-    const correlationId = logger.generateRequestId({ prefix: 'init' });
+    const correlationId = generateRequestId({ prefix: 'init' });
     
     try {
         logger.info('Initializing good-evening route system', {
@@ -621,7 +621,7 @@ async function initializeGoodEveningRoute(initOptions = {}) {
  */
 async function validateGoodEveningRoute(validationOptions = {}) {
     const startTime = Date.now();
-    const correlationId = logger.generateRequestId({ prefix: 'validate' });
+    const correlationId = generateRequestId({ prefix: 'validate' });
     
     try {
         logger.info('Starting good-evening route validation', {
@@ -883,7 +883,7 @@ async function validateGoodEveningRoute(validationOptions = {}) {
  */
 function getGoodEveningRouteHealth(healthOptions = {}) {
     const startTime = Date.now();
-    const correlationId = logger.generateRequestId({ prefix: 'health' });
+    const correlationId = generateRequestId({ prefix: 'health' });
     
     try {
         const {
@@ -1133,7 +1133,7 @@ function getGoodEveningRouteHealth(healthOptions = {}) {
  */
 async function optimizeGoodEveningRoutePerformance(optimizationOptions = {}) {
     const startTime = Date.now();
-    const correlationId = logger.generateRequestId({ prefix: 'optimize' });
+    const correlationId = generateRequestId({ prefix: 'optimize' });
     
     try {
         logger.info('Starting good-evening route performance optimization', {

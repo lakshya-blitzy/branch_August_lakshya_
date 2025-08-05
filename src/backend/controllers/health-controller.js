@@ -204,13 +204,13 @@ const getHealthStatus = handleAsyncError(async (req, res, next) => {
     });
 
     // Add response timing and performance metrics to health status for monitoring integration
-    const performanceMetrics = performanceTracker.finish();
+    const performanceMetrics = performanceTracker.end();
     formattedResponse.metadata = {
       ...formattedResponse.metadata,
       performance: {
-        responseTime: performanceMetrics.executionTime,
-        memoryUsage: performanceMetrics.memoryUsage,
-        cpuUsage: performanceMetrics.cpuUsage
+        responseTime: performanceMetrics.duration,
+        memoryUsage: process.memoryUsage(),
+        cpuUsage: process.cpuUsage && process.cpuUsage() || { user: 0, system: 0 }
       },
       request: {
         id: requestId,
@@ -249,7 +249,7 @@ const getHealthStatus = handleAsyncError(async (req, res, next) => {
     });
 
     // Apply CORS headers if configured for cross-platform compatibility
-    if (serverConfig.middleware.cors.enabled) {
+    if (serverConfig().middleware.cors.enabled) {
       res.set({
         'Access-Control-Allow-Origin': req.get('Origin') || '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -368,8 +368,8 @@ const getQuickHealth = handleAsyncError(async (req, res, next) => {
     };
 
     // Add performance timing for monitoring without overhead
-    const performanceMetrics = performanceTracker.finish();
-    quickResponse.responseTime = performanceMetrics.executionTime;
+    const performanceMetrics = performanceTracker.end();
+    quickResponse.responseTime = performanceMetrics.duration;
 
     // Determine HTTP status code for load balancer compatibility
     const statusCode = quickHealthData.status === 'OK' ? 
@@ -569,19 +569,19 @@ const getHealthMetrics = handleAsyncError(async (req, res, next) => {
     }
 
     // Add response metadata including data range, collection timestamp, and performance information
-    const performanceMetrics = performanceTracker.finish();
+    const performanceMetrics = performanceTracker.end();
     metricsResponse.metadata = {
       ...metricsResponse.metadata,
       collection: {
         timeRange: timeRangeValidation.timeRange,
         interval: timeRangeValidation.interval,
         dataPoints: processedMetrics.dataPoints || 0,
-        collectionTime: performanceMetrics.executionTime
+        collectionTime: performanceMetrics.duration
       },
       request: {
         id: requestId,
         timestamp: new Date().toISOString(),
-        processingTime: performanceMetrics.executionTime
+        processingTime: performanceMetrics.duration
       }
     };
 

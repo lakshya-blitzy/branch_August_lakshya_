@@ -420,6 +420,7 @@ export const PM2_CONSTANTS = Object.freeze({
   
   // Logging configuration for PM2 managed processes
   LOG_CONFIG: Object.freeze({
+    LOG_DIRECTORY: './logs',
     OUT_FILE: './logs/out.log',
     ERROR_FILE: './logs/error.log',
     COMBINED_LOG_FILE: './logs/combined.log',

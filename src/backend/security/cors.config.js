@@ -64,6 +64,9 @@ import {
     createErrorResponse
 } from '../utils/error-types.js';
 
+// External CORS library import for middleware functionality
+import cors from 'cors';
+
 // Global CORS configuration cache and management constants
 const CORS_CONFIG_CACHE = new Map(); // Caches validated CORS configurations for performance optimization
 const DEFAULT_CORS_MAX_AGE = 86400; // Default preflight cache duration in seconds (24 hours)
@@ -891,9 +894,11 @@ export function validateCorsConfig(corsConfig, environment) {
         validationResult.securityScore -= 10;
     } else {
         const sensitiveHeaders = ['Cookie', 'Authorization'];
-        const exposedSensitiveHeaders = corsConfig.allowedHeaders.filter(header =>
-            sensitiveHeaders.some(sensitive => header.toLowerCase().includes(sensitive.toLowerCase()))
-        );
+        const exposedSensitiveHeaders = corsConfig.allowedHeaders
+            .filter(header => header && typeof header === 'string') // Filter out undefined/null headers
+            .filter(header =>
+                sensitiveHeaders.some(sensitive => header.toLowerCase().includes(sensitive.toLowerCase()))
+            );
         
         if (exposedSensitiveHeaders.length > 0 && environment === 'production') {
             validationResult.warnings.push(`Sensitive headers exposed: ${exposedSensitiveHeaders.join(', ')}`);
@@ -1174,7 +1179,6 @@ export function createCorsMiddleware(environment = 'development', corsOptions = 
         }
         
         // Apply CORS configuration
-        const cors = require('cors');
         return cors(corsConfig)(req, res, next);
     };
 

@@ -61,7 +61,7 @@ import errorHandler, {
 
 // Configuration and Utilities - Unified system configuration and error management
 import { config } from '../config/index.js';
-import logger from '../utils/logger.js';
+import logger, { generateRequestId } from '../utils/logger.js';
 
 import { ValidationError } from '../utils/error-types.js';
 
@@ -119,7 +119,7 @@ const DEFAULT_MIDDLEWARE_ORDER = [
  */
 async function initializeMiddleware(initOptions = {}) {
     const startTime = Date.now();
-    const correlationId = logger.generateCorrelationId();
+    const correlationId = generateRequestId();
     
     try {
         logger.info('Initializing middleware system', {
@@ -348,7 +348,7 @@ async function initializeMiddleware(initOptions = {}) {
  * });
  */
 async function createMiddlewareStack(environment, stackOptions = {}) {
-    const correlationId = logger.generateCorrelationId();
+    const correlationId = generateRequestId();
     const startTime = Date.now();
 
     try {
@@ -626,7 +626,7 @@ async function createMiddlewareStack(environment, stackOptions = {}) {
  * });
  */
 async function createDevelopmentMiddleware(devOptions = {}) {
-    const correlationId = logger.generateCorrelationId();
+    const correlationId = generateRequestId();
 
     try {
         logger.info('Creating development middleware stack', {
@@ -797,7 +797,7 @@ async function createDevelopmentMiddleware(devOptions = {}) {
  * });
  */
 async function createProductionMiddleware(prodOptions = {}) {
-    const correlationId = logger.generateCorrelationId();
+    const correlationId = generateRequestId();
 
     try {
         logger.info('Creating production middleware stack', {
@@ -981,7 +981,7 @@ async function createProductionMiddleware(prodOptions = {}) {
  * });
  */
 async function validateMiddlewareStack(middlewareStack, validationOptions = {}) {
-    const correlationId = validationOptions.correlationId || logger.generateCorrelationId();
+    const correlationId = validationOptions.correlationId || generateRequestId();
     const startTime = Date.now();
 
     try {
@@ -1143,7 +1143,7 @@ async function validateMiddlewareStack(middlewareStack, validationOptions = {}) 
  * });
  */
 async function getMiddlewareInfo(infoOptions = {}) {
-    const correlationId = infoOptions.correlationId || logger.generateCorrelationId();
+    const correlationId = infoOptions.correlationId || generateRequestId();
 
     try {
         const {
@@ -1260,7 +1260,7 @@ async function getMiddlewareInfo(infoOptions = {}) {
  * });
  */
 async function refreshMiddleware(refreshOptions = {}) {
-    const correlationId = refreshOptions.correlationId || logger.generateCorrelationId();
+    const correlationId = refreshOptions.correlationId || generateRequestId();
     const startTime = Date.now();
 
     try {
@@ -1400,7 +1400,7 @@ async function refreshMiddleware(refreshOptions = {}) {
  * });
  */
 async function applyMiddlewareToApp(expressApp, middlewareStack, applyOptions = {}) {
-    const correlationId = applyOptions.correlationId || logger.generateCorrelationId();
+    const correlationId = applyOptions.correlationId || generateRequestId();
     const startTime = Date.now();
 
     try {
@@ -1571,7 +1571,7 @@ async function applyMiddlewareToApp(expressApp, middlewareStack, applyOptions = 
  * }, { enableMonitoring: true });
  */
 async function createCustomMiddleware(customConfig, customOptions = {}) {
-    const correlationId = customOptions.correlationId || logger.generateCorrelationId();
+    const correlationId = customOptions.correlationId || generateRequestId();
 
     try {
         logger.info('Creating custom middleware', {
@@ -1605,7 +1605,7 @@ async function createCustomMiddleware(customConfig, customOptions = {}) {
         // Create custom middleware function with Express.js req, res, next pattern
         const customMiddleware = async (req, res, next) => {
             const requestStart = Date.now();
-            const requestId = logger.generateCorrelationId();
+            const requestId = generateRequestId();
 
             try {
                 if (enableLogging) {
@@ -1697,8 +1697,12 @@ function validateMiddlewareConfigs(configs, correlationId) {
             validation.isValid = false;
         }
 
-        // Validate environment configuration
-        if (!configs.environment || !configs.environment.NODE_ENV) {
+        // Validate environment configuration - check multiple possible paths for NODE_ENV
+        const nodeEnv = configs.environment?.NODE_ENV || 
+                       configs.environment?.env?.NODE_ENV || 
+                       process.env.NODE_ENV;
+        
+        if (!configs.environment || !nodeEnv) {
             validation.errors.push('Missing or invalid environment configuration');
             validation.isValid = false;
         }

@@ -112,7 +112,7 @@ let requestMetrics = { // Request processing metrics for performance monitoring
  * @param {Object} [serverOptions.educationalOptions] - Educational demonstration options
  * @returns {Object} Configured Express.js server instance with middleware, routes, security, and monitoring capabilities ready for production deployment
  */
-export function createExpressServer(serverOptions = {}) {
+function createExpressServer(serverOptions = {}) {
   try {
     const config = {
       middleware: serverOptions.middleware || {},
@@ -554,7 +554,7 @@ export function initializeExpressMiddleware(app, middlewareConfig = {}) {
  * @param {boolean} [startupConfig.enableHealthMonitoring=true] - Enable health monitoring
  * @returns {Promise} Promise that resolves with server instance when successfully started with health monitoring and graceful shutdown configured
  */
-export async function startExpressServer(app, startupConfig = {}) {
+async function startExpressServer(app, startupConfig = {}) {
   try {
     const config = {
       port: startupConfig.port || ENV_CONSTANTS.DEFAULT_PORT,
@@ -782,7 +782,7 @@ export async function handleExpressServerShutdown(server, signal) {
  * @param {boolean} [validationOptions.includePerformanceAnalysis=true] - Include performance analysis
  * @returns {Object} Comprehensive validation result with configuration analysis, security assessment, and optimization recommendations
  */
-export async function validateExpressConfiguration(app, validationOptions = {}) {
+async function validateExpressConfiguration(app, validationOptions = {}) {
   try {
     const options = {
       comprehensive: validationOptions.comprehensive !== false,
@@ -914,7 +914,7 @@ export async function validateExpressConfiguration(app, validationOptions = {}) 
  * @param {boolean} [comparisonOptions.includeSecurity=true] - Include security comparison
  * @returns {Object} Detailed comparison result with framework benefits, feature enhancements, and educational insights
  */
-export async function compareWithBasicServer(expressApp, comparisonOptions = {}) {
+async function compareWithBasicServer(expressApp, comparisonOptions = {}) {
   try {
     const options = {
       includePerformance: comparisonOptions.includePerformance !== false,

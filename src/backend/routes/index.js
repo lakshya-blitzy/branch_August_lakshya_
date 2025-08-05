@@ -2364,6 +2364,55 @@ function generateValidationRecommendations(validationResult, scoreComponents) {
   return recommendations;
 }
 
+function generateRouteDocumentation(routeName, registrationConfig) {
+  return {
+    routeName,
+    description: `API documentation for ${routeName} route`,
+    endpoints: registrationConfig.endpoints || [],
+    methods: ['GET'],
+    parameters: {},
+    responses: {
+      200: 'Success',
+      404: 'Not Found',
+      500: 'Internal Server Error'
+    },
+    examples: {},
+    version: '1.0.0',
+    lastUpdated: new Date().toISOString()
+  };
+}
+
+function generateRouteEducationalContent(routeName, registrationConfig) {
+  return {
+    routeName,
+    learningObjectives: [`Understand ${routeName} endpoint functionality`],
+    concepts: ['Express.js routing', 'HTTP methods', 'Middleware integration'],
+    codeExamples: {},
+    bestPractices: ['Use appropriate HTTP status codes', 'Implement proper error handling'],
+    relatedTopics: ['REST API design', 'Node.js development'],
+    difficulty: 'beginner',
+    estimatedTime: '15 minutes'
+  };
+}
+
+function generateCrossPlatformMapping(routeName, registrationConfig) {
+  return {
+    routeName,
+    expressImplementation: {
+      router: 'Express.Router()',
+      middleware: registrationConfig.middleware || [],
+      endpoints: registrationConfig.endpoints || []
+    },
+    flaskEquivalent: {
+      blueprint: `${routeName}_bp`,
+      decorators: ['@app.route', '@blueprint.route'],
+      methods: ['GET', 'POST']
+    },
+    migrationNotes: [`Map Express ${routeName} route to Flask blueprint`],
+    compatibilityLevel: 'high'
+  };
+}
+
 function generateRoutesHealthRecommendations(routeHealthScores, routesStatistics, aggregationStatus) {
   const recommendations = [];
   

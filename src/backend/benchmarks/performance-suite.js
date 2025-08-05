@@ -1844,18 +1844,8 @@ function getIntervalMs(interval) {
   return intervals[interval] || intervals.daily;
 }
 
-// Export all public functions and the default configuration
+// Export constants and configuration objects 
 export {
-  runResponseTimeBenchmarks,
-  runConcurrencyBenchmarks,
-  runMemoryBenchmarks,
-  runLoadTestBenchmarks,
-  runCrossPlatformComparison,
-  generateBenchmarkReport,
-  validatePerformanceTargets,
-  setupBenchmarkEnvironment,
-  cleanupBenchmarkEnvironment,
-  scheduleBenchmarkSuite,
   defaultSuiteConfig,
   PERFORMANCE_SUITE_VERSION
 };

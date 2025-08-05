@@ -292,33 +292,6 @@ function createRateLimiterMiddleware(options = {}) {
                 }
                 
                 return false;
-            },
-            // Custom success handler for metrics collection
-            onLimitReached: (req, res, options) => {
-                const clientIp = getClientIp(req);
-                
-                // Update violation tracking
-                if (!RATE_LIMIT_METRICS.violations.has(clientIp)) {
-                    RATE_LIMIT_METRICS.violations.set(clientIp, {
-                        count: 0,
-                        firstViolation: Date.now(),
-                        lastViolation: Date.now()
-                    });
-                }
-                
-                const violation = RATE_LIMIT_METRICS.violations.get(clientIp);
-                violation.count++;
-                violation.lastViolation = Date.now();
-                
-                // Log security event for potential DoS attack
-                logger.logSecurityEvent('RATE_LIMIT_VIOLATION', {
-                    clientIp,
-                    userAgent: req.headers['user-agent'],
-                    method: req.method,
-                    url: req.url,
-                    violationCount: violation.count,
-                    timeSinceFirst: Date.now() - violation.firstViolation
-                });
             }
         };
 
@@ -463,6 +436,32 @@ function createRateLimitHandler(handlerConfig = {}) {
             const method = req.method;
             const url = req.url;
             const timestamp = new Date().toISOString();
+
+            // Check if this is the first time the limit is reached (replaces deprecated onLimitReached)
+            if (req.rateLimit && req.rateLimit.current === req.rateLimit.limit + 1) {
+                // Update violation tracking (moved from deprecated onLimitReached)
+                if (!RATE_LIMIT_METRICS.violations.has(clientIp)) {
+                    RATE_LIMIT_METRICS.violations.set(clientIp, {
+                        count: 0,
+                        firstViolation: Date.now(),
+                        lastViolation: Date.now()
+                    });
+                }
+                
+                const violation = RATE_LIMIT_METRICS.violations.get(clientIp);
+                violation.count++;
+                violation.lastViolation = Date.now();
+                
+                // Log security event for potential DoS attack (moved from deprecated onLimitReached)
+                logger.logSecurityEvent('RATE_LIMIT_VIOLATION', {
+                    clientIp,
+                    userAgent: req.headers['user-agent'],
+                    method: req.method,
+                    url: req.url,
+                    violationCount: violation.count,
+                    timeSinceFirst: Date.now() - violation.firstViolation
+                });
+            }
 
             // Update rate limiting metrics
             RATE_LIMIT_METRICS.blocked++;

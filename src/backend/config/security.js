@@ -719,6 +719,21 @@ export function createRateLimitConfig(environment = currentEnvironment, customLi
     const defaultHandler = (req, res, next) => {
       const requestLogger = createRequestLogger(req);
       
+      // Check if this is the first time the limit is reached (replaces deprecated onLimitReached)
+      if (req.rateLimit && req.rateLimit.current === req.rateLimit.limit + 1) {
+        // Track rate limit metrics (moved from deprecated onLimitReached)
+        SECURITY_METRICS.rateLimit.requests++;
+        
+        logger.warn('Rate limit threshold reached', {
+          ip: req.ip,
+          userAgent: req.get('User-Agent'),
+          url: req.url,
+          windowMs: windowMs,
+          max: max,
+          environment
+        });
+      }
+      
       // Log rate limit violation with detailed context
       logSecurityEvent('rate-limit-exceeded', {
         clientIp: req.ip,
@@ -811,22 +826,7 @@ export function createRateLimitConfig(environment = currentEnvironment, customLi
         return req.ip + (req.user ? `:${req.user.id}` : '');
       }),
       
-      store: customLimits.store, // Optional custom store for cluster mode
-      
-      // Rate limit headers configuration
-      onLimitReached: (req, res, options) => {
-        // Track rate limit metrics
-        SECURITY_METRICS.rateLimit.requests++;
-        
-        logger.warn('Rate limit threshold reached', {
-          ip: req.ip,
-          userAgent: req.get('User-Agent'),
-          url: req.url,
-          windowMs: options.windowMs,
-          max: options.max,
-          environment
-        });
-      }
+      store: customLimits.store // Optional custom store for cluster mode
     };
 
     // Apply custom rate limit overrides if provided
@@ -1761,6 +1761,11 @@ function createFallbackSecurityConfig(environment) {
       enabled: true,
       origin: isDevelopment ? '*' : false,
       credentials: false
+    },
+    csp: {
+      enabled: false,
+      fallback: true,
+      directives: {}
     },
     rateLimit: {
       enabled: true,

@@ -1474,6 +1474,82 @@ function generateLearningInsights(metrics) {
   };
 }
 
+// Missing performance optimization and educational functions
+function getPerformanceOptimizationRecommendations(enhancedMetrics) {
+  const recommendations = [];
+  
+  // Safely check responseTime
+  if (enhancedMetrics && enhancedMetrics.responseTime > 1000) {
+    recommendations.push('Consider implementing response caching');
+    recommendations.push('Review middleware execution order');
+    recommendations.push('Optimize database queries if applicable');
+  }
+  
+  // Safely check memory usage
+  if (enhancedMetrics && enhancedMetrics.system && enhancedMetrics.system.memory && enhancedMetrics.system.memory.heapUsed > 512 * 1024 * 1024) {
+    recommendations.push('Monitor memory usage patterns');
+    recommendations.push('Consider garbage collection optimization');
+  }
+  
+  // Safely check CPU usage (handle different possible structures)
+  let cpuUsage = 0;
+  if (enhancedMetrics && enhancedMetrics.system && enhancedMetrics.system.cpu) {
+    cpuUsage = enhancedMetrics.system.cpu.percentage || enhancedMetrics.system.cpu.usage || 0;
+  }
+  
+  if (cpuUsage > 80) {
+    recommendations.push('Investigate CPU-intensive operations');
+    recommendations.push('Consider load balancing or horizontal scaling');
+  }
+  
+  // Add general recommendations if we have basic metrics
+  if (enhancedMetrics && enhancedMetrics.responseTime) {
+    recommendations.push('Monitor response times across different endpoints');
+    recommendations.push('Use performance profiling tools for detailed analysis');
+  }
+  
+  return recommendations;
+}
+
+function getPerformanceEducationalInsights(performanceMetrics) {
+  const responseTime = performanceMetrics && performanceMetrics.responseTime ? performanceMetrics.responseTime : 0;
+  
+  return {
+    responseTimeImpact: responseTime > 1000 
+      ? 'High response time may affect user experience' 
+      : 'Response time within acceptable range',
+    memoryConsideration: 'Monitor memory usage for long-running processes',
+    scalabilityNote: 'Consider performance patterns when scaling the application'
+  };
+}
+
+function getPerformanceOptimizationTips(performanceMetrics) {
+  const tips = [];
+  const responseTime = performanceMetrics && performanceMetrics.responseTime ? performanceMetrics.responseTime : 0;
+  
+  if (responseTime > 500) {
+    tips.push('Use async/await patterns for non-blocking operations');
+    tips.push('Implement proper error handling to avoid timeouts');
+  }
+  
+  tips.push('Monitor response times across different endpoints');
+  tips.push('Use performance profiling tools for detailed analysis');
+  
+  return tips;
+}
+
+function getPerformanceMonitoringGuidance() {
+  return {
+    keyMetrics: ['Response time', 'Memory usage', 'CPU utilization', 'Error rates'],
+    bestPractices: [
+      'Set up automated alerts for performance thresholds',
+      'Monitor trends over time, not just point-in-time metrics',
+      'Correlate performance with business metrics'
+    ],
+    tools: ['Built-in Node.js profiler', 'Performance monitoring services', 'Custom metrics collection']
+  };
+}
+
 // Create and export default request logger instance
 const requestLogger = createRequestLogger({
   enableEducationalMode: !environmentConfig.isProduction,

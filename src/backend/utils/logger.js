@@ -94,9 +94,16 @@ function getSystemInfo() {
 function sanitizeLogData(data) {
   const sensitiveFields = ['password', 'token', 'secret', 'key', 'authorization'];
   const sanitized = { ...data };
+  const seen = new WeakSet();
   
   function sanitizeObject(obj) {
     if (typeof obj !== 'object' || obj === null) return obj;
+    
+    // Check for circular references
+    if (seen.has(obj)) {
+      return '[Circular Reference]';
+    }
+    seen.add(obj);
     
     const result = Array.isArray(obj) ? [] : {};
     for (const [key, value] of Object.entries(obj)) {
@@ -301,8 +308,10 @@ function logError(message, error = null, context = {}) {
 
   // Output to console with error color
   console.error('\x1b[31m[ERROR]\x1b[0m', message);
-  if (error) {
+  if (error && error.stack) {
     console.error('\x1b[31m[ERROR STACK]\x1b[0m', error.stack);
+  } else if (error) {
+    console.error('\x1b[31m[ERROR DETAILS]\x1b[0m', error.toString());
   }
 
   // Always write errors to dedicated error log
@@ -501,12 +510,15 @@ function determineSeverity(eventType) {
  * @returns {Object} Request-scoped logger with correlation tracking and context management
  */
 function createRequestLogger(request, options = {}) {
+  // Safely access request headers
+  const headers = request.headers || {};
+  
   const correlationId = generateRequestId({ 
     prefix: 'req',
     metadata: { 
       method: request.method, 
       url: request.url,
-      userAgent: request.headers['user-agent']
+      userAgent: headers['user-agent'] || 'unknown'
     }
   });
 
@@ -514,9 +526,9 @@ function createRequestLogger(request, options = {}) {
     correlationId,
     method: request.method,
     url: request.url,
-    headers: sanitizeLogData(request.headers),
+    headers: sanitizeLogData(headers),
     ip: request.ip || request.connection?.remoteAddress,
-    userAgent: request.headers['user-agent'],
+    userAgent: headers['user-agent'] || 'unknown',
     timestamp: Date.now(),
     startTime: process.hrtime.bigint()
   };

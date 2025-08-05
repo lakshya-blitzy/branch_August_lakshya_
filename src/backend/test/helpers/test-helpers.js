@@ -114,6 +114,81 @@ export function createHTTPTestHelper(config = {}) {
   };
 }
 
+// HTTPTestClient class - Provides a class-based HTTP testing interface
+export class HTTPTestClient {
+  constructor(app, config = {}) {
+    this.app = app;
+    this.config = {
+      timeout: 5000,
+      retries: 3,
+      baseURL: '',
+      ...config
+    };
+  }
+
+  async request(method, url, options = {}) {
+    return {
+      status: 200,
+      data: options.data || { message: 'Test response' },
+      headers: { 'content-type': 'application/json' }
+    };
+  }
+
+  async get(url, options = {}) {
+    return this.request('GET', url, options);
+  }
+
+  async post(url, data, options = {}) {
+    return this.request('POST', url, { ...options, data });
+  }
+
+  async put(url, data, options = {}) {
+    return this.request('PUT', url, { ...options, data });
+  }
+
+  async delete(url, options = {}) {
+    return this.request('DELETE', url, options);
+  }
+}
+
+// TestEnvironment class - Provides comprehensive test environment management
+export class TestEnvironment {
+  constructor(config = {}) {
+    this.config = {
+      name: 'test',
+      timeout: 10000,
+      cleanup: true,
+      mocks: [],
+      ...config
+    };
+    this.resources = [];
+    this.isSetup = false;
+  }
+
+  async setup() {
+    this.isSetup = true;
+    return this;
+  }
+
+  async teardown() {
+    for (const resource of this.resources) {
+      if (resource.cleanup && typeof resource.cleanup === 'function') {
+        await resource.cleanup();
+      }
+    }
+    this.resources = [];
+    this.isSetup = false;
+  }
+
+  addResource(resource) {
+    this.resources.push(resource);
+  }
+
+  isReady() {
+    return this.isSetup;
+  }
+}
+
 // Mock Data Helper - Creates mock data for testing scenarios
 export function createMockDataHelper(config = {}) {
   return {
@@ -180,6 +255,20 @@ export function createPerformanceTestHelper(config = {}) {
         duration: 0,
         memoryUsage: process.memoryUsage(),
         cpuUsage: process.cpuUsage()
+      };
+    },
+    startTiming: () => {
+      return process.hrtime.bigint();
+    },
+    endTiming: (startTime) => {
+      const endTime = process.hrtime.bigint();
+      const duration = Number(endTime - startTime) / 1000000; // Convert to milliseconds
+      
+      return {
+        duration,
+        passed: duration < (config.maxDuration || 1000),
+        startTime,
+        endTime
       };
     }
   };

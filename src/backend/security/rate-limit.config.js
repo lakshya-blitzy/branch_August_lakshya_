@@ -299,6 +299,18 @@ export function createRateLimitHandler(handlerConfig = {}) {
                 correlationId: req.correlationId
             };
 
+            // Check if this is the first time the limit is reached (replaces deprecated onLimitReached)
+            if (req.rateLimit && req.rateLimit.current === req.rateLimit.limit + 1) {
+                logger.logSecurityEvent('rate_limit_reached', {
+                    ip: clientIp,
+                    path: req.path,
+                    method: req.method,
+                    limit: req.rateLimit.limit,
+                    windowMs: req.rateLimit.windowMs,
+                    correlationId: req.correlationId
+                });
+            }
+
             // Update rate limiting metrics
             RATE_LIMIT_METRICS.blocked++;
             RATE_LIMIT_METRICS.requests++;
@@ -576,19 +588,7 @@ export function createRateLimitConfig(environment = environmentConfig.environmen
             
             // Skip successful requests (only count failed requests)
             skipSuccessfulRequests: false,
-            skipFailedRequests: false,
-            
-            // Custom rate limit reached handler
-            onLimitReached: (req, res, options) => {
-                logger.logSecurityEvent('rate_limit_reached', {
-                    ip: getClientIp(req),
-                    path: req.path,
-                    method: req.method,
-                    limit: options.max,
-                    windowMs: options.windowMs,
-                    correlationId: req.correlationId
-                });
-            }
+            skipFailedRequests: false
         };
 
         // Include monitoring and metrics collection configuration

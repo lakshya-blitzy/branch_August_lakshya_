@@ -1934,22 +1934,17 @@ logInfo('PM2 Ecosystem Configuration Module Initialized', {
   timestamp: new Date().toISOString()
 });
 
+// Extract configurations for export
+const apps = tutorialEcosystem;
+const deploy = tutorialEcosystem.deploy;
+
 // Export the complete PM2 ecosystem configuration and utility functions
 export default tutorialEcosystem;
 
 export {
   // Main ecosystem configuration ready for PM2 deployment
-  tutorialEcosystem as apps,
-  tutorialEcosystem.deploy as deploy,
-  
-  // Factory functions for creating comprehensive PM2 ecosystem configurations
-  createTutorialEcosystem,
-  configureProductionDeployment,
-  configureDevelopmentDeployment,
-  
-  // Utility functions for ecosystem validation and optimization
-  validateEcosystemConfiguration,
-  optimizeForEnvironment,
+  apps,
+  deploy,
   
   // Configuration constants and metadata
   ECOSYSTEM_VERSION,

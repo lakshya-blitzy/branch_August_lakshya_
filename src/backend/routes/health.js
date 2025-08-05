@@ -62,7 +62,7 @@ import {
 } from '../utils/constants.js';
 
 // Logging and Utilities - Structured logging and request correlation tracking
-import logger from '../utils/logger.js';
+import logger, { generateRequestId } from '../utils/logger.js';
 
 // Global Health Router State Management - Optimized for PM2 cluster mode
 let HEALTH_ROUTER_INSTANCE = null;
@@ -107,7 +107,7 @@ let ROUTE_INITIALIZATION_STATUS = {
  */
 function createHealthRouter(routerOptions = {}) {
     const startTime = Date.now();
-    const correlationId = logger.generateRequestId({ prefix: 'health-router' });
+    const correlationId = generateRequestId({ prefix: 'health-router' });
     
     try {
         logger.info('Creating health router with comprehensive middleware integration', {
@@ -392,7 +392,7 @@ function createHealthRouter(routerOptions = {}) {
  * });
  */
 function configureHealthMiddleware(middlewareConfig = {}) {
-    const correlationId = middlewareConfig.correlationId || logger.generateRequestId({ prefix: 'health-middleware' });
+    const correlationId = middlewareConfig.correlationId || generateRequestId({ prefix: 'health-middleware' });
     
     try {
         logger.debug('Configuring health-specific middleware stack', {
@@ -616,7 +616,7 @@ function configureHealthMiddleware(middlewareConfig = {}) {
  */
 async function initializeHealthRoutes(initOptions = {}) {
     const startTime = Date.now();
-    const correlationId = logger.generateRequestId({ prefix: 'health-init' });
+    const correlationId = generateRequestId({ prefix: 'health-init' });
 
     try {
         logger.info('Initializing comprehensive health route system', {
@@ -916,7 +916,7 @@ async function initializeHealthRoutes(initOptions = {}) {
  */
 async function validateHealthRoutes(validationOptions = {}) {
     const startTime = Date.now();
-    const correlationId = logger.generateRequestId({ prefix: 'health-validation' });
+    const correlationId = generateRequestId({ prefix: 'health-validation' });
 
     try {
         logger.info('Performing comprehensive health route validation', {
@@ -1223,7 +1223,7 @@ async function validateHealthRoutes(validationOptions = {}) {
  * });
  */
 function getHealthRouteInfo(infoOptions = {}) {
-    const correlationId = logger.generateRequestId({ prefix: 'health-info' });
+    const correlationId = generateRequestId({ prefix: 'health-info' });
 
     try {
         logger.debug('Retrieving comprehensive health route information', {
@@ -1599,7 +1599,7 @@ function getHealthRouteInfo(infoOptions = {}) {
  */
 async function optimizeHealthRoutes(optimizationOptions = {}) {
     const startTime = Date.now();
-    const correlationId = logger.generateRequestId({ prefix: 'health-optimization' });
+    const correlationId = generateRequestId({ prefix: 'health-optimization' });
 
     try {
         logger.info('Analyzing and optimizing health route performance', {

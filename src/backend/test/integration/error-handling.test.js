@@ -91,7 +91,7 @@ let testApps = { development: null, production: null };
  * @param {Object} [setupOptions.environmentOverrides] - Environment configuration overrides
  * @returns {Object} Test setup result with initialized test environment and utilities
  */
-export async function setupErrorHandlingTests(setupOptions = {}) {
+async function setupErrorHandlingTests(setupOptions = {}) {
     const config = {
         enableSecurity: setupOptions.enableSecurity !== false,
         enableMetrics: setupOptions.enableMetrics === true,
@@ -270,7 +270,7 @@ export async function setupErrorHandlingTests(setupOptions = {}) {
  * @param {number} [teardownOptions.cleanupTimeout=10000] - Cleanup timeout in milliseconds
  * @returns {Promise} Promise that resolves when cleanup is complete
  */
-export async function teardownErrorHandlingTests(teardownOptions = {}) {
+async function teardownErrorHandlingTests(teardownOptions = {}) {
     const config = {
         forceCleanup: teardownOptions.forceCleanup === true,
         cleanupTimeout: teardownOptions.cleanupTimeout || 10000,
@@ -373,7 +373,7 @@ export async function teardownErrorHandlingTests(teardownOptions = {}) {
  * @param {Object} [errorConfig.context] - Additional error context
  * @returns {Function} Express.js route handler that triggers the specified error condition
  */
-export function createTestErrorRoute(errorType, errorConfig = {}) {
+function createTestErrorRoute(errorType, errorConfig = {}) {
     const config = {
         message: errorConfig.message || `Test ${errorType} error`,
         statusCode: errorConfig.statusCode || 500,
@@ -543,7 +543,7 @@ export function createTestErrorRoute(errorType, errorConfig = {}) {
  * @param {Object} [validationOptions={}] - Additional validation options
  * @returns {Object} Validation result with assertion details and compliance status
  */
-export function validateErrorResponse(response, expectedError, environment, validationOptions = {}) {
+function validateErrorResponse(response, expectedError, environment, validationOptions = {}) {
     const options = {
         strictValidation: validationOptions.strictValidation !== false,
         validateSecurity: validationOptions.validateSecurity !== false,
@@ -851,7 +851,7 @@ export function validateErrorResponse(response, expectedError, environment, vali
  * @param {boolean} [testConfig.validateTiming] - Enable response timing validation
  * @returns {Promise<Object>} Promise resolving to HTTP error handling test results
  */
-export async function testHTTPErrorHandling(testConfig = {}) {
+async function testHTTPErrorHandling(testConfig = {}) {
     const config = {
         statusCodes: testConfig.statusCodes || [400, 401, 403, 404, 429, 500, 502, 503],
         customHeaders: testConfig.customHeaders || {
@@ -1063,7 +1063,7 @@ export async function testHTTPErrorHandling(testConfig = {}) {
  * @param {boolean} [validationTestConfig.testFieldMapping] - Test field-specific error mapping
  * @returns {Promise<Object>} Promise resolving to validation error handling test results
  */
-export async function testValidationErrorHandling(validationTestConfig = {}) {
+async function testValidationErrorHandling(validationTestConfig = {}) {
     const config = {
         testScenarios: validationTestConfig.testScenarios || [
             {
@@ -1304,7 +1304,7 @@ export async function testValidationErrorHandling(validationTestConfig = {}) {
  * @param {boolean} [securityTestConfig.testThreatDetection] - Enable threat detection testing
  * @returns {Promise<Object>} Promise resolving to security error handling test results
  */
-export async function testSecurityErrorHandling(securityTestConfig = {}) {
+async function testSecurityErrorHandling(securityTestConfig = {}) {
     const config = {
         securityScenarios: securityTestConfig.securityScenarios || [
             { type: 'csrf-violation', severity: 'high', message: 'CSRF token validation failed' },
@@ -1542,7 +1542,7 @@ export async function testSecurityErrorHandling(securityTestConfig = {}) {
  * @param {boolean} [asyncTestConfig.testPromiseRejection] - Test Promise rejection handling
  * @returns {Promise<Object>} Promise resolving to async error handling test results
  */
-export async function testAsyncErrorHandling(asyncTestConfig = {}) {
+async function testAsyncErrorHandling(asyncTestConfig = {}) {
     const config = {
         asyncScenarios: asyncTestConfig.asyncScenarios || [
             { type: 'promise-rejection', delay: 100, message: 'Async operation failed' },
@@ -1835,7 +1835,7 @@ export async function testAsyncErrorHandling(asyncTestConfig = {}) {
  * @param {boolean} [pm2TestConfig.testClusterMode] - Test cluster mode compatibility
  * @returns {Promise<Object>} Promise resolving to PM2 error handling test results
  */
-export async function testPM2ErrorHandling(pm2TestConfig = {}) {
+async function testPM2ErrorHandling(pm2TestConfig = {}) {
     const config = {
         pm2Scenarios: pm2TestConfig.pm2Scenarios || [
             { operation: 'restart', affectsCluster: false, severity: 'medium' },
@@ -2067,7 +2067,7 @@ export async function testPM2ErrorHandling(pm2TestConfig = {}) {
  * @param {Array} [environmentTestConfig.testScenarios] - Environment test scenarios
  * @returns {Promise<Object>} Promise resolving to environment error handling test results
  */
-export async function testErrorHandlingEnvironments(environmentTestConfig = {}) {
+async function testErrorHandlingEnvironments(environmentTestConfig = {}) {
     const config = {
         testScenarios: environmentTestConfig.testScenarios || [
             { errorType: 'http', statusCode: 500, message: 'Internal server error test' },
@@ -2250,7 +2250,7 @@ export async function testErrorHandlingEnvironments(environmentTestConfig = {}) 
  * @param {boolean} [crossPlatformConfig.testFormatParity] - Test response format compatibility
  * @returns {Promise<Object>} Promise resolving to cross-platform compatibility test results
  */
-export async function testCrossPlatformErrorCompatibility(crossPlatformConfig = {}) {
+async function testCrossPlatformErrorCompatibility(crossPlatformConfig = {}) {
     const config = {
         testFormatParity: crossPlatformConfig.testFormatParity !== false,
         environments: crossPlatformConfig.environments || ['development', 'production'],
@@ -2395,7 +2395,7 @@ export async function testCrossPlatformErrorCompatibility(crossPlatformConfig = 
  * @param {Object} [reportConfig.testResults] - All test results to include in report
  * @returns {Object} Comprehensive error handling test report with analysis and recommendations
  */
-export function generateErrorHandlingReport(reportConfig = {}) {
+function generateErrorHandlingReport(reportConfig = {}) {
     const config = {
         includePerformanceMetrics: reportConfig.includePerformanceMetrics !== false,
         includeSecurityAnalysis: reportConfig.includeSecurityAnalysis !== false,
