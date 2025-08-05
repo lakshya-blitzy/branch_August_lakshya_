@@ -425,7 +425,7 @@ export async function createIntegrationTestTemplate(integrationTestOptions = {})
       corsValidation: generateCORSValidationTests(),
       errorHandling: generateErrorHandlingTests(),
       requestLogging: generateRequestLoggingTests(),
-      rateLimit ing: generateRateLimitingTests()
+      rateLimiting: generateRateLimitingTests()
     };
 
     // Implement route integration testing with controller and service layer communication patterns
@@ -592,7 +592,7 @@ export async function createE2ETestTemplate(e2eTestOptions = {}) {
     const productionSecurityConfig = {
       securityHeaders: generateProductionSecurityHeaderTests(),
       attackSimulation: generateAttackSimulationTests(),
-      vulnerabilityScanning: generateVulnerabilityScannin Tests(),
+      vulnerabilityScanning: generateVulnerabilityScanningTests(),
       complianceValidation: generateComplianceValidationTests()
     };
 
@@ -1785,24 +1785,7 @@ async function generateMockTeardown(options) {
 // - Optimization algorithms
 
 // Export all public functions and constants
-export {
-  createUnitTestTemplate,
-  createIntegrationTestTemplate,
-  createE2ETestTemplate,
-  createPerformanceTestTemplate,
-  createSecurityTestTemplate,
-  createCrossPlatformTestTemplate,
-  createPM2TestTemplate,
-  generateTestImplementation,
-  validateTestTemplate,
-  generateTestDocumentation,
-  optimizeTestTemplate,
-  getTestTemplateRegistry,
-  TEST_TEMPLATE_VERSION,
-  SUPPORTED_TEST_TYPES,
-  SUPPORTED_FRAMEWORKS,
-  DEFAULT_TEST_OPTIONS
-};
+
 
 // Initialize module and log startup information
 logger.info('Test template factory module initialized successfully', {

@@ -1362,17 +1362,3 @@ describe('Rate Limiter Middleware Unit Tests', () => {
 });
 
 // Export test functions for external test runner integration
-export {
-    testBasicRateLimiting,
-    testEnvironmentSpecificConfigurations,
-    testEndpointSpecificLimiting,
-    testCustomKeyGeneration,
-    testDistributedStorageIntegration,
-    testSecurityFeatures,
-    testPerformanceAndScaling,
-    testErrorHandlingAndEdgeCases,
-    testConfigurationValidation,
-    testStatusMonitoringAndMetrics,
-    testAdministrativeOperations,
-    testCrossPlatformCompatibility
-};

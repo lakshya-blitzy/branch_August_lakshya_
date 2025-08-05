@@ -1626,13 +1626,9 @@ async function attemptRecovery(context, error, options) {
 
 // Export the TeardownManager class and teardown manager instance
 export { TeardownManager };
-export const teardownManager = new TeardownManager();
 
-// Export all utility functions for modular usage
+// Export teardown manager as default (other functions are individually exported above)
 export {
-  shutdownTestServers,
-  cleanupPM2Processes,
-  restoreEnvironmentVariables,
   teardownManager as default
 };
 

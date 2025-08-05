@@ -2019,7 +2019,7 @@ export function validateHealthResponseFormat(healthResponse, formatRequirements 
  * @param {Object} timingConfig - Timing measurement configuration
  * @returns {Object} Health check timing analysis with performance metrics
  */
-export function measureHealthCheckTiming(healthCheckFunction, timingConfig = {}) {
+export async function measureHealthCheckTiming(healthCheckFunction, timingConfig = {}) {
   const config = {
     iterations: timingConfig.iterations || 10,
     warmupRuns: timingConfig.warmupRuns || 3,
@@ -2229,21 +2229,7 @@ export function measureHealthCheckTiming(healthCheckFunction, timingConfig = {})
 }
 
 // Export all health monitoring test functions and utilities
-export {
-  setupHealthMonitoringTest,
-  teardownHealthMonitoringTest,
-  testHealthEndpointBasicFunctionality,
-  testQuickHealthValidation,
-  testComprehensiveHealthCheck,
-  testHealthMetricsCollection,
-  testCrossPlatformHealthCompatibility,
-  testHealthMonitoringIntegrationWithPM2,
-  testHealthMonitoringPerformance,
-  testHealthMonitoringSecurity,
-  testHealthMonitoringErrorScenarios,
-  validateHealthResponseFormat,
-  measureHealthCheckTiming
-};
+
 
 // Test suite implementation using the comprehensive test functions
 describe('Health Monitoring E2E Test Suite', () => {

@@ -1905,15 +1905,6 @@ const helloRouter = await createHelloRouter({
 
 // Export all route functions and utilities for application integration
 export {
-  createHelloRouter as helloRouter,
-  createHelloRouter as createHelloRoute,
-  initializeHelloRoute,
-  validateHelloRoute,
-  getHelloRouteHealth,
-  configureHelloRouteMetrics,
-  optimizeHelloRoutePerformance,
-  
-  // Export configuration and state for monitoring
   HELLO_ROUTE_CONFIG,
   ROUTE_METRICS,
   ROUTE_INITIALIZED

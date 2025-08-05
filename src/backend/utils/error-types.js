@@ -3136,19 +3136,6 @@ function getErrorOrigin(stack) {
 
 // Export all error classes and utility functions
 export {
-  BaseError,
-  HTTPError,
-  ValidationError,
-  SecurityError,
-  PM2Error,
-  createErrorResponse,
-  isOperationalError,
-  sanitizeErrorForResponse,
-  classifyErrorSeverity,
-  createErrorFromCode,
-  formatErrorForLogging,
-  validateErrorInstance,
-  
   // Global error tracking
   ERROR_REGISTRY,
   OPERATIONAL_ERROR_TYPES,

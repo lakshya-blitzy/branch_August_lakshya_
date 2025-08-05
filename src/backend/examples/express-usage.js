@@ -2011,19 +2011,7 @@ if (process.env.NODE_ENV === 'development') {
   printExpressUsageInstructions();
 }
 
-// Export all demonstration functions and utilities for educational use
-export {
-  demonstrateExpressConfiguration,
-  demonstrateMiddlewareIntegration,
-  demonstrateRouteHandling,
-  demonstrateSecurityFeatures,
-  demonstratePerformanceOptimization,
-  demonstrateProductionDeployment,
-  demonstrateCrossPlatformCompatibility,
-  demonstrateTestingIntegration,
-  printExpressUsageInstructions,
-  cleanup
-};
+// All demonstration functions are individually exported above
 
 // Module initialization completion logging
 logger.info('Express.js Usage Examples module loaded successfully', {

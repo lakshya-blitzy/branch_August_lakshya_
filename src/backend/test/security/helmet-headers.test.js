@@ -1850,15 +1850,3 @@ function generateSecurityRecommendations(headers) {
 }
 
 // Export all test functions and utilities for comprehensive security testing
-export {
-  setupSecurityTestSuite,
-  teardownSecurityTestSuite,
-  testHelmetSecurityHeaders,
-  testContentSecurityPolicy,
-  testEnvironmentSpecificSecurity,
-  testSecurityHeaderPerformance,
-  testSecurityCompliance,
-  testSecurityHeaderIntegration,
-  testCrossPlatformSecurityParity,
-  validateSecurityTestCoverage
-};

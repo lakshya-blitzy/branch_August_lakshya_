@@ -159,7 +159,7 @@ function formatHTTPResponse(res, options = {}) {
  * @param {Object} [options.correlationConfig] - Correlation tracking configuration
  * @returns {Function} Express.js middleware function with (req, res, next) signature for HTTP request logging
  */
-export function createRequestLogger(options = {}) {
+export function createMiddlewareRequestLogger(options = {}) {
   // Validate and merge middleware options with environment-specific defaults
   const config = {
     logLevel: options.logLevel || environmentConfig.middleware?.logging?.level || ENV_CONSTANTS.LOG_LEVELS.INFO,
@@ -820,7 +820,7 @@ export function createDevelopmentLogger(devOptions = {}) {
     middleware: 'development-logger'
   });
 
-  return createRequestLogger({
+  return createMiddlewareRequestLogger({
     ...config,
     logLevel: ENV_CONSTANTS.LOG_LEVELS.DEBUG,
     enableEducationalMode: true,
@@ -878,7 +878,7 @@ export function createProductionLogger(prodOptions = {}) {
     middleware: 'production-logger'
   });
 
-  return createRequestLogger(config);
+  return createMiddlewareRequestLogger(config);
 }
 
 /**
@@ -1476,7 +1476,7 @@ function generateLearningInsights(metrics) {
 }
 
 // Create and export default request logger instance
-const requestLogger = createRequestLogger({
+const requestLogger = createMiddlewareRequestLogger({
   enableEducationalMode: !environmentConfig.isProduction,
   enablePerformanceMonitoring: true,
   enableSecurityLogging: true
@@ -1485,15 +1485,6 @@ const requestLogger = createRequestLogger({
 // Export all logging functions and utilities
 export {
   requestLogger as default,
-  requestLogger,
-  logHTTPRequest,
-  logHTTPResponse,
-  logSecurityMiddlewareEvent,
-  createSecurityLogger,
-  logPerformanceData,
-  createDevelopmentLogger,
-  createProductionLogger,
-  getLoggerMetrics,
-  validateLoggerConfig,
-  createFlaskCompatibleLogger
+  requestLogger
+  // All other functions are individually exported above
 };

@@ -1008,8 +1008,7 @@ export function configureReporters(reporterConfig = {}) {
       enabled: true,
       learningMetrics: {
         conceptsCovered: true,
-        skillsDemo 
-        stratersatedrated: true,
+        skillsDemonstrated: true,
         progressTracking: true,
         difficultyAssessment: true
       },

@@ -2310,16 +2310,4 @@ function generateMonitoringRecommendations(sessionData) {
   ];
 }
 
-// Export health controller functions for use in routing
-export {
-  getHealthStatus,
-  getQuickHealth,
-  getHealthMetrics,
-  startHealthMonitoring,
-  stopHealthMonitoring,
-  getFlaskCompatibilityHealth,
-  validateHealthRequest,
-  formatHealthResponse,
-  logHealthRequest,
-  handleHealthError
-};
+// All health controller functions are individually exported above

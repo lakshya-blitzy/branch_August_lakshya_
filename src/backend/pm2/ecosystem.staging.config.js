@@ -2667,51 +2667,26 @@ const stagingEcosystem = createStagingEcosystemConfig();
 const stagingApp = configureStagingApp(STAGING_APP_NAME, STAGING_SCRIPT_PATH);
 
 // Export staging cluster configuration
-const stagingClusterConfig = setupStagingCluster();
+const localStagingClusterConfig = setupStagingCluster();
 
 // Export staging monitoring configuration
-const stagingMonitoringConfig = configureStagingMonitoring();
+const localStagingMonitoringConfig = configureStagingMonitoring();
 
 // Export staging log configuration
 const stagingLogConfig = setupStagingLogging();
 
 // Export all configuration functions and objects
 export {
-    // Main ecosystem configuration
-    stagingEcosystem,
-    createStagingEcosystemConfig,
-    
-    // Application configuration
-    configureStagingApp,
-    stagingApp,
-    
-    // Cluster configuration
-    setupStagingCluster,
-    stagingClusterConfig,
-    
-    // Monitoring configuration
-    configureStagingMonitoring,
-    stagingMonitoringConfig,
-    
-    // Logging configuration
-    setupStagingLogging,
-    stagingLogConfig,
-    
-    // Deployment configuration
-    configureStagingDeployment,
-    
-    // Validation and optimization
-    validateStagingConfig,
-    optimizeStagingPerformance,
-    
-    // Global staging constants
-    STAGING_ECOSYSTEM_VERSION,
-    STAGING_APP_NAME,
-    STAGING_SCRIPT_PATH,
-    STAGING_ENVIRONMENT,
-    STAGING_CPU_CORES,
-    STAGING_PORT,
-    STAGING_MEMORY_LIMIT
+  stagingApp,
+  localStagingClusterConfig,
+  localStagingMonitoringConfig,
+  stagingLogConfig,
+  STAGING_APP_NAME,
+  STAGING_SCRIPT_PATH,
+  STAGING_ENVIRONMENT,
+  STAGING_CPU_CORES,
+  STAGING_PORT,
+  STAGING_MEMORY_LIMIT
 };
 
 // Initialize staging ecosystem configuration

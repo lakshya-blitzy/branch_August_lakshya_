@@ -272,7 +272,7 @@ export function parseCommandLineArguments(argv = process.argv) {
  * @param {Object} startupOptions - Parsed startup options from command line
  * @returns {Object} Validation result with status, errors, warnings, and prerequisite check details
  */
-export function validateStartupPrerequisites(startupOptions) {
+export async function validateStartupPrerequisites(startupOptions) {
   info('Validating startup prerequisites', { 
     options: startupOptions,
     correlationId: STARTUP_CORRELATION_ID 

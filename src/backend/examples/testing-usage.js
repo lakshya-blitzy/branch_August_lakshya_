@@ -2208,20 +2208,7 @@ async function generateTestingReport() {
   };
 }
 
-// Export all testing functions and utilities for comprehensive testing demonstration
-export {
-  runTestingUsageExample,
-  demonstrateJestTesting,
-  demonstrateMochaTesting,
-  demonstrateHTTPEndpointTesting,
-  demonstrateSecurityTesting,
-  demonstratePerformanceTesting,
-  demonstrateCrossPlatformTesting,
-  demonstratePM2Testing,
-  demonstrateTestCoverage,
-  printTestingUsageInstructions,
-  cleanup
-};
+// All testing functions are individually exported above
 
 // Log testing usage example module initialization
 logger.info('🎓 Testing Usage Example Module Initialized', {

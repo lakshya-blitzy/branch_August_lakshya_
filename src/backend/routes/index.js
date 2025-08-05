@@ -2469,28 +2469,10 @@ const routes = await createRoutesAggregator({
 
 // Export all route aggregation functions and utilities
 export {
-  // Main route aggregator
   routes,
-  routes as default,
-  
-  // Route aggregation functions
-  createRoutesAggregator,
-  initializeRoutes,
-  validateRoutes,
-  getRoutesHealth,
-  configureRouteMetrics,
-  optimizeRoutesPerformance,
-  
-  // Route registry management
-  registerRoute,
-  getRouteRegistry,
-  
-  // Re-export individual route modules for direct access
   helloRouter,
   goodEveningRouter,
   healthRouter,
-  
-  // Route factory functions
   createHelloRoute,
   createGoodEveningRoute,
   createHealthRoutes

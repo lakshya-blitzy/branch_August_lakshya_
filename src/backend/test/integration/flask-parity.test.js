@@ -2489,20 +2489,8 @@ afterAll(async () => {
 }, 30000); // 30 second timeout
 
 // Export all functions and classes for external use
+// Export global variables for test access
 export {
-  // Core functions
-  setupCrossPlatformTest,
-  teardownCrossPlatformTest,
-  compareHTTPResponses,
-  validateSecurityHeaderParity,
-  testEndpointParity,
-  runCrossPlatformTestSuite,
-  generateParityReport,
-  
-  // Test runner class
-  CrossPlatformTestRunner,
-  
-  // Global variables for test access
   expressApp,
   flaskProcess,
   testHelpers,

@@ -1339,18 +1339,8 @@ export function createFlaskCompatibleController(controllerType, compatibilityOpt
   return flaskCompatibleController;
 }
 
-// Export all controller functions and utilities for Express.js routing integration
+// Export global state for monitoring and debugging (functions are individually exported above)
 export {
-  hello,
-  goodEvening,
-  validateRequestMethod,
-  handleControllerError,
-  createRequestContext,
-  handleOptionsRequest,
-  trackControllerPerformance,
-  createFlaskCompatibleController,
-  
-  // Export global state for monitoring and debugging
   REQUEST_METRICS,
   CONTROLLER_CACHE,
   CORS_HEADERS

@@ -1742,16 +1742,7 @@ export const errorFixtures = {
 };
 
 // Export factory functions and utilities
-export {
-  createHTTPErrorFixture,
-  createValidationErrorFixture,
-  createSecurityErrorFixture,
-  createPM2ErrorFixture,
-  createCrossPlatformErrorFixture,
-  generateErrorVariations,
-  cacheErrorFixture,
-  initializeErrorFixtures
-};
+
 
 /**
  * Module Summary and Educational Notes:
