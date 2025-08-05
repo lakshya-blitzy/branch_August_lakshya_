@@ -32,7 +32,7 @@ import { createHelmetConfigMiddleware } from './helmet-config.js';
 import { configureCorsForEnvironment } from './cors.js';
 import { createRateLimiterMiddleware } from './rate-limiter.js';
 import { createRequestLogger } from './logger.js';
-import { errorHandler } from './error-handler.js';
+import errorHandler from './error-handler.js';
 
 // Internal utility and configuration imports
 import {
@@ -121,7 +121,7 @@ const SECURITY_METRICS = {
  * @param {Object} [securityOptions.educationalMode] - Educational insights configuration
  * @returns {Function} Express.js middleware function with comprehensive security protection
  */
-export function createSecurityMiddleware(securityOptions = {}) {
+function createSecurityMiddleware(securityOptions = {}) {
   // Validate security options and apply environment-specific default configurations
   const securityConfig = {
     environment: securityOptions.environment || config.environment?.current || 'development',
@@ -311,7 +311,7 @@ export function createSecurityMiddleware(securityOptions = {}) {
  * @param {boolean} [validationOptions.strictMode=false] - Enable strict validation mode
  * @returns {Object} Request validation result with security status, violations, and sanitized data
  */
-export function validateRequest(req, validationOptions = {}) {
+function validateRequest(req, validationOptions = {}) {
   const config = {
     enabledValidations: validationOptions.enabledValidations || [
       'headers', 'query', 'body', 'url', 'method', 'size'
@@ -468,7 +468,7 @@ export function validateRequest(req, validationOptions = {}) {
  * @param {Object} [clientContext.geoLocation] - Client geographical location
  * @returns {Object} Threat detection result with risk score, threat type, and response actions
  */
-export function detectThreats(req, clientContext = {}) {
+function detectThreats(req, clientContext = {}) {
   const threatAnalysis = {
     riskScore: 0,
     threatTypes: [],
@@ -599,7 +599,7 @@ export function detectThreats(req, clientContext = {}) {
  * @param {boolean} [enforcementOptions.enableAlerting=true] - Enable security alerting
  * @returns {Object} Security enforcement result with applied actions and monitoring updates
  */
-export function enforceSecurityPolicies(securityViolation, enforcementOptions = {}) {
+function enforceSecurityPolicies(securityViolation, enforcementOptions = {}) {
   const config = {
     enforcementMode: enforcementOptions.enforcementMode || 'moderate',
     enableBlocking: enforcementOptions.enableBlocking ?? true,
@@ -741,7 +741,7 @@ export function enforceSecurityPolicies(securityViolation, enforcementOptions = 
  * @param {Object} [headerOptions={}] - Custom header generation options
  * @returns {Object} Complete security headers object ready for HTTP response application
  */
-export function createSecurityHeaders(req, environment = 'development', headerOptions = {}) {
+function createSecurityHeaders(req, environment = 'development', headerOptions = {}) {
   const config = {
     environment,
     strictMode: headerOptions.strictMode ?? (environment === 'production'),
@@ -861,7 +861,7 @@ export function createSecurityHeaders(req, environment = 'development', headerOp
  * @param {boolean} [monitoringConfig.enableEducationalInsights=false] - Enable educational insights
  * @returns {void} No return value, updates security metrics and triggers alerts as side effects
  */
-export function monitorSecurityMetrics(securityEvent, monitoringConfig = {}) {
+function monitorSecurityMetrics(securityEvent, monitoringConfig = {}) {
   const config = {
     enableRealTimeAlerts: monitoringConfig.enableRealTimeAlerts ?? true,
     enableTrendAnalysis: monitoringConfig.enableTrendAnalysis ?? true,
@@ -964,7 +964,7 @@ export function monitorSecurityMetrics(securityEvent, monitoringConfig = {}) {
  * @param {boolean} [sanitizationOptions.enableEducationalMode=false] - Enable educational insights
  * @returns {Object} Sanitized security context safe for logging and external monitoring systems
  */
-export function sanitizeSecurityContext(securityContext, sanitizationOptions = {}) {
+function sanitizeSecurityContext(securityContext, sanitizationOptions = {}) {
   const config = {
     sensitiveFields: sanitizationOptions.sensitiveFields || [
       'password', 'token', 'secret', 'key', 'authorization', 'cookie',
@@ -1115,7 +1115,7 @@ export function sanitizeSecurityContext(securityContext, sanitizationOptions = {
  * @param {string} timeRange - Time range for report data aggregation (e.g., '24h', '7d', '30d')
  * @returns {Object} Comprehensive security report with analytics, trends, and recommendations
  */
-export function createSecurityReport(reportOptions = {}, timeRange = '24h') {
+function createSecurityReport(reportOptions = {}, timeRange = '24h') {
   const config = {
     reportType: reportOptions.reportType || 'comprehensive',
     includeEducationalInsights: reportOptions.includeEducationalInsights ?? false,
@@ -1280,7 +1280,7 @@ export function createSecurityReport(reportOptions = {}, timeRange = '24h') {
  * @param {Function} next - Express next function for middleware continuation
  * @returns {void} No return value, handles security violation as middleware side effect
  */
-export function handleSecurityViolation(violation, req, res, next) {
+function handleSecurityViolation(violation, req, res, next) {
   const startTime = Date.now();
   
   try {
@@ -1399,7 +1399,7 @@ export function handleSecurityViolation(violation, req, res, next) {
  * @param {boolean} [optimizationConfig.enableEducationalMode=false] - Enable educational insights
  * @returns {Object} Security performance optimization results with improvements and recommendations
  */
-export function optimizeSecurityPerformance(performanceMetrics, optimizationConfig = {}) {
+function optimizeSecurityPerformance(performanceMetrics, optimizationConfig = {}) {
   const config = {
     enableCaching: optimizationConfig.enableCaching ?? true,
     enableAdaptiveOptimization: optimizationConfig.enableAdaptiveOptimization ?? true,

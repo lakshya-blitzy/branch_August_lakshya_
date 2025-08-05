@@ -65,7 +65,7 @@ import {
   httpEndpoints,
   performanceBenchmarks,
   errorScenarios
-} from '../fixtures/test-data.json';
+} from '../fixtures/test-data.js';
 
 // Global Test Variables - Server Instance Management
 let TEST_SERVER_INSTANCE = null;

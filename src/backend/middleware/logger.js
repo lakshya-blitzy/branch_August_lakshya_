@@ -34,7 +34,6 @@ import logger, {
   generateRequestId,
   logPerformanceMetrics,
   logSecurityEvent,
-  createRequestLogger,
   formatLogMessage
 } from '../utils/logger.js';
 
@@ -45,7 +44,7 @@ import {
   PM2_CONSTANTS
 } from '../utils/constants.js';
 
-import { environmentConfig } from '../config/environment.js';
+import { defaultEnvironmentConfig as environmentConfig } from '../config/environment.js';
 
 // Global middleware state management for PM2 cluster compatibility
 let LOGGER_MIDDLEWARE_INITIALIZED = false;
@@ -159,7 +158,7 @@ function formatHTTPResponse(res, options = {}) {
  * @param {Object} [options.correlationConfig] - Correlation tracking configuration
  * @returns {Function} Express.js middleware function with (req, res, next) signature for HTTP request logging
  */
-export function createRequestLogger(options = {}) {
+function createRequestLogger(options = {}) {
   // Validate and merge middleware options with environment-specific defaults
   const config = {
     logLevel: options.logLevel || environmentConfig.middleware?.logging?.level || ENV_CONSTANTS.LOG_LEVELS.INFO,
@@ -344,7 +343,7 @@ export function createRequestLogger(options = {}) {
  * @param {Object} context - Additional context information for logging
  * @returns {void} No return value, performs request logging side effect with structured output
  */
-export function logHTTPRequest(req, correlationId, context = {}) {
+function logHTTPRequest(req, correlationId, context = {}) {
   // Extract HTTP request method, URL, and query parameters for request identification
   const requestData = {
     method: req.method,
@@ -459,7 +458,7 @@ export function logHTTPRequest(req, correlationId, context = {}) {
  * @param {Object} [context={}] - Additional context for logging
  * @returns {void} No return value, performs response logging side effect with performance metrics
  */
-export function logHTTPResponse(req, res, correlationId, responseTime, context = {}) {
+function logHTTPResponse(req, res, correlationId, responseTime, context = {}) {
   // Format response information using utility function for consistent output
   const responseData = formatHTTPResponse(res, {
     includeSecurityAnalysis: context.enableEducationalMode,
@@ -568,7 +567,7 @@ export function logHTTPResponse(req, res, correlationId, responseTime, context =
  * @param {string} correlationId - Request correlation identifier
  * @returns {void} No return value, performs security event logging side effect with threat monitoring
  */
-export function logSecurityMiddlewareEvent(eventType, securityContext, req, correlationId) {
+function logSecurityMiddlewareEvent(eventType, securityContext, req, correlationId) {
   // Classify security event type and determine appropriate severity level
   const eventSeverity = classifySecurityEventSeverity(eventType);
   const threatLevel = assessThreatLevel(eventType, securityContext);
@@ -649,7 +648,7 @@ export function logSecurityMiddlewareEvent(eventType, securityContext, req, corr
  * @param {boolean} [securityOptions.enableThreatDetection=true] - Enable automated threat detection
  * @returns {Function} Security logging middleware function for integration with security middleware stack
  */
-export function createSecurityLogger(securityOptions = {}) {
+function createSecurityLogger(securityOptions = {}) {
   // Validate security logging configuration and merge with defaults
   const config = {
     enabledEvents: securityOptions.enabledEvents || [
@@ -728,7 +727,7 @@ export function createSecurityLogger(securityOptions = {}) {
  * @param {Object} [context={}] - Additional context for performance logging
  * @returns {void} No return value, performs performance logging side effect with metrics collection
  */
-export function logPerformanceData(performanceMetrics, correlationId, context = {}) {
+function logPerformanceData(performanceMetrics, correlationId, context = {}) {
   // Extract and enhance performance metrics with system information
   const enhancedMetrics = {
     ...performanceMetrics,
@@ -800,7 +799,7 @@ export function logPerformanceData(performanceMetrics, correlationId, context = 
  * @param {boolean} [devOptions.enableEducationalMode=true] - Enable educational insights
  * @returns {Function} Development logging middleware with enhanced debugging and educational features
  */
-export function createDevelopmentLogger(devOptions = {}) {
+function createDevelopmentLogger(devOptions = {}) {
   const config = {
     verboseLogging: devOptions.verboseLogging ?? true,
     includeStackTraces: devOptions.includeStackTraces ?? true,
@@ -843,7 +842,7 @@ export function createDevelopmentLogger(devOptions = {}) {
  * @param {boolean} [prodOptions.enableSecurityCompliance=true] - Enable security-compliant logging
  * @returns {Function} Production logging middleware optimized for performance and security compliance
  */
-export function createProductionLogger(prodOptions = {}) {
+function createProductionLogger(prodOptions = {}) {
   const config = {
     enableStructuredLogging: prodOptions.enableStructuredLogging ?? true,
     enableLogRotation: prodOptions.enableLogRotation ?? true,
@@ -890,7 +889,7 @@ export function createProductionLogger(prodOptions = {}) {
  * @param {boolean} [metricsOptions.includePerformanceMetrics=true] - Include performance data
  * @returns {Object} Detailed logging metrics with performance data, security events, and educational insights
  */
-export function getLoggerMetrics(metricsOptions = {}) {
+function getLoggerMetrics(metricsOptions = {}) {
   const config = {
     includeSecurityMetrics: metricsOptions.includeSecurityMetrics ?? true,
     includePerformanceMetrics: metricsOptions.includePerformanceMetrics ?? true,
@@ -985,7 +984,7 @@ export function getLoggerMetrics(metricsOptions = {}) {
  * @param {Object} [config.securityConfig] - Security logging configuration
  * @returns {Object} Comprehensive validation result with status, warnings, security analysis, and optimization recommendations
  */
-export function validateLoggerConfig(config) {
+function validateLoggerConfig(config) {
   const validationResult = {
     isValid: true,
     errors: [],
@@ -1104,7 +1103,7 @@ export function validateLoggerConfig(config) {
  * @param {boolean} [flaskConfig.enableFlaskHeaders=true] - Enable Flask-style header logging
  * @returns {Object} Flask-compatible logger interface with consistent formatting and correlation tracking
  */
-export function createFlaskCompatibleLogger(flaskConfig = {}) {
+function createFlaskCompatibleLogger(flaskConfig = {}) {
   const config = {
     logFormat: flaskConfig.logFormat || 'flask-style',
     enableFlaskHeaders: flaskConfig.enableFlaskHeaders ?? true,
@@ -1495,5 +1494,6 @@ export {
   createProductionLogger,
   getLoggerMetrics,
   validateLoggerConfig,
-  createFlaskCompatibleLogger
+  createFlaskCompatibleLogger,
+  createRequestLogger
 };

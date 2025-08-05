@@ -65,7 +65,7 @@ import {
   testEnvironments,
   pm2TestData,
   validationRules
-} from '../fixtures/test-data.json';
+} from '../fixtures/test-data.js';
 
 // Global test state management for PM2 compatibility and test isolation
 let EXPRESS_APP_INSTANCE = null;

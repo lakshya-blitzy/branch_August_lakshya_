@@ -2,28 +2,27 @@
 // Validates HTTP server performance under various load conditions
 // Uses Jest testing framework with SuperTest and Autocannon integration
 
-const supertest = require('supertest'); // v6.3.3 - SuperAgent driven HTTP testing library
-const autocannon = require('autocannon'); // v7.15.0 - High-performance HTTP load testing library
-const process = require('node:process'); // built-in - Node.js process module for memory and CPU monitoring
-const { EventEmitter } = require('node:events'); // built-in - Node.js events module for test coordination
+import supertest from 'supertest'; // v6.3.3 - SuperAgent driven HTTP testing library
+import autocannon from 'autocannon'; // v7.15.0 - High-performance HTTP load testing library
+import process from 'node:process'; // built-in - Node.js process module for memory and CPU monitoring
+import { EventEmitter } from 'node:events'; // built-in - Node.js events module for test coordination
 
 // Internal imports - Express.js application and production configurations
-const createApp = require('../../app.js');
-const { createProductionApp } = require('../../app.js');
+import createApp, { createProductionApp } from '../../app.js';
 
 // Import constants for performance thresholds and validation criteria
-const {
+import {
   PERFORMANCE_CONSTANTS,
   TESTING_CONSTANTS,
   PM2_CONSTANTS,
   HTTP_CONSTANTS
-} = require('../../utils/constants.js');
+} from '../../utils/constants.js';
 
 // Import test data for endpoints and performance benchmarks
-const {
+import {
   httpEndpoints,
   performanceBenchmarks
-} = require('../fixtures/test-data.json');
+} from '../fixtures/test-data.js';
 
 // Global test environment variables
 let TEST_SERVER_INSTANCE = null;

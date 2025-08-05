@@ -77,7 +77,7 @@ import {
   crossPlatformTestData,
   securityTestData,
   performanceBenchmarks
-} from '../fixtures/test-data.json';
+} from '../fixtures/test-data.js';
 
 // Global test configuration and server instance management
 let expressServer = null; // Express.js server instance for cross-platform comparison

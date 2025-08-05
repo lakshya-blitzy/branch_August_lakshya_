@@ -92,7 +92,6 @@ import logger, {
 import {
   HTTPError,
   ValidationError,
-  RouteError,
   createErrorResponse
 } from '../utils/error-types.js';
 
@@ -133,7 +132,7 @@ const HELLO_ROUTE_CONFIG = {
  * @param {Object} [routerOptions.customMiddleware] - Custom middleware configuration overrides
  * @returns {Object} Configured Express.js Router instance with hello endpoints and comprehensive middleware protection
  */
-export async function createHelloRouter(routerOptions = {}) {
+async function createHelloRouter(routerOptions = {}) {
   // Generate correlation ID for router creation tracking and distributed system debugging
   const correlationId = generateRequestId({
     prefix: 'router-create',
@@ -191,7 +190,7 @@ export async function createHelloRouter(routerOptions = {}) {
     });
 
     if (!stackValidation.isValid) {
-      throw new RouteError(
+      throw new HTTPError(
         'Middleware stack validation failed for hello router',
         'MIDDLEWARE_VALIDATION_ERROR',
         {
@@ -451,8 +450,8 @@ export async function createHelloRouter(routerOptions = {}) {
       options: routerOptions
     });
 
-    // Throw RouteError for upstream error handling and monitoring system notification
-    throw new RouteError(
+    // Throw HTTPError for upstream error handling and monitoring system notification
+    throw new HTTPError(
       `Hello router creation failed: ${error.message}`,
       'ROUTER_CREATION_ERROR',
       {
@@ -478,7 +477,7 @@ export async function createHelloRouter(routerOptions = {}) {
  * @param {Object} [initOptions.customConfig] - Custom configuration overrides
  * @returns {Promise<Object>} Promise that resolves with route initialization status and configuration details
  */
-export async function initializeHelloRoute(initOptions = {}) {
+async function initializeHelloRoute(initOptions = {}) {
   const correlationId = generateRequestId({
     prefix: 'hello-init',
     metadata: { options: initOptions }
@@ -516,7 +515,7 @@ export async function initializeHelloRoute(initOptions = {}) {
       });
 
       if (!configValidation.isValid) {
-        throw new RouteError(
+        throw new HTTPError(
           'Hello route configuration validation failed',
           'CONFIGURATION_VALIDATION_ERROR',
           {
@@ -542,7 +541,7 @@ export async function initializeHelloRoute(initOptions = {}) {
     });
 
     if (!controllerInitialization.success) {
-      throw new RouteError(
+      throw new HTTPError(
         'Hello controller initialization failed',
         'CONTROLLER_INITIALIZATION_ERROR',
         {
@@ -561,7 +560,7 @@ export async function initializeHelloRoute(initOptions = {}) {
     });
 
     if (!middlewareInitialization.success) {
-      throw new RouteError(
+      throw new HTTPError(
         'Hello route middleware initialization failed',
         'MIDDLEWARE_INITIALIZATION_ERROR',
         {
@@ -715,8 +714,8 @@ export async function initializeHelloRoute(initOptions = {}) {
     // Update route initialization status to failed for monitoring systems
     ROUTE_INITIALIZED = false;
 
-    // Throw RouteError with initialization context for upstream error handling
-    throw new RouteError(
+    // Throw HTTPError with initialization context for upstream error handling
+    throw new HTTPError(
       `Hello route initialization failed: ${error.message}`,
       'ROUTE_INITIALIZATION_ERROR',
       {
@@ -742,7 +741,7 @@ export async function initializeHelloRoute(initOptions = {}) {
  * @param {Object} [validationOptions.customConfig] - Custom configuration to validate
  * @returns {Promise<Object>} Comprehensive validation result with route analysis, security assessment, and optimization recommendations
  */
-export async function validateHelloRoute(validationOptions = {}) {
+async function validateHelloRoute(validationOptions = {}) {
   const correlationId = validationOptions.correlationId || generateRequestId({ prefix: 'hello-validate' });
   const startTime = Date.now();
 
@@ -1003,7 +1002,7 @@ export async function validateHelloRoute(validationOptions = {}) {
  * @param {boolean} [healthOptions.includeDependencyHealth=true] - Include dependency health checks
  * @returns {Promise<Object>} Comprehensive hello route health report with performance metrics and status information
  */
-export async function getHelloRouteHealth(healthOptions = {}) {
+async function getHelloRouteHealth(healthOptions = {}) {
   const correlationId = healthOptions.correlationId || generateRequestId({ prefix: 'hello-health' });
   const startTime = Date.now();
 
@@ -1210,7 +1209,7 @@ export async function getHelloRouteHealth(healthOptions = {}) {
  * @param {Object} [metricsConfig.customThresholds] - Custom alert thresholds and monitoring rules
  * @returns {Promise<Object>} Hello route metrics configuration with collection setup and monitoring integration
  */
-export async function configureHelloRouteMetrics(metricsConfig = {}) {
+async function configureHelloRouteMetrics(metricsConfig = {}) {
   const correlationId = metricsConfig.correlationId || generateRequestId({ prefix: 'hello-metrics' });
   const startTime = Date.now();
 
@@ -1480,7 +1479,7 @@ export async function configureHelloRouteMetrics(metricsConfig = {}) {
  * @param {Object} [optimizationOptions.targetMetrics] - Target performance metrics for optimization
  * @returns {Promise<Object>} Hello route performance optimization results with recommendations and educational insights
  */
-export async function optimizeHelloRoutePerformance(optimizationOptions = {}) {
+async function optimizeHelloRoutePerformance(optimizationOptions = {}) {
   const correlationId = optimizationOptions.correlationId || generateRequestId({ prefix: 'hello-optimize' });
   const startTime = Date.now();
 

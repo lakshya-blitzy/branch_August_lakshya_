@@ -22,7 +22,7 @@
  * - Express.js application factory integration via createApp import
  * - Production-hardened application testing via createProductionApp
  * - Comprehensive test helper ecosystem via test-helpers.js functions
- * - Cross-platform test data management via test-data.json fixtures
+ * - Cross-platform test data management via test-data.js fixtures
  * - Flask application process management via Node.js child_process
  * - HTTP testing via SuperTest for Express.js and axios for Flask
  * - Performance monitoring and measurement utilities integration
@@ -62,7 +62,7 @@ import {
   httpEndpoints,
   securityTestData,
   performanceBenchmarks
-} from '../fixtures/test-data.json';
+} from '../fixtures/test-data.js';
 
 // Global test configuration and state management
 let expressApp = null; // Express.js application instance

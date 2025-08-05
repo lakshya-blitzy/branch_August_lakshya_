@@ -60,7 +60,7 @@ import {
   securityTestData,
   performanceBenchmarks,
   validationRules
-} from '../../fixtures/test-data.json';
+} from '../../fixtures/test-data.js';
 
 // Global test state management for security testing isolation
 let TEST_APP = null;

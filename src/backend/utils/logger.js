@@ -144,7 +144,7 @@ async function ensureLogDirectory(logPath) {
  * @param {Object} [options.metadata] - Additional metadata for all log entries
  * @returns {Object} Configured logger instance with debug, info, warn, error methods and context management
  */
-export function createLogger(options = {}) {
+function createLogger(options = {}) {
   const config = {
     level: options.level || CURRENT_LOG_LEVEL,
     name: options.name || 'app',
@@ -189,7 +189,7 @@ export function createLogger(options = {}) {
  * @param {Object} [context={}] - Additional context information
  * @returns {void} No return value, performs logging side effect
  */
-export function debug(message, context = {}) {
+function debug(message, context = {}) {
   if (!shouldLog(ENV_CONSTANTS.LOG_LEVELS.DEBUG)) return;
 
   const logEntry = formatLogMessage(ENV_CONSTANTS.LOG_LEVELS.DEBUG, message, {
@@ -221,7 +221,7 @@ export function debug(message, context = {}) {
  * @param {Object} [context={}] - Additional context information
  * @returns {void} No return value, performs logging side effect
  */
-export function info(message, context = {}) {
+function info(message, context = {}) {
   if (!shouldLog(ENV_CONSTANTS.LOG_LEVELS.INFO)) return;
 
   const logEntry = formatLogMessage(ENV_CONSTANTS.LOG_LEVELS.INFO, message, context);
@@ -249,7 +249,7 @@ export function info(message, context = {}) {
  * @param {Object} [context={}] - Additional context information
  * @returns {void} No return value, performs logging side effect
  */
-export function warn(message, context = {}) {
+function warn(message, context = {}) {
   if (!shouldLog(ENV_CONSTANTS.LOG_LEVELS.WARN)) return;
 
   const logEntry = formatLogMessage(ENV_CONSTANTS.LOG_LEVELS.WARN, message, {
@@ -281,7 +281,7 @@ export function warn(message, context = {}) {
  * @param {Object} [context={}] - Additional context information
  * @returns {void} No return value, performs logging side effect
  */
-export function logError(message, error = null, context = {}) {
+function logError(message, error = null, context = {}) {
   PERFORMANCE_METRICS.errors++;
 
   const errorContext = {
@@ -322,7 +322,7 @@ export function logError(message, error = null, context = {}) {
  * @param {number} [options.length] - Length of random component
  * @returns {string} Unique request correlation ID for distributed request tracking
  */
-export function generateRequestId(options = {}) {
+function generateRequestId(options = {}) {
   const config = {
     prefix: options.prefix || 'req',
     length: options.length || 16,
@@ -376,7 +376,7 @@ export function generateRequestId(options = {}) {
  * @param {Object} [context={}] - Additional context information
  * @returns {void} No return value, performs performance logging side effect
  */
-export function logPerformanceMetrics(metrics, context = {}) {
+function logPerformanceMetrics(metrics, context = {}) {
   const performanceData = {
     ...metrics,
     system: getSystemInfo(),
@@ -435,7 +435,7 @@ export function logPerformanceMetrics(metrics, context = {}) {
  * @param {Object} [requestContext={}] - Request context information
  * @returns {void} No return value, performs security logging side effect
  */
-export function logSecurityEvent(eventType, securityContext, requestContext = {}) {
+function logSecurityEvent(eventType, securityContext, requestContext = {}) {
   // Sanitize security context to prevent sensitive data exposure
   const sanitizedContext = sanitizeLogData(securityContext);
   
@@ -500,7 +500,7 @@ function determineSeverity(eventType) {
  * @param {Object} [options={}] - Logger options
  * @returns {Object} Request-scoped logger with correlation tracking and context management
  */
-export function createRequestLogger(request, options = {}) {
+function createRequestLogger(request, options = {}) {
   const correlationId = generateRequestId({ 
     prefix: 'req',
     metadata: { 
@@ -582,7 +582,7 @@ export function createRequestLogger(request, options = {}) {
  * @param {Object} [options={}] - Formatting options
  * @returns {string} Formatted log message with structured output ready for logging destinations
  */
-export function formatLogMessage(level, message, context = {}, options = {}) {
+function formatLogMessage(level, message, context = {}, options = {}) {
   const timestamp = new Date().toISOString();
   const environment = process.env.NODE_ENV || ENV_CONSTANTS.ENVIRONMENT_TYPES.DEVELOPMENT;
   
@@ -635,7 +635,7 @@ export function formatLogMessage(level, message, context = {}, options = {}) {
  * @param {Object} rotationConfig - Log rotation configuration
  * @returns {Object} Log rotation configuration with monitoring and cleanup procedures
  */
-export async function setupLogRotation(rotationConfig) {
+async function setupLogRotation(rotationConfig) {
   const config = {
     logDirectory: rotationConfig.logDirectory || './logs',
     maxSize: rotationConfig.maxSize || '10M',
@@ -774,7 +774,7 @@ function parseSize(sizeStr) {
  * @param {Object} [flaskConfig={}] - Flask compatibility configuration
  * @returns {Object} Flask-compatible logger interface with consistent formatting and behavior
  */
-export function createFlaskCompatibleLogger(flaskConfig = {}) {
+function createFlaskCompatibleLogger(flaskConfig = {}) {
   const config = {
     format: flaskConfig.format || 'flask-style',
     timezone: flaskConfig.timezone || 'UTC',

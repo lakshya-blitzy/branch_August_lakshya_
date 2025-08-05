@@ -49,7 +49,7 @@ import {
 } from '../utils/constants.js';
 
 import {
-    environmentConfig
+    defaultEnvironmentConfig as environmentConfig
 } from '../config/environment.js';
 
 import logger, {

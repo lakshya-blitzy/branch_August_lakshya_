@@ -1,4 +1,10 @@
-{
+/**
+ * @fileoverview Test Data for Node.js Tutorial Project
+ * @description Comprehensive test data including HTTP endpoints, security tests, performance benchmarks,
+ * cross-platform compatibility data, error scenarios, mock responses, and validation rules
+ */
+
+const testData = {
   "httpEndpoints": {
     "hello": {
       "method": "GET",
@@ -949,4 +955,18 @@
       }
     }
   }
-}
+};
+
+// Export individual sections for convenient importing
+export const httpEndpoints = testData.httpEndpoints;
+export const securityTestData = testData.securityTestData;
+export const performanceBenchmarks = testData.performanceBenchmarks;
+export const crossPlatformTestData = testData.crossPlatformTestData;
+export const errorScenarios = testData.errorScenarios;
+export const mockResponses = testData.mockResponses;
+export const testEnvironments = testData.testEnvironments;
+export const pm2TestData = testData.pm2TestData;
+export const validationRules = testData.validationRules;
+
+// Export the entire test data object as default
+export default testData;

@@ -64,18 +64,18 @@ import {
   initializeGoodEveningRoute,
   validateGoodEveningRoute,
   getGoodEveningRouteHealth,
-  configureGoodEveningRouteMetrics as configureGoodEveningMetrics,
+  optimizeGoodEveningRoutePerformance as configureGoodEveningMetrics,
   optimizeGoodEveningRoutePerformance
 } from './good-evening.js';
 
 import {
   healthRouter,
   createHealthRoutes,
-  initializeHealthRoute,
-  validateHealthRoute,
-  getHealthRouteStatus,
-  configureHealthRouteMetrics as configureHealthMetrics,
-  optimizeHealthRoutePerformance
+  initializeHealthRoutes as initializeHealthRoute,
+  validateHealthRoutes as validateHealthRoute,
+  getHealthRouteInfo as getHealthRouteStatus,
+  optimizeHealthRoutes as configureHealthMetrics,
+  optimizeHealthRoutes as optimizeHealthRoutePerformance
 } from './health.js';
 
 // Internal Middleware Imports - Comprehensive security and performance middleware stack
@@ -109,7 +109,6 @@ import logger, {
 import {
   HTTPError,
   ValidationError,
-  RouteError,
   createErrorResponse
 } from '../utils/error-types.js';
 
@@ -156,7 +155,7 @@ let AGGREGATION_METRICS = {
  * @param {boolean} [aggregatorOptions.enableCrossPlatformSupport=false] - Enable Flask compatibility
  * @returns {Object} Configured Express.js Router instance with all route modules mounted and comprehensive middleware protection
  */
-export async function createRoutesAggregator(aggregatorOptions = {}) {
+async function createRoutesAggregator(aggregatorOptions = {}) {
   const correlationId = generateCorrelationId({
     prefix: 'routes-aggregator',
     metadata: { options: aggregatorOptions }
@@ -432,8 +431,8 @@ export async function createRoutesAggregator(aggregatorOptions = {}) {
       options: aggregatorOptions
     });
 
-    // Throw RouteError for upstream error handling and monitoring system notification
-    throw new RouteError(
+    // Throw HTTPError for upstream error handling and monitoring system notification
+    throw new HTTPError(
       `Routes aggregator creation failed: ${error.message}`,
       'AGGREGATOR_CREATION_ERROR',
       {
@@ -460,7 +459,7 @@ export async function createRoutesAggregator(aggregatorOptions = {}) {
  * @param {Object} [initOptions.customConfig] - Custom configuration overrides
  * @returns {Promise<Object>} Promise that resolves with route initialization status, aggregated router, and configuration details
  */
-export async function initializeRoutes(initOptions = {}) {
+async function initializeRoutes(initOptions = {}) {
   const correlationId = generateCorrelationId({
     prefix: 'routes-init',
     metadata: { options: initOptions }
@@ -541,7 +540,7 @@ export async function initializeRoutes(initOptions = {}) {
     });
 
     if (!middlewareInitialization.success) {
-      throw new RouteError(
+      throw new HTTPError(
         'Route aggregation middleware initialization failed',
         'MIDDLEWARE_INITIALIZATION_ERROR',
         {
@@ -705,8 +704,8 @@ export async function initializeRoutes(initOptions = {}) {
     ROUTE_HEALTH_STATUS.healthy = false;
     ROUTE_HEALTH_STATUS.aggregationStatus = 'failed';
 
-    // Throw RouteError with initialization context for upstream error handling
-    throw new RouteError(
+    // Throw HTTPError with initialization context for upstream error handling
+    throw new HTTPError(
       `Route system initialization failed: ${error.message}`,
       'ROUTES_INITIALIZATION_ERROR',
       {
@@ -733,7 +732,7 @@ export async function initializeRoutes(initOptions = {}) {
  * @param {Object} [validationOptions.customThresholds] - Custom validation thresholds
  * @returns {Promise<Object>} Comprehensive validation result with route analysis, security assessment, performance metrics, and optimization recommendations
  */
-export async function validateRoutes(validationOptions = {}) {
+async function validateRoutes(validationOptions = {}) {
   const correlationId = validationOptions.correlationId || generateCorrelationId({ prefix: 'routes-validate' });
   const startTime = Date.now();
 
@@ -1010,7 +1009,7 @@ export async function validateRoutes(validationOptions = {}) {
  * @param {boolean} [healthOptions.includeEducationalInsights=false] - Include educational content
  * @returns {Promise<Object>} Comprehensive routes health report with aggregated metrics, status information, and monitoring insights
  */
-export async function getRoutesHealth(healthOptions = {}) {
+async function getRoutesHealth(healthOptions = {}) {
   const correlationId = healthOptions.correlationId || generateCorrelationId({ prefix: 'routes-health' });
   const startTime = Date.now();
 
@@ -1244,7 +1243,7 @@ export async function getRoutesHealth(healthOptions = {}) {
  * @param {Object} [metricsConfig.customThresholds] - Custom alert thresholds and monitoring rules
  * @returns {Promise<Object>} Routes metrics configuration with collection setup, monitoring integration, and educational analytics
  */
-export async function configureRouteMetrics(metricsConfig = {}) {
+async function configureRouteMetrics(metricsConfig = {}) {
   const correlationId = metricsConfig.correlationId || generateCorrelationId({ prefix: 'routes-metrics' });
   const startTime = Date.now();
 
@@ -1576,7 +1575,7 @@ export async function configureRouteMetrics(metricsConfig = {}) {
  * @param {Object} [optimizationOptions.targetMetrics] - Target performance metrics
  * @returns {Promise<Object>} Routes performance optimization results with improvements, recommendations, and educational insights
  */
-export async function optimizeRoutesPerformance(optimizationOptions = {}) {
+async function optimizeRoutesPerformance(optimizationOptions = {}) {
   const correlationId = optimizationOptions.correlationId || generateCorrelationId({ prefix: 'routes-optimize' });
   const startTime = Date.now();
 
@@ -1891,7 +1890,7 @@ export async function optimizeRoutesPerformance(optimizationOptions = {}) {
  * @param {Object} routeConfig - Route configuration and metadata
  * @returns {Object} Route registration result with status, configuration, and monitoring setup
  */
-export function registerRoute(routeName, routeInstance, routeConfig) {
+function registerRoute(routeName, routeInstance, routeConfig) {
   const correlationId = routeConfig.correlationId || generateCorrelationId({ prefix: 'route-register' });
 
   try {
@@ -2046,7 +2045,7 @@ export function registerRoute(routeName, routeInstance, routeConfig) {
  * @param {Array<string>} [registryOptions.filterRoutes] - Specific routes to include
  * @returns {Object} Complete route registry with detailed information, metrics, and educational content
  */
-export function getRouteRegistry(registryOptions = {}) {
+function getRouteRegistry(registryOptions = {}) {
   const correlationId = registryOptions.correlationId || generateCorrelationId({ prefix: 'route-registry' });
 
   try {

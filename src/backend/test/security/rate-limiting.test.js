@@ -84,7 +84,7 @@ import {
   performanceBenchmarks,
   SECURITY_CONSTANTS,
   TESTING_CONSTANTS
-} from '../fixtures/test-data.json';
+} from '../fixtures/test-data.js';
 
 // Internal Imports - Application Constants
 import {

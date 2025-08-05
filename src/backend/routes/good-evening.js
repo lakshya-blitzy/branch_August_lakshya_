@@ -111,7 +111,7 @@ let GOOD_EVENING_ROUTE_CONFIG = {
  *   environment: 'production'
  * });
  */
-export function createGoodEveningRouter(routerOptions = {}) {
+function createGoodEveningRouter(routerOptions = {}) {
     const startTime = Date.now();
     const correlationId = logger.generateRequestId({ prefix: 'router' });
     
@@ -392,7 +392,7 @@ export function createGoodEveningRouter(routerOptions = {}) {
  *   enableEducationalLogging: true
  * });
  */
-export async function initializeGoodEveningRoute(initOptions = {}) {
+async function initializeGoodEveningRoute(initOptions = {}) {
     const startTime = Date.now();
     const correlationId = logger.generateRequestId({ prefix: 'init' });
     
@@ -619,7 +619,7 @@ export async function initializeGoodEveningRoute(initOptions = {}) {
  *   thresholds: { responseTime: 50, securityScore: 95 }
  * });
  */
-export async function validateGoodEveningRoute(validationOptions = {}) {
+async function validateGoodEveningRoute(validationOptions = {}) {
     const startTime = Date.now();
     const correlationId = logger.generateRequestId({ prefix: 'validate' });
     
@@ -881,7 +881,7 @@ export async function validateGoodEveningRoute(validationOptions = {}) {
  *   includeDetailed: false
  * });
  */
-export function getGoodEveningRouteHealth(healthOptions = {}) {
+function getGoodEveningRouteHealth(healthOptions = {}) {
     const startTime = Date.now();
     const correlationId = logger.generateRequestId({ prefix: 'health' });
     
@@ -1131,7 +1131,7 @@ export function getGoodEveningRouteHealth(healthOptions = {}) {
  *   optimizeMiddleware: true
  * });
  */
-export async function optimizeGoodEveningRoutePerformance(optimizationOptions = {}) {
+async function optimizeGoodEveningRoutePerformance(optimizationOptions = {}) {
     const startTime = Date.now();
     const correlationId = logger.generateRequestId({ prefix: 'optimize' });
     

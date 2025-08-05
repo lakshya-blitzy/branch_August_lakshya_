@@ -65,7 +65,7 @@ import {
   testEnvironments,
   pm2TestData,
   validationRules
-} from '../../fixtures/test-data.json';
+} from '../../fixtures/test-data.js';
 
 // Global Test Variables - Shared test state and configuration
 let TEST_APP = null;

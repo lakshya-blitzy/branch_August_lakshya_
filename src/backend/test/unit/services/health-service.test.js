@@ -76,7 +76,7 @@ import {
   crossPlatformTestData,
   errorScenarios,
   pm2TestData
-} from '../../fixtures/test-data.json';
+} from '../../fixtures/test-data.js';
 
 // Global test environment variables and state management
 let testHelpers = null;

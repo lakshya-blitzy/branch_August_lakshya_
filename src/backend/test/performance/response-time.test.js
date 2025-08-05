@@ -14,7 +14,7 @@ const { createApp, createDevelopmentApp, createProductionApp } = require('../../
 const { TESTING_CONSTANTS, API_CONSTANTS } = require('../../utils/constants.js');
 
 // Import centralized test data including performance benchmarks
-const testData = require('../fixtures/test-data.json');
+const testData = require('../fixtures/test-data.js');
 
 // Conditional imports for files that may not exist yet with fallback implementations
 let setupTestEnvironment, TestEnvironment, HTTPTestClient, createPerformanceTestHelper, PerformanceMonitor, measureResponseTime;

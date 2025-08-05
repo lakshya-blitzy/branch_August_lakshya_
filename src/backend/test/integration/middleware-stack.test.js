@@ -76,7 +76,7 @@ import {
 
 import { 
   middlewareTestData 
-} from '../fixtures/test-data.json' assert { type: 'json' };
+} from '../fixtures/test-data.js' assert { type: 'json' };
 
 import { 
   maliciousRequests 

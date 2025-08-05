@@ -41,7 +41,7 @@ import logger, {
 
 // Internal imports - Configuration and constants
 import {
-    environmentConfig,
+    defaultEnvironmentConfig as environmentConfig,
     currentEnvironment,
     isProduction,
     isDevelopment
@@ -84,7 +84,7 @@ const PERFORMANCE_METRICS = {
  * @param {Array<string>} [options.sanitizeFields=[]] - Additional fields to sanitize
  * @returns {Function} Express.js error handling middleware with comprehensive error processing
  */
-export function createErrorHandler(options = {}) {
+function createErrorHandler(options = {}) {
     // Validate and merge error handler options with environment-specific defaults
     const config = {
         includeStack: isDevelopment && (options.includeStack !== false),
@@ -236,7 +236,7 @@ export function createErrorHandler(options = {}) {
  * @param {Function} asyncFunction - Async function to wrap with error handling
  * @returns {Function} Wrapped async function with comprehensive error handling
  */
-export function handleAsyncError(asyncFunction) {
+function handleAsyncError(asyncFunction) {
     return async function wrappedAsyncFunction(req, res, next) {
         const correlationId = req.correlationId || generateRequestId();
         const startTime = process.hrtime.bigint();
@@ -305,7 +305,7 @@ export function handleAsyncError(asyncFunction) {
  * @param {Function} next - Express next function
  * @returns {Object} Processed error object with classification and context
  */
-export async function processError(error, req, res, next) {
+async function processError(error, req, res, next) {
     const startTime = process.hrtime.bigint();
     const processingContext = {
         correlationId: req.correlationId || generateRequestId(),
@@ -478,7 +478,7 @@ export async function processError(error, req, res, next) {
  * @param {Object} processingContext - Error processing context
  * @returns {Object} Complete error response with status, headers, and body
  */
-export async function generateErrorResponse(error, req, processingContext) {
+async function generateErrorResponse(error, req, processingContext) {
     const { correlationId, config, environment } = processingContext;
     const startTime = process.hrtime.bigint();
 
@@ -634,7 +634,7 @@ export async function generateErrorResponse(error, req, processingContext) {
  * @param {Object} req - Express request object
  * @param {Object} errorContext - Error logging context
  */
-export async function logErrorDetails(error, req, errorContext) {
+async function logErrorDetails(error, req, errorContext) {
     const { correlationId, config, processingTime } = errorContext;
     
     try {
@@ -759,7 +759,7 @@ export async function logErrorDetails(error, req, errorContext) {
  * @param {Object} res - Express response object
  * @returns {Object} Security error response with blocking, logging, and alerting actions
  */
-export async function handleSecurityError(securityError, req, res) {
+async function handleSecurityError(securityError, req, res) {
     const correlationId = req.correlationId || generateRequestId();
     const startTime = process.hrtime.bigint();
 
@@ -872,7 +872,7 @@ export async function handleSecurityError(securityError, req, res) {
  * @param {Object} req - Express request object
  * @returns {Object} Validation error response with field-level details and user-friendly messaging
  */
-export async function handleValidationError(validationError, req) {
+async function handleValidationError(validationError, req) {
     const correlationId = req.correlationId || generateRequestId();
     const startTime = process.hrtime.bigint();
 
@@ -977,7 +977,7 @@ export async function handleValidationError(validationError, req) {
  * @param {Object} processContext - Process management context
  * @returns {Object} PM2 error response with recovery actions and cluster management information
  */
-export async function handlePM2Error(pm2Error, req, processContext) {
+async function handlePM2Error(pm2Error, req, processContext) {
     const { correlationId } = processContext;
     const startTime = process.hrtime.bigint();
 
@@ -1092,7 +1092,7 @@ export async function handlePM2Error(pm2Error, req, processContext) {
  * @param {Error} error - Processed error object
  * @param {Object} processingMetrics - Error processing metrics and context
  */
-export function updateErrorMetrics(error, processingMetrics) {
+function updateErrorMetrics(error, processingMetrics) {
     const { processingTime, correlationId, environment } = processingMetrics;
 
     try {
@@ -1169,7 +1169,7 @@ export function updateErrorMetrics(error, processingMetrics) {
  * @param {Object} handlerConfig - Error handler configuration to validate
  * @returns {Object} Validation result with status, recommendations, and improvement suggestions
  */
-export function validateErrorHandling(handlerConfig) {
+function validateErrorHandling(handlerConfig) {
     const validationStart = process.hrtime.bigint();
     const validationResult = {
         isValid: true,

@@ -169,7 +169,7 @@ class HealthCheckManager {
  * @param {boolean} [serverOptions.enableGracefulShutdown=true] - Enable graceful shutdown
  * @returns {Promise<Object>} Promise resolving to server instance and health monitoring manager
  */
-export async function startProductionServer(serverOptions = {}) {
+async function startProductionServer(serverOptions = {}) {
   const startTime = process.hrtime.bigint();
   const correlationId = generateRequestId({ prefix: 'server-start' });
   
@@ -344,7 +344,7 @@ export async function startProductionServer(serverOptions = {}) {
  * @param {Object} [environmentOptions={}] - Environment initialization options
  * @returns {Promise<Object>} Initialized server environment with configuration and cluster information
  */
-export async function initializeServerEnvironment(environmentOptions = {}) {
+async function initializeServerEnvironment(environmentOptions = {}) {
   try {
     logDebug('Initializing server environment', {
       nodeVersion: process.version,
@@ -434,7 +434,7 @@ export async function initializeServerEnvironment(environmentOptions = {}) {
  * @param {Object} healthManager - Health check manager instance
  * @returns {Promise<void>} No return value, sets up signal handlers for graceful shutdown
  */
-export async function setupGracefulShutdownHandlers(server, healthManager) {
+async function setupGracefulShutdownHandlers(server, healthManager) {
   const shutdownHandler = async (signal) => {
     const shutdownId = generateRequestId({ prefix: 'shutdown' });
     const shutdownStart = Date.now();
@@ -540,7 +540,7 @@ export async function setupGracefulShutdownHandlers(server, healthManager) {
  * @param {Object} serverConfig - Server configuration for error context
  * @returns {void} No return value, handles error with logging and appropriate response actions
  */
-export async function handleServerStartupError(error, serverConfig) {
+async function handleServerStartupError(error, serverConfig) {
   const errorId = generateRequestId({ prefix: 'startup-error' });
   
   try {
@@ -651,7 +651,7 @@ export async function handleServerStartupError(error, serverConfig) {
  * @param {Object} config - Server configuration object
  * @returns {Promise<Object>} Server readiness validation result with status and recommendations
  */
-export async function validateServerReadiness(config) {
+async function validateServerReadiness(config) {
   const validationResult = {
     isValid: true,
     errors: [],
@@ -760,7 +760,7 @@ export async function validateServerReadiness(config) {
  * @param {Object} [monitoringOptions={}] - Monitoring configuration options
  * @returns {Promise<void>} Promise that resolves when health monitoring is established
  */
-export async function monitorServerHealth(healthManager, monitoringOptions = {}) {
+async function monitorServerHealth(healthManager, monitoringOptions = {}) {
   const config = {
     interval: monitoringOptions.interval || 30000,
     memoryThreshold: monitoringOptions.memoryThreshold || 1024 * 1024 * 1024, // 1GB
@@ -858,7 +858,7 @@ export async function monitorServerHealth(healthManager, monitoringOptions = {})
  * @param {Object} environment - Environment context information
  * @returns {void} No return value, performs comprehensive startup logging
  */
-export function logServerStartupInformation(config, server, environment) {
+function logServerStartupInformation(config, server, environment) {
   try {
     // Create comprehensive startup information summary
     const startupInfo = {
@@ -1021,7 +1021,7 @@ export function logServerStartupInformation(config, server, environment) {
  * @param {Object} [pm2Options={}] - PM2 compatibility options
  * @returns {Promise<Object>} PM2-compatible server configuration
  */
-export async function createPM2CompatibleServer(pm2Options = {}) {
+async function createPM2CompatibleServer(pm2Options = {}) {
   const config = {
     clustered: pm2Options.clustered || cluster.isWorker,
     stateless: pm2Options.stateless !== false,
@@ -1095,7 +1095,7 @@ export async function createPM2CompatibleServer(pm2Options = {}) {
  * @param {Object} deploymentConfig - Deployment configuration object
  * @returns {Promise<Object>} Production deployment validation result
  */
-export async function validateProductionDeployment(deploymentConfig) {
+async function validateProductionDeployment(deploymentConfig) {
   const validation = {
     isValid: true,
     errors: [],
@@ -1278,7 +1278,7 @@ function clearAllIntervals() {
  * @param {Object} [options={}] - Health monitoring initialization options
  * @returns {Promise<Object>} Health monitoring initialization result
  */
-export async function initializeHealthMonitoring(options = {}) {
+async function initializeHealthMonitoring(options = {}) {
   try {
     logInfo('Initializing health monitoring system', {
       pid: process.pid,
@@ -1308,7 +1308,7 @@ export async function initializeHealthMonitoring(options = {}) {
  * @param {Object} [trackingOptions={}] - Uptime tracking options
  * @returns {Object} Uptime tracking information
  */
-export function trackApplicationUptime(trackingOptions = {}) {
+function trackApplicationUptime(trackingOptions = {}) {
   const uptimeInfo = {
     processUptime: process.uptime(),
     startTime: SERVER_STATE.startTime,
@@ -1330,6 +1330,7 @@ export { startProductionServer as default };
 
 // Server lifecycle management functions
 export {
+  startProductionServer,
   initializeServerEnvironment,
   setupGracefulShutdownHandlers,
   handleServerStartupError,
@@ -1343,7 +1344,7 @@ export {
 };
 
 // Export server instance and health manager for external access
-export const server = SERVER_INSTANCE;
+export const serverInstance = SERVER_INSTANCE;
 export const healthManager = HEALTH_CHECK_MANAGER;
 
 // Auto-start server if this module is run directly

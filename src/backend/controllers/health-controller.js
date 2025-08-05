@@ -73,10 +73,10 @@ import {
 
 // Internal imports - Environment configuration for deployment-specific health behavior
 import {
-  environmentConfig,
+  defaultEnvironmentConfig as environmentConfig,
   isProduction,
   isDevelopment,
-  server as serverConfig
+  getServerConfig as serverConfig
 } from '../config/environment.js';
 
 // Global health controller state and performance tracking
@@ -103,7 +103,7 @@ let HEALTH_REQUEST_CACHE = new Map();
  * @param {Function} next - Express.js next middleware function for error handling chain
  * @returns {Promise} Promise that resolves when health response is sent to client or rejects with error for middleware chain
  */
-export const getHealthStatus = handleAsyncError(async (req, res, next) => {
+const getHealthStatus = handleAsyncError(async (req, res, next) => {
   // Generate request correlation ID using generateRequestId for distributed health check tracking
   const requestId = generateRequestId();
   
@@ -316,7 +316,7 @@ export const getHealthStatus = handleAsyncError(async (req, res, next) => {
  * @param {Function} next - Express.js next middleware function for Express.js middleware chain
  * @returns {Promise} Promise that resolves when quick health response is sent or rejects with error for Express.js middleware chain
  */
-export const getQuickHealth = handleAsyncError(async (req, res, next) => {
+const getQuickHealth = handleAsyncError(async (req, res, next) => {
   // Check HEALTH_REQUEST_CACHE for recent quick health results to optimize response time
   const cacheKey = 'quick_health';
   const cachedResult = HEALTH_REQUEST_CACHE.get(cacheKey);
@@ -452,7 +452,7 @@ export const getQuickHealth = handleAsyncError(async (req, res, next) => {
  * @param {Function} next - Express.js next middleware function for middleware processing
  * @returns {Promise} Promise that resolves when health metrics response is sent or rejects with error for middleware processing
  */
-export const getHealthMetrics = handleAsyncError(async (req, res, next) => {
+const getHealthMetrics = handleAsyncError(async (req, res, next) => {
   // Generate request correlation ID and create request-scoped logger for metrics request tracking
   const requestId = generateRequestId();
   const requestLogger = createRequestLogger(requestId, {
@@ -647,7 +647,7 @@ export const getHealthMetrics = handleAsyncError(async (req, res, next) => {
  * @param {Function} next - Express.js next middleware function for Express.js error handling
  * @returns {Promise} Promise that resolves when monitoring start response is sent or rejects with error for Express.js error handling
  */
-export const startHealthMonitoring = handleAsyncError(async (req, res, next) => {
+const startHealthMonitoring = handleAsyncError(async (req, res, next) => {
   // Generate request correlation ID and create request-scoped logger for monitoring control tracking
   const requestId = generateRequestId();
   const requestLogger = createRequestLogger(requestId, {
@@ -806,7 +806,7 @@ export const startHealthMonitoring = handleAsyncError(async (req, res, next) => 
  * @param {Function} next - Express.js next middleware function for Express.js middleware chain
  * @returns {Promise} Promise that resolves when monitoring stop response is sent or rejects with error for Express.js middleware chain
  */
-export const stopHealthMonitoring = handleAsyncError(async (req, res, next) => {
+const stopHealthMonitoring = handleAsyncError(async (req, res, next) => {
   // Generate request correlation ID and create request-scoped logger for monitoring shutdown tracking
   const requestId = generateRequestId();
   const requestLogger = createRequestLogger(requestId, {
@@ -964,7 +964,7 @@ export const stopHealthMonitoring = handleAsyncError(async (req, res, next) => {
  * @param {Function} next - Express.js next middleware function for middleware processing
  * @returns {Promise} Promise that resolves when Flask-compatible health response is sent or rejects with error for middleware processing
  */
-export const getFlaskCompatibilityHealth = handleAsyncError(async (req, res, next) => {
+const getFlaskCompatibilityHealth = handleAsyncError(async (req, res, next) => {
   // Generate request correlation ID and create request-scoped logger for Flask compatibility tracking
   const requestId = generateRequestId();
   const requestLogger = createRequestLogger(requestId, {
@@ -1159,7 +1159,7 @@ export const getFlaskCompatibilityHealth = handleAsyncError(async (req, res, nex
  * @param {Object} validationOptions - Validation configuration including allowed formats and security requirements
  * @returns {Object} Validation result with sanitized parameters, validation status, and error details if validation fails
  */
-export function validateHealthRequest(req, validationOptions = {}) {
+function validateHealthRequest(req, validationOptions = {}) {
   const validation = {
     isValid: true,
     errors: [],
@@ -1288,7 +1288,7 @@ export function validateHealthRequest(req, validationOptions = {}) {
  * @param {Object} requestContext - Request context information including request ID, timestamp, and client details
  * @returns {Object} Formatted health response with status, headers, body, and metadata ready for HTTP transmission
  */
-export function formatHealthResponse(healthData, formatOptions = {}, requestContext = {}) {
+function formatHealthResponse(healthData, formatOptions = {}, requestContext = {}) {
   const format = formatOptions.format || 'json';
   const includeMetadata = formatOptions.includeMetadata !== false;
   const includePerformance = formatOptions.includePerformance !== false;
@@ -1436,7 +1436,7 @@ export function formatHealthResponse(healthData, formatOptions = {}, requestCont
  * @param {Object} performanceMetrics - Performance measurement data including timing and resource usage
  * @returns {void} No return value, performs logging side effects for monitoring and analysis
  */
-export function logHealthRequest(req, healthResult, performanceMetrics) {
+function logHealthRequest(req, healthResult, performanceMetrics) {
   try {
     // Extract comprehensive request details including method, path, headers, and client information
     const requestDetails = {
@@ -1588,7 +1588,7 @@ export function logHealthRequest(req, healthResult, performanceMetrics) {
  * @param {Function} next - Express.js next middleware function for error handling chain forwarding
  * @returns {void} No return value, sends error response or forwards to Express.js error handling middleware
  */
-export function handleHealthError(error, req, res, next) {
+function handleHealthError(error, req, res, next) {
   try {
     // Classify error type and determine appropriate health error response strategy
     const errorClassification = classifyHealthError(error);

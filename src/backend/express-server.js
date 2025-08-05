@@ -1090,7 +1090,7 @@ export async function compareWithBasicServer(expressApp, comparisonOptions = {})
  * @param {boolean} [migrationConfig.validateResponses=true] - Validate response formats
  * @returns {Object} Flask migration preparation result with mapping analysis, configuration guidelines, and compatibility report
  */
-export async function prepareFlaskMigration(expressApp, migrationConfig = {}) {
+async function prepareFlaskMigration(expressApp, migrationConfig = {}) {
   try {
     const config = {
       analyzeRoutes: migrationConfig.analyzeRoutes !== false,

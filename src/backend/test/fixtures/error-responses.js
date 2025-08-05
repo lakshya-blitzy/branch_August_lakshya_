@@ -43,11 +43,12 @@ import {
 } from '../../utils/constants.js';
 
 // Import test data for realistic error scenarios and validation
-import {
+import testDataJson from './test-data.js' with { type: 'json' };
+const {
   httpEndpoints,
   securityTestData,
   pm2TestData
-} from './test-data.json';
+} = testDataJson;
 
 // Global error fixture cache for performance optimization and consistent test execution
 const ERROR_FIXTURE_CACHE = new Map();

@@ -47,9 +47,9 @@ import cors from 'cors'; // latest - Cross-Origin Resource Sharing middleware fo
 // Internal configuration imports for unified application configuration management
 import { 
   config,
-  environment,
-  security,
-  server
+  environmentConfig as environment,
+  securityConfig as security,
+  pm2Config as server
 } from './config/index.js';
 
 // Middleware stack imports for comprehensive request processing pipeline
@@ -106,7 +106,7 @@ import {
 
 // Global application state and monitoring variables
 let app = null; // Express application instance
-let server = null; // HTTP server instance
+let httpServer = null; // HTTP server instance
 let healthService = null; // Health service instance
 let healthCheckManager = null; // Health check manager instance
 let isShuttingDown = false; // Graceful shutdown flag
@@ -123,7 +123,7 @@ let isShuttingDown = false; // Graceful shutdown flag
  * @param {Object} [options.additionalMiddleware] - Additional middleware to apply
  * @returns {Object} Configured Express.js application instance ready for server startup
  */
-export function createExpressApp(options = {}) {
+function createExpressApp(options = {}) {
   const appConfig = {
     enableHealthMonitoring: options.enableHealthMonitoring !== false,
     enableSecurityMiddleware: options.enableSecurityMiddleware !== false,
@@ -714,7 +714,7 @@ function setup404Handler(app) {
  * @param {Object} httpServer - HTTP server instance
  * @returns {void} No return value, sets up signal handlers for graceful shutdown procedures
  */
-export function setupGracefulShutdown(httpServer) {
+function setupGracefulShutdown(httpServer) {
   const shutdownHandler = async (signal) => {
     if (isShuttingDown) {
       logger.warn('Shutdown already in progress, forcefully exiting', { signal });
@@ -813,13 +813,13 @@ export function setupGracefulShutdown(httpServer) {
  * @param {boolean} [serverConfig.enableGracefulShutdown=true] - Enable graceful shutdown
  * @returns {Object} Started HTTP server instance with health monitoring and graceful shutdown
  */
-export function startServer(expressApp, serverConfig = {}) {
+function startServer(expressApp, serverConfig = {}) {
   return new Promise((resolve, reject) => {
     try {
       // Extract server configuration with defaults
       const config = {
-        port: serverConfig.port || server.PORT || ENV_CONSTANTS.DEFAULT_PORT,
-        host: serverConfig.host || server.HOST || '0.0.0.0',
+        port: serverConfig.port || ENV_CONSTANTS.DEFAULT_PORT,
+        host: serverConfig.host || '0.0.0.0',
         enableGracefulShutdown: serverConfig.enableGracefulShutdown !== false,
         ...serverConfig
       };
@@ -838,8 +838,8 @@ export function startServer(expressApp, serverConfig = {}) {
       }
 
       // Start HTTP server with configured port and host
-      server = expressApp.listen(config.port, config.host, () => {
-        const address = server.address();
+      httpServer = expressApp.listen(config.port, config.host, () => {
+        const address = httpServer.address();
         const serverUrl = `http://${address.address}:${address.port}`;
 
         logger.info('HTTP server started successfully', {
@@ -863,17 +863,17 @@ export function startServer(expressApp, serverConfig = {}) {
         validateApplicationHealth(expressApp)
           .then(healthResult => {
             logger.info('Application health validation completed', healthResult);
-            resolve(server);
+            resolve(httpServer);
           })
           .catch(healthError => {
             logger.warn('Application health validation failed', healthError);
             // Don't reject, just warn - server is still functional
-            resolve(server);
+            resolve(httpServer);
           });
       });
 
       // Set up server error handling
-      server.on('error', (error) => {
+      httpServer.on('error', (error) => {
         handleServerError(error, {
           port: config.port,
           host: config.host,
@@ -884,9 +884,9 @@ export function startServer(expressApp, serverConfig = {}) {
 
       // Configure server timeout settings for production
       if (environment.NODE_ENV === ENV_CONSTANTS.ENVIRONMENT_TYPES.PRODUCTION) {
-        server.timeout = 30000; // 30 seconds
-        server.keepAliveTimeout = 65000; // 65 seconds
-        server.headersTimeout = 66000; // 66 seconds
+        httpServer.timeout = 30000; // 30 seconds
+        httpServer.keepAliveTimeout = 65000; // 65 seconds
+        httpServer.headersTimeout = 66000; // 66 seconds
       }
 
     } catch (error) {
@@ -904,7 +904,7 @@ export function startServer(expressApp, serverConfig = {}) {
  * @param {Object} context - Error context information
  * @returns {void} No return value, handles error with logging and appropriate response actions
  */
-export function handleServerError(error, context = {}) {
+function handleServerError(error, context = {}) {
   // Classify error type and determine appropriate response
   const isOperational = isOperationalError(error);
   const severity = classifyErrorSeverity(error, context);
@@ -978,7 +978,7 @@ export function handleServerError(error, context = {}) {
  * @param {Object} expressApp - Express application instance
  * @returns {Object} Comprehensive health validation result with component status and recommendations
  */
-export async function validateApplicationHealth(expressApp) {
+async function validateApplicationHealth(expressApp) {
   try {
     logger.debug('Starting application health validation');
 
@@ -1129,7 +1129,7 @@ export async function validateApplicationHealth(expressApp) {
  * @param {Object} httpServer - HTTP server instance
  * @returns {void} No return value, performs comprehensive startup logging for operational monitoring
  */
-export function logApplicationStartup(appConfig, httpServer) {
+function logApplicationStartup(appConfig, httpServer) {
   try {
     const startupInfo = {
       application: {
@@ -1202,7 +1202,7 @@ export {
   createExpressApp,
   startServer,
   healthService,
-  server,
+  httpServer,
   setupGracefulShutdown,
   handleServerError,
   validateApplicationHealth,

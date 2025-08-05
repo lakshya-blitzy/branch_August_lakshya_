@@ -46,11 +46,12 @@ import {
 } from '../../utils/constants.js';
 
 // Test data fixtures for comprehensive mock generation
-import {
+import testDataJson from './test-data.js' with { type: 'json' };
+const {
   httpEndpoints,
   securityTestData,
   performanceBenchmarks
-} from './test-data.json' assert { type: 'json' };
+} = testDataJson;
 
 /**
  * Global Mock Response Infrastructure

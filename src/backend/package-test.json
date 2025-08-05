@@ -1,0 +1,31 @@
+{
+  "name": "nodejs-tutorial-backend",
+  "version": "1.0.0",
+  "description": "Node.js tutorial project - testing setup",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0",
+    "sinon": "^18.0.1",
+    "c8": "^10.1.2",
+    "@jest/globals": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

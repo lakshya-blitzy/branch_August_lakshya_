@@ -65,7 +65,7 @@ import {
   httpEndpoints,
   securityTestData,
   performanceBenchmarks
-} from '../../fixtures/test-data.json';
+} from '../../fixtures/test-data.js';
 
 // Utility imports for constants, error handling, and logging
 import {

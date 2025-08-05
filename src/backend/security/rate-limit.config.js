@@ -1,14 +1,12 @@
 // express-rate-limit v7.4.1 - Rate limiting middleware for Express applications
-import rateLimit from 'express-rate-limit';
-// memory-store v1.6.7 - Memory store for express-rate-limit
-import MemoryStore from 'express-rate-limit/lib/memory-store.js';
+import rateLimit, { MemoryStore } from 'express-rate-limit';
 
 // Internal imports - Import security constants and environment configuration
 import { 
     SECURITY_CONSTANTS, 
     API_CONSTANTS 
 } from '../utils/constants.js';
-import { environmentConfig } from '../config/environment.js';
+import { defaultEnvironmentConfig as environmentConfig } from '../config/environment.js';
 import logger from '../utils/logger.js';
 import { SecurityError } from '../utils/error-types.js';
 

@@ -27,7 +27,7 @@ import {
   performanceBenchmarks,
   securityTestData,
   errorScenarios
-} from '../fixtures/test-data.json' assert { type: 'json' };
+} from '../fixtures/test-data.js' assert { type: 'json' };
 
 // Global test environment variables for test isolation and management
 let testEnvironment = null;
@@ -376,7 +376,7 @@ async function setupTestSuite() {
   };
   
   // Configure test data fixtures and mock response scenarios
-  // Test fixtures are imported from test-data.json and available globally
+  // Test fixtures are imported from test-data.js and available globally
   
   // Set up test server registry for lifecycle management and cleanup
   testEnvironment.cleanupTasks.push(async () => {

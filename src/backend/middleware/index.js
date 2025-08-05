@@ -37,17 +37,17 @@ import {
 
 import {
     corsMiddleware,
-    createDevelopmentCorsMiddleware
+    createDevelopmentCors
 } from './cors.js';
 
 import {
     rateLimiter,
-    createCustomRateLimiter
+    createRateLimiterMiddleware
 } from './rate-limiter.js';
 
 import {
     securityMiddleware,
-    createSecurityStack
+    createSecurityMiddleware
 } from './security.js';
 
 import {
@@ -55,16 +55,15 @@ import {
     createRequestLogger
 } from './logger.js';
 
-import {
-    errorHandler,
-    createCustomErrorHandler
+import errorHandler, {
+    createErrorHandler
 } from './error-handler.js';
 
 // Configuration and Utilities - Unified system configuration and error management
 import { config } from '../config/index.js';
 import logger from '../utils/logger.js';
-import { MIDDLEWARE_CONSTANTS } from '../utils/constants.js';
-import { MiddlewareError } from '../utils/error-types.js';
+
+import { ValidationError } from '../utils/error-types.js';
 
 // Global Middleware State Management - Optimized for PM2 cluster mode
 let MIDDLEWARE_CACHE = new Map();
@@ -100,7 +99,7 @@ const DEFAULT_MIDDLEWARE_ORDER = [
  * 
  * @returns {Promise<Object>} Initialization result with middleware components and status
  * 
- * @throws {MiddlewareError} When initialization fails due to configuration or compatibility issues
+ * @throws {ValidationError} When initialization fails due to configuration or compatibility issues
  * 
  * @example
  * // Basic middleware initialization
@@ -118,7 +117,7 @@ const DEFAULT_MIDDLEWARE_ORDER = [
  *   customConfig: { rateLimiting: { enabled: false } }
  * });
  */
-export async function initializeMiddleware(initOptions = {}) {
+async function initializeMiddleware(initOptions = {}) {
     const startTime = Date.now();
     const correlationId = logger.generateCorrelationId();
     
@@ -144,7 +143,7 @@ export async function initializeMiddleware(initOptions = {}) {
             const majorVersion = parseInt(nodeVersion.slice(1).split('.')[0]);
             
             if (majorVersion < 18) {
-                throw new MiddlewareError(
+                throw new ValidationError(
                     'Incompatible Node.js version. Express.js v5.1.0 requires Node.js v18 or higher.',
                     'COMPATIBILITY_ERROR',
                     { nodeVersion, requiredVersion: 'v18+', correlationId }
@@ -170,7 +169,7 @@ export async function initializeMiddleware(initOptions = {}) {
         // Validate configuration completeness and consistency
         const configValidation = validateMiddlewareConfigs(middlewareConfigs, correlationId);
         if (!configValidation.isValid) {
-            throw new MiddlewareError(
+            throw new ValidationError(
                 'Invalid middleware configuration detected',
                 'CONFIGURATION_ERROR',
                 { 
@@ -219,7 +218,7 @@ export async function initializeMiddleware(initOptions = {}) {
         const dependencyValidation = validateMiddlewareDependencies(executionOrder, middlewareInstances);
         
         if (!dependencyValidation.isValid) {
-            throw new MiddlewareError(
+            throw new ValidationError(
                 'Middleware dependency validation failed',
                 'DEPENDENCY_ERROR',
                 {
@@ -305,7 +304,7 @@ export async function initializeMiddleware(initOptions = {}) {
             initializationTime: Date.now() - startTime
         });
 
-        throw new MiddlewareError(
+        throw new ValidationError(
             `Middleware initialization failed: ${error.message}`,
             'INITIALIZATION_ERROR',
             { 
@@ -332,7 +331,7 @@ export async function initializeMiddleware(initOptions = {}) {
  * 
  * @returns {Promise<Array<Function>>} Ordered array of Express.js middleware functions
  * 
- * @throws {MiddlewareError} When stack creation fails due to configuration or validation errors
+ * @throws {ValidationError} When stack creation fails due to configuration or validation errors
  * 
  * @example
  * // Production middleware stack
@@ -348,7 +347,7 @@ export async function initializeMiddleware(initOptions = {}) {
  *   customConfig: { logging: { level: 'debug' } }
  * });
  */
-export async function createMiddlewareStack(environment, stackOptions = {}) {
+async function createMiddlewareStack(environment, stackOptions = {}) {
     const correlationId = logger.generateCorrelationId();
     const startTime = Date.now();
 
@@ -362,7 +361,7 @@ export async function createMiddlewareStack(environment, stackOptions = {}) {
 
         // Validate environment and stack options for middleware composition requirements
         if (!environment || typeof environment !== 'string') {
-            throw new MiddlewareError(
+            throw new ValidationError(
                 'Invalid environment specified for middleware stack creation',
                 'VALIDATION_ERROR',
                 { environment, correlationId }
@@ -416,7 +415,7 @@ export async function createMiddlewareStack(environment, stackOptions = {}) {
             };
 
             const corsInstance = environment === 'development' 
-                ? createDevelopmentCorsMiddleware(corsConfig)
+                ? createDevelopmentCors(corsConfig)
                 : corsMiddleware;
 
             middlewareStack.push(corsInstance);
@@ -456,7 +455,7 @@ export async function createMiddlewareStack(environment, stackOptions = {}) {
 
             const rateLimitInstance = environment === 'production'
                 ? rateLimiter
-                : createCustomRateLimiter({
+                : createRateLimiterMiddleware({
                     ...rateLimitConfig,
                     windowMs: rateLimitConfig.windowMs || 15 * 60 * 1000, // 15 minutes
                     max: rateLimitConfig.max || (environment === 'development' ? 1000 : 100)
@@ -502,7 +501,7 @@ export async function createMiddlewareStack(environment, stackOptions = {}) {
                 environment
             };
 
-            const securityInstance = createSecurityStack(securityConfig);
+            const securityInstance = createSecurityMiddleware(securityConfig);
             middlewareStack.push(securityInstance);
             performanceMetrics.middlewareCount++;
 
@@ -522,7 +521,7 @@ export async function createMiddlewareStack(environment, stackOptions = {}) {
                 enableSanitization: environment === 'production'
             };
 
-            const errorInstance = createCustomErrorHandler(errorConfig);
+            const errorInstance = createErrorHandler(errorConfig);
             middlewareStack.push(errorInstance);
             performanceMetrics.middlewareCount++;
 
@@ -541,7 +540,7 @@ export async function createMiddlewareStack(environment, stackOptions = {}) {
         });
 
         if (!validationResult.isValid) {
-            throw new MiddlewareError(
+            throw new ValidationError(
                 'Middleware stack validation failed',
                 'STACK_VALIDATION_ERROR',
                 {
@@ -584,7 +583,7 @@ export async function createMiddlewareStack(environment, stackOptions = {}) {
             creationTime: Date.now() - startTime
         });
 
-        throw new MiddlewareError(
+        throw new ValidationError(
             `Middleware stack creation failed: ${error.message}`,
             'STACK_CREATION_ERROR',
             {
@@ -610,7 +609,7 @@ export async function createMiddlewareStack(environment, stackOptions = {}) {
  * 
  * @returns {Promise<Array<Function>>} Development-optimized middleware stack
  * 
- * @throws {MiddlewareError} When development middleware creation fails
+ * @throws {ValidationError} When development middleware creation fails
  * 
  * @example
  * // Basic development middleware
@@ -626,7 +625,7 @@ export async function createMiddlewareStack(environment, stackOptions = {}) {
  *   customPolicies: { cors: { origin: 'localhost:3000' } }
  * });
  */
-export async function createDevelopmentMiddleware(devOptions = {}) {
+async function createDevelopmentMiddleware(devOptions = {}) {
     const correlationId = logger.generateCorrelationId();
 
     try {
@@ -654,7 +653,7 @@ export async function createDevelopmentMiddleware(devOptions = {}) {
             ...customPolicies.cors
         };
 
-        const devCorsMiddleware = createDevelopmentCorsMiddleware(developmentCorsConfig);
+        const devCorsMiddleware = createDevelopmentCors(developmentCorsConfig);
 
         // Initialize Helmet.js with relaxed CSP policies supporting debugging tools
         const developmentHelmetConfig = {
@@ -683,7 +682,7 @@ export async function createDevelopmentMiddleware(devOptions = {}) {
             ...customPolicies.rateLimit
         };
 
-        const devRateLimitMiddleware = createCustomRateLimiter(developmentRateLimitConfig);
+        const devRateLimitMiddleware = createRateLimiterMiddleware(developmentRateLimitConfig);
 
         // Set up enhanced request logging with detailed debugging information
         const developmentLoggerConfig = {
@@ -706,7 +705,7 @@ export async function createDevelopmentMiddleware(devOptions = {}) {
             ...customPolicies.security
         };
 
-        const devSecurityMiddleware = createSecurityStack(developmentSecurityConfig);
+        const devSecurityMiddleware = createSecurityMiddleware(developmentSecurityConfig);
 
         // Configure development error handler with enhanced error reporting and stack traces
         const developmentErrorConfig = {
@@ -718,7 +717,7 @@ export async function createDevelopmentMiddleware(devOptions = {}) {
             ...customPolicies.errorHandling
         };
 
-        const devErrorMiddleware = createCustomErrorHandler(developmentErrorConfig);
+        const devErrorMiddleware = createErrorHandler(developmentErrorConfig);
 
         // Add educational middleware for demonstrating middleware concepts and execution
         const educationalMiddleware = enableTutorialMode ? createEducationalMiddleware(correlationId) : null;
@@ -759,7 +758,7 @@ export async function createDevelopmentMiddleware(devOptions = {}) {
             options: devOptions
         });
 
-        throw new MiddlewareError(
+        throw new ValidationError(
             `Development middleware creation failed: ${error.message}`,
             'DEVELOPMENT_MIDDLEWARE_ERROR',
             { originalError: error, correlationId, devOptions }
@@ -780,7 +779,7 @@ export async function createDevelopmentMiddleware(devOptions = {}) {
  * 
  * @returns {Promise<Array<Function>>} Production-hardened middleware stack
  * 
- * @throws {MiddlewareError} When production middleware creation fails
+ * @throws {ValidationError} When production middleware creation fails
  * 
  * @example
  * // Standard production middleware
@@ -797,7 +796,7 @@ export async function createDevelopmentMiddleware(devOptions = {}) {
  *   }
  * });
  */
-export async function createProductionMiddleware(prodOptions = {}) {
+async function createProductionMiddleware(prodOptions = {}) {
     const correlationId = logger.generateCorrelationId();
 
     try {
@@ -864,7 +863,7 @@ export async function createProductionMiddleware(prodOptions = {}) {
             ...securityPolicies.rateLimit
         };
 
-        const prodRateLimitMiddleware = createCustomRateLimiter(productionRateLimitConfig);
+        const prodRateLimitMiddleware = createRateLimiterMiddleware(productionRateLimitConfig);
 
         // Set up production request logging with performance metrics and correlation tracking
         const productionLoggerConfig = {
@@ -889,7 +888,7 @@ export async function createProductionMiddleware(prodOptions = {}) {
             ...securityPolicies.security
         };
 
-        const prodSecurityMiddleware = createSecurityStack(productionSecurityConfig);
+        const prodSecurityMiddleware = createSecurityMiddleware(productionSecurityConfig);
 
         // Configure production error handler with sanitized responses and security logging
         const productionErrorConfig = {
@@ -901,7 +900,7 @@ export async function createProductionMiddleware(prodOptions = {}) {
             ...securityPolicies.errorHandling
         };
 
-        const prodErrorMiddleware = createCustomErrorHandler(productionErrorConfig);
+        const prodErrorMiddleware = createErrorHandler(productionErrorConfig);
 
         // Apply PM2 cluster mode optimizations with shared state management
         const pm2OptimizedStack = await optimizeForPM2Cluster([
@@ -944,7 +943,7 @@ export async function createProductionMiddleware(prodOptions = {}) {
             options: prodOptions
         });
 
-        throw new MiddlewareError(
+        throw new ValidationError(
             `Production middleware creation failed: ${error.message}`,
             'PRODUCTION_MIDDLEWARE_ERROR',
             { originalError: error, correlationId, prodOptions }
@@ -966,7 +965,7 @@ export async function createProductionMiddleware(prodOptions = {}) {
  * 
  * @returns {Promise<Object>} Comprehensive validation result with analysis and recommendations
  * 
- * @throws {MiddlewareError} When validation encounters critical errors
+ * @throws {ValidationError} When validation encounters critical errors
  * 
  * @example
  * // Basic middleware validation
@@ -981,7 +980,7 @@ export async function createProductionMiddleware(prodOptions = {}) {
  *   thresholds: { responseTime: 50, securityScore: 90 }
  * });
  */
-export async function validateMiddlewareStack(middlewareStack, validationOptions = {}) {
+async function validateMiddlewareStack(middlewareStack, validationOptions = {}) {
     const correlationId = validationOptions.correlationId || logger.generateCorrelationId();
     const startTime = Date.now();
 
@@ -994,7 +993,7 @@ export async function validateMiddlewareStack(middlewareStack, validationOptions
 
         // Validate input parameters
         if (!Array.isArray(middlewareStack)) {
-            throw new MiddlewareError(
+            throw new ValidationError(
                 'Invalid middleware stack: expected array of functions',
                 'VALIDATION_INPUT_ERROR',
                 { correlationId, receivedType: typeof middlewareStack }
@@ -1108,7 +1107,7 @@ export async function validateMiddlewareStack(middlewareStack, validationOptions
             validationTime: Date.now() - startTime
         });
 
-        throw new MiddlewareError(
+        throw new ValidationError(
             `Middleware stack validation failed: ${error.message}`,
             'VALIDATION_ERROR',
             { originalError: error, correlationId, validationOptions }
@@ -1143,7 +1142,7 @@ export async function validateMiddlewareStack(middlewareStack, validationOptions
  *   includeTroubleshooting: true
  * });
  */
-export async function getMiddlewareInfo(infoOptions = {}) {
+async function getMiddlewareInfo(infoOptions = {}) {
     const correlationId = infoOptions.correlationId || logger.generateCorrelationId();
 
     try {
@@ -1225,7 +1224,7 @@ export async function getMiddlewareInfo(infoOptions = {}) {
             options: infoOptions
         });
 
-        throw new MiddlewareError(
+        throw new ValidationError(
             `Failed to retrieve middleware information: ${error.message}`,
             'INFO_RETRIEVAL_ERROR',
             { originalError: error, correlationId, infoOptions }
@@ -1245,7 +1244,7 @@ export async function getMiddlewareInfo(infoOptions = {}) {
  * 
  * @returns {Promise<Object>} Refresh result with updated middleware stack and status
  * 
- * @throws {MiddlewareError} When refresh operation encounters errors
+ * @throws {ValidationError} When refresh operation encounters errors
  * 
  * @example
  * // Complete middleware refresh
@@ -1260,7 +1259,7 @@ export async function getMiddlewareInfo(infoOptions = {}) {
  *   targetMiddleware: ['security', 'rateLimit']
  * });
  */
-export async function refreshMiddleware(refreshOptions = {}) {
+async function refreshMiddleware(refreshOptions = {}) {
     const correlationId = refreshOptions.correlationId || logger.generateCorrelationId();
     const startTime = Date.now();
 
@@ -1325,7 +1324,7 @@ export async function refreshMiddleware(refreshOptions = {}) {
             );
 
             if (!validationResult.isValid) {
-                throw new MiddlewareError(
+                throw new ValidationError(
                     'Refreshed middleware validation failed',
                     'REFRESH_VALIDATION_ERROR',
                     {
@@ -1363,7 +1362,7 @@ export async function refreshMiddleware(refreshOptions = {}) {
             options: refreshOptions
         });
 
-        throw new MiddlewareError(
+        throw new ValidationError(
             `Middleware refresh failed: ${error.message}`,
             'REFRESH_ERROR',
             { originalError: error, correlationId, refreshOptions }
@@ -1385,7 +1384,7 @@ export async function refreshMiddleware(refreshOptions = {}) {
  * 
  * @returns {Promise<Object>} Application integration result with middleware status and monitoring
  * 
- * @throws {MiddlewareError} When middleware application fails
+ * @throws {ValidationError} When middleware application fails
  * 
  * @example
  * // Apply middleware to Express app
@@ -1400,7 +1399,7 @@ export async function refreshMiddleware(refreshOptions = {}) {
  *   enableEducationalLogging: true
  * });
  */
-export async function applyMiddlewareToApp(expressApp, middlewareStack, applyOptions = {}) {
+async function applyMiddlewareToApp(expressApp, middlewareStack, applyOptions = {}) {
     const correlationId = applyOptions.correlationId || logger.generateCorrelationId();
     const startTime = Date.now();
 
@@ -1413,7 +1412,7 @@ export async function applyMiddlewareToApp(expressApp, middlewareStack, applyOpt
 
         // Validate Express.js application instance and middleware stack compatibility
         if (!expressApp || typeof expressApp.use !== 'function') {
-            throw new MiddlewareError(
+            throw new ValidationError(
                 'Invalid Express.js application instance',
                 'APPLICATION_VALIDATION_ERROR',
                 { correlationId, receivedType: typeof expressApp }
@@ -1421,7 +1420,7 @@ export async function applyMiddlewareToApp(expressApp, middlewareStack, applyOpt
         }
 
         if (!Array.isArray(middlewareStack)) {
-            throw new MiddlewareError(
+            throw new ValidationError(
                 'Invalid middleware stack: expected array of functions',
                 'MIDDLEWARE_VALIDATION_ERROR',
                 { correlationId, receivedType: typeof middlewareStack }
@@ -1505,7 +1504,7 @@ export async function applyMiddlewareToApp(expressApp, middlewareStack, applyOpt
                 monitoringEnabled: applicationResult.monitoringEnabled
             });
         } else {
-            throw new MiddlewareError(
+            throw new ValidationError(
                 'Failed to apply complete middleware stack',
                 'APPLICATION_ERROR',
                 {
@@ -1526,7 +1525,7 @@ export async function applyMiddlewareToApp(expressApp, middlewareStack, applyOpt
             applicationTime: Date.now() - startTime
         });
 
-        throw new MiddlewareError(
+        throw new ValidationError(
             `Failed to apply middleware stack: ${error.message}`,
             'APPLICATION_ERROR',
             { originalError: error, correlationId, applyOptions }
@@ -1549,7 +1548,7 @@ export async function applyMiddlewareToApp(expressApp, middlewareStack, applyOpt
  * 
  * @returns {Promise<Function>} Custom middleware function ready for Express.js integration
  * 
- * @throws {MiddlewareError} When custom middleware creation fails
+ * @throws {ValidationError} When custom middleware creation fails
  * 
  * @example
  * // Create custom authentication middleware
@@ -1571,7 +1570,7 @@ export async function applyMiddlewareToApp(expressApp, middlewareStack, applyOpt
  *   }
  * }, { enableMonitoring: true });
  */
-export async function createCustomMiddleware(customConfig, customOptions = {}) {
+async function createCustomMiddleware(customConfig, customOptions = {}) {
     const correlationId = customOptions.correlationId || logger.generateCorrelationId();
 
     try {
@@ -1583,7 +1582,7 @@ export async function createCustomMiddleware(customConfig, customOptions = {}) {
 
         // Validate custom middleware configuration and required functionality
         if (!customConfig.name || typeof customConfig.name !== 'string') {
-            throw new MiddlewareError(
+            throw new ValidationError(
                 'Custom middleware requires a valid name',
                 'CUSTOM_MIDDLEWARE_VALIDATION_ERROR',
                 { correlationId, providedName: customConfig.name }
@@ -1591,7 +1590,7 @@ export async function createCustomMiddleware(customConfig, customOptions = {}) {
         }
 
         if (!customConfig.handler || typeof customConfig.handler !== 'function') {
-            throw new MiddlewareError(
+            throw new ValidationError(
                 'Custom middleware requires a valid handler function',
                 'CUSTOM_MIDDLEWARE_VALIDATION_ERROR',
                 { correlationId, middlewareName: customConfig.name }
@@ -1667,7 +1666,7 @@ export async function createCustomMiddleware(customConfig, customOptions = {}) {
             error: error.message
         });
 
-        throw new MiddlewareError(
+        throw new ValidationError(
             `Custom middleware creation failed: ${error.message}`,
             'CUSTOM_MIDDLEWARE_ERROR',
             { originalError: error, correlationId, customConfig }
@@ -1730,20 +1729,20 @@ async function createMiddlewareInstances(environment, configs, enableCaching, co
         
         // Create CORS middleware instance
         instances.cors = environment === 'development' 
-            ? createDevelopmentCorsMiddleware(configs.security.cors || {})
+            ? createDevelopmentCors(configs.security.cors || {})
             : corsMiddleware;
         
         // Create rate limiting middleware instance
-        instances.rateLimiter = createCustomRateLimiter(configs.security.rateLimit || {});
+        instances.rateLimiter = createRateLimiterMiddleware(configs.security.rateLimit || {});
         
         // Create security stack middleware instance
-        instances.security = createSecurityStack(configs.security || {});
+        instances.security = createSecurityMiddleware(configs.security || {});
         
         // Create request logger middleware instance
         instances.logger = createRequestLogger(configs.server.logging || {});
         
         // Create error handler middleware instance
-        instances.errorHandler = createCustomErrorHandler(configs.server.errorHandling || {});
+        instances.errorHandler = createErrorHandler(configs.server.errorHandling || {});
 
         logger.debug('Middleware instances created successfully', {
             correlationId,
@@ -1772,7 +1771,7 @@ async function validateMiddlewareCompatibility(instances, correlationId) {
         // Validate Express.js v5.1.0 compatibility
         for (const [name, middleware] of Object.entries(instances)) {
             if (typeof middleware !== 'function') {
-                throw new MiddlewareError(
+                throw new ValidationError(
                     `Invalid middleware instance: ${name} is not a function`,
                     'COMPATIBILITY_ERROR',
                     { correlationId, middlewareName: name }

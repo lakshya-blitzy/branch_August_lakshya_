@@ -59,7 +59,6 @@ import logger, {
 } from '../utils/logger.js';
 
 import {
-  ConfigurationError,
   ValidationError
 } from '../utils/error-types.js';
 
@@ -85,7 +84,7 @@ const CONFIG_CACHE_TTL = 300000; // 5 minutes cache TTL
  * @param {Array} [options.indicators=[]] - Additional environment indicators
  * @returns {Object} Environment detection result with environment type, confidence level, and detection reasoning
  */
-export function detectEnvironment(options = {}) {
+function detectEnvironment(options = {}) {
   const config = {
     useCache: options.useCache !== false,
     detailed: options.detailed === true,
@@ -271,7 +270,7 @@ export function loadEnvironmentVariables(environment, options = {}) {
         });
       } catch (error) {
         if (envFile.required) {
-          throw new ConfigurationError(
+          throw new ValidationError(
             `Required environment file not found: ${envFile.path}`,
             { code: 'ENV_FILE_MISSING', filePath: envFile.path, environment: targetEnvironment }
           );
@@ -561,7 +560,7 @@ export function createEnvironmentConfig(environment, overrides = {}) {
       environment: targetEnvironment,
       error: error.message
     });
-    throw new ConfigurationError(
+    throw new ValidationError(
       `Failed to create configuration for environment: ${targetEnvironment}`,
       { code: 'CONFIG_CREATION_FAILED', environment: targetEnvironment, cause: error }
     );
@@ -576,7 +575,7 @@ export function createEnvironmentConfig(environment, overrides = {}) {
  * @param {string} [environment] - Target environment identifier
  * @returns {Object} Server configuration object with port, host, protocol, timeouts, and middleware settings
  */
-export function getServerConfig(environment) {
+function getServerConfig(environment) {
   const targetEnvironment = environment || detectEnvironment().environment;
 
   // Determine server port from environment variables or defaults
@@ -671,7 +670,7 @@ export function getServerConfig(environment) {
  * @param {string} [environment] - Target environment identifier
  * @returns {Object} Security configuration with Helmet.js, CORS, CSP, SSL, and rate limiting settings
  */
-export function getSecurityConfig(environment) {
+function getSecurityConfig(environment) {
   const targetEnvironment = environment || detectEnvironment().environment;
   const isProduction = targetEnvironment === ENV_CONSTANTS.ENVIRONMENT_TYPES.PRODUCTION;
 
@@ -828,7 +827,7 @@ export function getSecurityConfig(environment) {
  * @param {string} [environment] - Target environment identifier
  * @returns {Object} Logging configuration with levels, destinations, rotation, and monitoring settings
  */
-export function getLoggingConfig(environment) {
+function getLoggingConfig(environment) {
   const targetEnvironment = environment || detectEnvironment().environment;
   const isProduction = targetEnvironment === ENV_CONSTANTS.ENVIRONMENT_TYPES.PRODUCTION;
 
@@ -975,7 +974,7 @@ export function getLoggingConfig(environment) {
  * @param {string} [environment] - Target environment identifier
  * @returns {Object} PM2 configuration with cluster mode, instances, restart policies, and monitoring settings
  */
-export function getPM2Config(environment) {
+function getPM2Config(environment) {
   const targetEnvironment = environment || detectEnvironment().environment;
   const isProduction = targetEnvironment === ENV_CONSTANTS.ENVIRONMENT_TYPES.PRODUCTION;
 
@@ -1134,7 +1133,7 @@ export function getPM2Config(environment) {
  * @param {string} [testFramework='jest'] - Testing framework identifier
  * @returns {Object} Testing configuration with framework settings, coverage thresholds, and test environment parameters
  */
-export function getTestingConfig(testFramework = 'jest') {
+function getTestingConfig(testFramework = 'jest') {
   const framework = testFramework.toLowerCase();
 
   // Configure test framework-specific settings (Jest or Mocha)
@@ -1323,7 +1322,7 @@ export function getTestingConfig(testFramework = 'jest') {
  * 
  * @returns {Object} Node.js version validation result with compatibility status and upgrade recommendations
  */
-export function validateNodeVersion() {
+function validateNodeVersion() {
   const currentVersion = process.version;
   const currentVersionNumeric = parseVersionString(currentVersion);
   
@@ -1527,7 +1526,7 @@ export function normalizeEnvironmentVariables(rawEnvVars) {
  * @param {string} [outputPath] - Output file path
  * @returns {Object} Export result with file path, format information, and export status
  */
-export function exportEnvironmentConfig(config, format = 'env', outputPath) {
+function exportEnvironmentConfig(config, format = 'env', outputPath) {
   const supportedFormats = ['env', 'json', 'pm2'];
   const exportFormat = format.toLowerCase();
 
@@ -1572,7 +1571,7 @@ export function exportEnvironmentConfig(config, format = 'env', outputPath) {
     const validationResult = validateExportedFile(finalOutputPath, exportFormat);
     
     if (!validationResult.isValid) {
-      throw new ConfigurationError(
+      throw new ValidationError(
         `Exported file validation failed: ${validationResult.errors.join(', ')}`,
         { code: 'EXPORT_VALIDATION_FAILED', path: finalOutputPath }
       );
@@ -1797,7 +1796,7 @@ async function parseEnvironmentFile(filePath) {
     
     return variables;
   } catch (error) {
-    throw new ConfigurationError(
+    throw new ValidationError(
       `Failed to parse environment file: ${filePath}`,
       { code: 'ENV_FILE_PARSE_ERROR', filePath, cause: error }
     );
@@ -2300,7 +2299,7 @@ async function writeConfigurationFile(filePath, data, format) {
   try {
     await fs.writeFile(filePath, data, 'utf8');
   } catch (error) {
-    throw new ConfigurationError(
+    throw new ValidationError(
       `Failed to write configuration file: ${filePath}`,
       { code: 'FILE_WRITE_ERROR', filePath, format, cause: error }
     );
@@ -2346,11 +2345,11 @@ async function validateExportedFile(filePath, format) {
 }
 
 // Export main environment configuration object and utility functions
-const environmentConfig = createEnvironmentConfig();
+const defaultEnvironmentConfig = createEnvironmentConfig();
 
 export {
   // Main configuration object
-  environmentConfig,
+  defaultEnvironmentConfig,
   
   // Factory functions
   createEnvironmentConfig as loadEnvironmentConfig,

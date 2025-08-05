@@ -2464,7 +2464,7 @@ The application uses a sophisticated configuration system supporting multiple en
 ```javascript
 // config/index.js - Main configuration orchestrator
 import { environmentConfig } from './environment.js';
-import { securityConfig } from './security.js';
+import { defaultSecurityConfig } from './security.js';
 import { pm2Config } from './pm2.js';
 import { databaseConfig } from './database.js';
 
@@ -2484,7 +2484,7 @@ export class ConfigurationManager {
         host: process.env.HOST || '0.0.0.0'
       },
       environment: environmentConfig.getConfig(this.environment),
-      security: securityConfig.getConfig(this.environment),
+      security: defaultSecurityConfig.getConfig(this.environment),
       pm2: pm2Config.getConfig(this.environment),
       database: databaseConfig.getConfig(this.environment),
       logging: this.getLoggingConfig(),

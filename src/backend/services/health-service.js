@@ -55,13 +55,12 @@ import logger, {
 import {
   HTTP_CONSTANTS,
   API_CONSTANTS,
-  PERFORMANCE_CONSTANTS,
   PM2_CONSTANTS,
   FLASK_CONSTANTS
 } from '../utils/constants.js';
 
 import {
-  environmentConfig,
+  defaultEnvironmentConfig as environmentConfig,
   isProduction
 } from '../config/environment.js';
 

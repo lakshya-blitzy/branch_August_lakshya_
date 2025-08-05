@@ -50,18 +50,18 @@ import {
 
 import { 
   createSecurityConfig, 
-  securityConfig, 
+  defaultSecurityConfig, 
   validateSecurityConfig 
 } from './security.js';
 
 import { 
-  environmentConfig, 
+  defaultEnvironmentConfig, 
   loadEnvironmentConfig, 
   validateEnvironment 
 } from './environment.js';
 
 import { 
-  pm2Config, 
+  defaultPM2Config, 
   createPM2Config, 
   validatePM2Config 
 } from './pm2.js';
@@ -81,7 +81,6 @@ import {
 } from '../utils/constants.js';
 
 import { 
-  ConfigurationError, 
   ValidationError 
 } from '../utils/error-types.js';
 
@@ -252,7 +251,7 @@ export async function initializeConfiguration(environment, options = {}) {
 
   } catch (error) {
     // Handle configuration initialization errors with detailed logging
-    const configError = new ConfigurationError(
+    const configError = new ValidationError(
       `Configuration initialization failed: ${error.message}`,
       {
         cause: error,
@@ -381,7 +380,7 @@ export async function loadAllConfigurations(environment, forceReload = false) {
     return customizedConfigurations;
 
   } catch (error) {
-    const loadError = new ConfigurationError(
+    const loadError = new ValidationError(
       `Failed to load all configurations: ${error.message}`,
       {
         cause: error,
@@ -704,7 +703,7 @@ export async function mergeConfigurations(baseConfig, overrides = {}, environmen
     return environmentSpecificConfig;
 
   } catch (error) {
-    const mergeError = new ConfigurationError(
+    const mergeError = new ValidationError(
       `Configuration merge failed: ${error.message}`,
       {
         cause: error,
@@ -737,7 +736,7 @@ export async function mergeConfigurations(baseConfig, overrides = {}, environmen
  * @param {boolean} [useCache=true] - Whether to use cached configuration
  * @returns {Promise<Object>} Requested configuration module or complete configuration object
  */
-export async function getConfiguration(module, useCache = true) {
+async function getConfiguration(module, useCache = true) {
   try {
     logDebug('Retrieving configuration', {
       module: module || 'all',
@@ -758,7 +757,7 @@ export async function getConfiguration(module, useCache = true) {
           });
           return cachedConfig[module];
         } else {
-          throw new ConfigurationError(
+          throw new ValidationError(
             `Configuration module '${module}' not found`,
             { module, availableModules: Object.keys(cachedConfig) }
           );
@@ -786,7 +785,7 @@ export async function getConfiguration(module, useCache = true) {
       if (freshConfig[module]) {
         return freshConfig[module];
       } else {
-        throw new ConfigurationError(
+        throw new ValidationError(
           `Configuration module '${module}' not found`,
           { module, availableModules: Object.keys(freshConfig) }
         );
@@ -798,7 +797,7 @@ export async function getConfiguration(module, useCache = true) {
     return secureConfig;
 
   } catch (error) {
-    const retrievalError = new ConfigurationError(
+    const retrievalError = new ValidationError(
       `Configuration retrieval failed: ${error.message}`,
       {
         cause: error,
@@ -831,7 +830,7 @@ export async function getConfiguration(module, useCache = true) {
  * @param {boolean} [validateFirst=true] - Whether to validate updates before applying
  * @returns {Promise<Object>} Updated configuration with change summary and validation results
  */
-export async function updateConfiguration(module, updates, validateFirst = true) {
+async function updateConfiguration(module, updates, validateFirst = true) {
   try {
     logDebug('Updating configuration module', {
       module,
@@ -853,7 +852,7 @@ export async function updateConfiguration(module, updates, validateFirst = true)
     // Load current configuration from cache or reload
     const currentConfig = await getConfiguration();
     if (!currentConfig[module]) {
-      throw new ConfigurationError(
+      throw new ValidationError(
         `Configuration module '${module}' not found for update`,
         { module, availableModules: Object.keys(currentConfig) }
       );
@@ -927,7 +926,7 @@ export async function updateConfiguration(module, updates, validateFirst = true)
     };
 
   } catch (error) {
-    const updateError = new ConfigurationError(
+    const updateError = new ValidationError(
       `Configuration update failed: ${error.message}`,
       {
         cause: error,
@@ -960,7 +959,7 @@ export async function updateConfiguration(module, updates, validateFirst = true)
  * @param {Object} [customSettings={}] - Custom settings to apply to environment configuration
  * @returns {Promise<Object>} Environment-specific configuration with all modules configured for target environment
  */
-export async function createEnvironmentConfig(targetEnvironment, customSettings = {}) {
+async function createEnvironmentConfig(targetEnvironment, customSettings = {}) {
   try {
     logDebug('Creating environment-specific configuration', {
       targetEnvironment,
@@ -1039,7 +1038,7 @@ export async function createEnvironmentConfig(targetEnvironment, customSettings 
     return environmentConfig;
 
   } catch (error) {
-    const envError = new ConfigurationError(
+    const envError = new ValidationError(
       `Environment configuration creation failed: ${error.message}`,
       {
         cause: error,
@@ -1072,7 +1071,7 @@ export async function createEnvironmentConfig(targetEnvironment, customSettings 
  * @param {string[]} [formats=['env', 'json', 'pm2']] - Export formats to generate
  * @returns {Promise<Object>} Export result with generated file paths and format information
  */
-export async function exportConfigurationFiles(config, outputDir, formats = ['env', 'json', 'pm2']) {
+async function exportConfigurationFiles(config, outputDir, formats = ['env', 'json', 'pm2']) {
   try {
     logDebug('Exporting configuration files', {
       outputDir,
@@ -1147,7 +1146,7 @@ export async function exportConfigurationFiles(config, outputDir, formats = ['en
     return exportResults;
 
   } catch (error) {
-    const exportError = new ConfigurationError(
+    const exportError = new ValidationError(
       `Configuration export failed: ${error.message}`,
       {
         cause: error,
@@ -1378,7 +1377,7 @@ export async function resetConfiguration(clearCache = true) {
     return resetResult;
 
   } catch (error) {
-    const resetError = new ConfigurationError(
+    const resetError = new ValidationError(
       `Configuration reset failed: ${error.message}`,
       {
         cause: error,

@@ -37,6 +37,7 @@
 // External library imports with version comments
 import util from 'node:util'; // Node.js built-in - Object inspection and formatting utilities for error debugging
 import crypto from 'node:crypto'; // Node.js built-in - Cryptographic functionality for secure error ID generation
+import os from 'node:os'; // Node.js built-in - Operating system utilities for system information
 
 // Internal imports with specific members for error handling functionality
 import {
@@ -72,7 +73,7 @@ const ERROR_METRICS = { // Application-wide error metrics for monitoring
  * handling patterns with support for error chaining, correlation tracking, and production-ready
  * error information management.
  */
-export class BaseError extends Error {
+class BaseError extends Error {
   /**
    * Initializes BaseError instance with message, context, and enhanced error properties.
    * Sets up error tracking, correlation IDs, and comprehensive error metadata for production
@@ -298,7 +299,7 @@ export class BaseError extends Error {
  * with proper HTTP semantics, status code management, and RESTful API error responses.
  * Provides comprehensive HTTP error context and cross-platform compatibility with Flask implementations.
  */
-export class HTTPError extends BaseError {
+class HTTPError extends BaseError {
   /**
    * Initializes HTTPError with HTTP status code, headers, and request context.
    * Sets up HTTP-specific error properties and context for proper REST API error handling.
@@ -534,7 +535,7 @@ export class HTTPError extends BaseError {
  * constraint information, and user-friendly validation error reporting. Designed for
  * comprehensive form validation, API parameter validation, and data quality enforcement.
  */
-export class ValidationError extends BaseError {
+class ValidationError extends BaseError {
   /**
    * Initializes ValidationError with field-level validation failures and constraint details.
    * Sets up comprehensive validation error context for user-friendly error reporting.
@@ -772,7 +773,7 @@ export class ValidationError extends BaseError {
  * security context, violation details, and enhanced security logging capabilities.
  * Designed for integration with Helmet.js security middleware and comprehensive security monitoring.
  */
-export class SecurityError extends BaseError {
+class SecurityError extends BaseError {
   /**
    * Initializes SecurityError with security violation type, client information, and security context.
    * Sets up comprehensive security error tracking and monitoring.
@@ -1269,7 +1270,7 @@ export class SecurityError extends BaseError {
  * cluster information, and production deployment error handling capabilities. Designed for
  * comprehensive PM2 integration and production monitoring.
  */
-export class PM2Error extends BaseError {
+class PM2Error extends BaseError {
   /**
    * Initializes PM2Error with process operation details, cluster context, and deployment information.
    * Sets up PM2-specific error tracking and process management context.
@@ -1739,7 +1740,7 @@ export class PM2Error extends BaseError {
  * @param {Object} [options.additionalContext] - Additional context to include
  * @returns {Object} Standardized error response object with status, message, code, and context appropriate for environment
  */
-export function createErrorResponse(error, options = {}) {
+function createErrorResponse(error, options = {}) {
   const config = {
     environment: options.environment || process.env.NODE_ENV || 'development',
     includeStack: options.includeStack !== false && process.env.NODE_ENV === 'development',
@@ -1883,7 +1884,7 @@ export function createErrorResponse(error, options = {}) {
  * @param {Error} error - Error instance to classify
  * @returns {boolean} True if error is operational and recoverable, false if it indicates programming bugs or system issues
  */
-export function isOperationalError(error) {
+function isOperationalError(error) {
   // Check if error is instance of custom operational error classes (BaseError, HTTPError, ValidationError, SecurityError)
   if (error instanceof BaseError) {
     return error.isOperational;
@@ -1969,7 +1970,7 @@ export function isOperationalError(error) {
  * @param {boolean} [environment.removePaths] - Remove file system paths
  * @returns {Object} Sanitized error object safe for client transmission with environment-appropriate detail levels
  */
-export function sanitizeErrorForResponse(error, environment = {}) {
+function sanitizeErrorForResponse(error, environment = {}) {
   const config = {
     environment: environment.environment || process.env.NODE_ENV || 'development',
     removeStack: environment.removeStack !== false,
@@ -2070,7 +2071,7 @@ export function sanitizeErrorForResponse(error, environment = {}) {
  * @param {Object} [context.systemContext] - System state context
  * @returns {Object} Error severity classification with level, priority, alerting requirements, and recommended actions
  */
-export function classifyErrorSeverity(error, context = {}) {
+function classifyErrorSeverity(error, context = {}) {
   // Analyze error type and classification for base severity determination
   let severity = 'medium';
   let priority = 'P3';
@@ -2206,7 +2207,7 @@ export function classifyErrorSeverity(error, context = {}) {
  * @param {Object} [context={}] - Error context and additional options
  * @returns {Error} Appropriate error class instance based on error code with proper initialization and context
  */
-export function createErrorFromCode(errorCode, message, context = {}) {
+function createErrorFromCode(errorCode, message, context = {}) {
   // Parse error code and determine appropriate error class type
   let ErrorClass = BaseError;
   let statusCode;
@@ -2304,7 +2305,7 @@ export function createErrorFromCode(errorCode, message, context = {}) {
  * @param {Object} [context.performanceMetrics] - Performance metrics at time of error
  * @returns {Object} Formatted error object with structured logging data, context, and debugging information
  */
-export function formatErrorForLogging(error, context = {}) {
+function formatErrorForLogging(error, context = {}) {
   // Extract error class type and basic error information
   const errorInfo = {
     name: error.name,
@@ -2350,7 +2351,7 @@ export function formatErrorForLogging(error, context = {}) {
     environment: process.env.NODE_ENV || 'development',
     memory: process.memoryUsage(),
     uptime: process.uptime(),
-    loadAverage: require('os').loadavg()
+    loadAverage: os.loadavg()
   };
 
   // Format error chain and cause information for nested errors
@@ -2457,7 +2458,7 @@ export function formatErrorForLogging(error, context = {}) {
  * @param {boolean} [validationOptions.validateMethods] - Validate required methods exist
  * @returns {Object} Validation result with status, missing properties, and correction recommendations
  */
-export function validateErrorInstance(error, validationOptions = {}) {
+function validateErrorInstance(error, validationOptions = {}) {
   const options = {
     strict: validationOptions.strict === true,
     requiredProperties: validationOptions.requiredProperties || ['name', 'message'],

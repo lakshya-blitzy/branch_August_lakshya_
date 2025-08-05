@@ -65,7 +65,7 @@ import {
   securityTestData,
   crossPlatformTestData,
   errorScenarios
-} from '../fixtures/test-data.json';
+} from '../fixtures/test-data.js';
 
 // Global test environment state
 let testEnvironment = null;

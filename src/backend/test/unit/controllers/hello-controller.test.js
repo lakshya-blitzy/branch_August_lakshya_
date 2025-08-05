@@ -56,7 +56,7 @@ import {
   crossPlatformTestData,
   mockResponses,
   validationRules
-} from '../../fixtures/test-data.json';
+} from '../../fixtures/test-data.js';
 
 // Mock implementations for non-existent helper files
 const createHTTPTestHelper = () => ({

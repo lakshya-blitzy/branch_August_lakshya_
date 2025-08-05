@@ -41,14 +41,13 @@
 import { createContentSecurityPolicy } from './csp.config.js';
 
 import {
-  SECURITY_CONSTANTS,
-  CSP_DIRECTIVES,
-  CORS_CONFIG
+  SECURITY_CONSTANTS
 } from '../utils/constants.js';
 
+const { CSP_DIRECTIVES, CORS_CONFIG } = SECURITY_CONSTANTS;
+
 import {
-  environmentConfig,
-  security as securityConfig,
+  defaultEnvironmentConfig as environmentConfig,
   isProduction,
   isDevelopment,
   currentEnvironment
@@ -61,7 +60,7 @@ import logger, {
   logSecurityEvent
 } from '../utils/logger.js';
 
-import { SecurityConfigurationError } from '../utils/error-types.js';
+import { SecurityError } from '../utils/error-types.js';
 
 // Global configuration cache and constants for Helmet.js security management
 const HELMET_CONFIG_CACHE = new Map(); // Centralized configuration caching for performance optimization
@@ -112,7 +111,7 @@ function validateUrl(url, options = {}) {
  * @param {string} environment - Environment name (development, production, staging)
  * @returns {Object} Custom security headers configuration with Permissions Policy and Expect-CT settings
  */
-export function createCustomSecurityHeaders(environment) {
+function createCustomSecurityHeaders(environment) {
   try {
     logInfo('Creating custom security headers configuration', { environment });
     
@@ -207,7 +206,7 @@ export function createCustomSecurityHeaders(environment) {
       stack: error.stack
     });
     
-    throw new SecurityConfigurationError(
+    throw new SecurityError(
       'Custom security headers creation failed',
       'custom-headers-creation',
       {
@@ -228,7 +227,7 @@ export function createCustomSecurityHeaders(environment) {
  * @param {string} environment - Environment name for configuration customization
  * @returns {Object} Base Helmet.js configuration object with all 15 sub-middlewares configured
  */
-export function createBaseHelmetConfig(environment) {
+function createBaseHelmetConfig(environment) {
   try {
     logInfo('Creating base Helmet configuration', { environment });
     
@@ -334,7 +333,7 @@ export function createBaseHelmetConfig(environment) {
       stack: error.stack
     });
     
-    throw new SecurityConfigurationError(
+    throw new SecurityError(
       'Base Helmet configuration creation failed',
       'base-config-creation',
       {
@@ -355,7 +354,7 @@ export function createBaseHelmetConfig(environment) {
  * @param {Object} baseConfig - Base Helmet configuration to customize for development
  * @returns {Object} Development-optimized Helmet configuration with relaxed policies
  */
-export function createDevelopmentHelmetConfig(baseConfig) {
+function createDevelopmentHelmetConfig(baseConfig) {
   try {
     logInfo('Creating development Helmet configuration');
     
@@ -450,7 +449,7 @@ export function createDevelopmentHelmetConfig(baseConfig) {
       stack: error.stack
     });
     
-    throw new SecurityConfigurationError(
+    throw new SecurityError(
       'Development Helmet configuration creation failed',
       'dev-config-creation',
       {
@@ -470,7 +469,7 @@ export function createDevelopmentHelmetConfig(baseConfig) {
  * @param {Object} baseConfig - Base Helmet configuration to harden for production
  * @returns {Object} Production-hardened Helmet configuration with strict security policies
  */
-export function createProductionHelmetConfig(baseConfig) {
+function createProductionHelmetConfig(baseConfig) {
   try {
     logInfo('Creating production Helmet configuration');
     
@@ -588,7 +587,7 @@ export function createProductionHelmetConfig(baseConfig) {
       stack: error.stack
     });
     
-    throw new SecurityConfigurationError(
+    throw new SecurityError(
       'Production Helmet configuration creation failed',
       'prod-config-creation',
       {
@@ -608,7 +607,7 @@ export function createProductionHelmetConfig(baseConfig) {
  * @param {Object} baseConfig - Base Helmet configuration to customize for staging
  * @returns {Object} Staging-optimized Helmet configuration balancing security and testing
  */
-export function createStagingHelmetConfig(baseConfig) {
+function createStagingHelmetConfig(baseConfig) {
   try {
     logInfo('Creating staging Helmet configuration');
     
@@ -716,7 +715,7 @@ export function createStagingHelmetConfig(baseConfig) {
       stack: error.stack
     });
     
-    throw new SecurityConfigurationError(
+    throw new SecurityError(
       'Staging Helmet configuration creation failed',
       'staging-config-creation',
       {
@@ -737,7 +736,7 @@ export function createStagingHelmetConfig(baseConfig) {
  * @param {string} environment - Environment name for context-specific validation
  * @returns {Object} Validation result with security status, warnings, and recommendations
  */
-export function validateHelmetConfig(helmetConfig, environment) {
+function validateHelmetConfig(helmetConfig, environment) {
   try {
     logInfo('Validating Helmet configuration', { environment });
     
@@ -916,7 +915,7 @@ export function validateHelmetConfig(helmetConfig, environment) {
       stack: error.stack
     });
     
-    throw new SecurityConfigurationError(
+    throw new SecurityError(
       'Helmet configuration validation failed',
       'config-validation',
       {
@@ -938,14 +937,14 @@ export function validateHelmetConfig(helmetConfig, environment) {
  * @param {Object} [options={}] - Configuration options and overrides
  * @returns {Object} Complete Helmet.js configuration object ready for Express.js middleware integration
  */
-export function createHelmetConfig(environment = currentEnvironment, options = {}) {
+function createHelmetConfig(environment = currentEnvironment, options = {}) {
   try {
     logInfo('Creating complete Helmet configuration', { environment, options });
     
     // Validate environment parameter against supported environment types
     const supportedEnvironments = ['development', 'production', 'staging', 'test'];
     if (!supportedEnvironments.includes(environment)) {
-      throw new SecurityConfigurationError(
+      throw new SecurityError(
         `Unsupported environment: ${environment}`,
         'invalid-environment',
         { environment, supportedEnvironments }
@@ -1023,7 +1022,7 @@ export function createHelmetConfig(environment = currentEnvironment, options = {
     const validation = validateHelmetConfig(helmetConfig, environment);
     
     if (!validation.isValid && options.strict !== false) {
-      throw new SecurityConfigurationError(
+      throw new SecurityError(
         'Helmet configuration validation failed',
         'config-validation-failed',
         {
@@ -1072,12 +1071,12 @@ export function createHelmetConfig(environment = currentEnvironment, options = {
       stack: error.stack
     });
     
-    // Re-throw SecurityConfigurationError or wrap in new one
-    if (error instanceof SecurityConfigurationError) {
+    // Re-throw SecurityError or wrap in new one
+    if (error instanceof SecurityError) {
       throw error;
     }
     
-    throw new SecurityConfigurationError(
+    throw new SecurityError(
       'Helmet configuration creation failed',
       'config-creation-failed',
       {
@@ -1099,7 +1098,7 @@ export function createHelmetConfig(environment = currentEnvironment, options = {
  * @param {Object} helmetConfig - Helmet configuration object to analyze
  * @returns {Object} Comprehensive security headers information with values and purposes
  */
-export function getSecurityHeaders(helmetConfig) {
+function getSecurityHeaders(helmetConfig) {
   try {
     logInfo('Extracting security headers information');
     
@@ -1259,7 +1258,7 @@ export function getSecurityHeaders(helmetConfig) {
       stack: error.stack
     });
     
-    throw new SecurityConfigurationError(
+    throw new SecurityError(
       'Security headers extraction failed',
       'headers-extraction-failed',
       {
@@ -1280,7 +1279,7 @@ export function getSecurityHeaders(helmetConfig) {
  * @param {Object} [optimizationOptions={}] - Optimization configuration options
  * @returns {Object} Optimized Helmet configuration with improved performance and maintained security
  */
-export function optimizeHelmetConfig(helmetConfig, optimizationOptions = {}) {
+function optimizeHelmetConfig(helmetConfig, optimizationOptions = {}) {
   try {
     const options = {
       environment: optimizationOptions.environment || 'production',
@@ -1459,7 +1458,7 @@ export function optimizeHelmetConfig(helmetConfig, optimizationOptions = {}) {
  * @param {string} [format='markdown'] - Documentation output format
  * @returns {Object} Comprehensive Helmet configuration documentation with educational content
  */
-export function createHelmetDocumentation(helmetConfig, format = 'markdown') {
+function createHelmetDocumentation(helmetConfig, format = 'markdown') {
   try {
     logInfo('Creating Helmet configuration documentation', { format });
     
@@ -1665,7 +1664,7 @@ Implementation: Production-ready with environment-specific policies
       stack: error.stack
     });
     
-    throw new SecurityConfigurationError(
+    throw new SecurityError(
       'Helmet documentation creation failed',
       'documentation-creation-failed',
       {
@@ -1780,7 +1779,7 @@ function generateMarkdownDocumentation(documentation) {
 }
 
 // Default Helmet configurations for different environments
-export const helmetDefaults = {
+const helmetDefaults = {
   development: {
     hsts: false,
     contentSecurityPolicy: {

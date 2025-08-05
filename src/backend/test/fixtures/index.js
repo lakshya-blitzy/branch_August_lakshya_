@@ -33,13 +33,14 @@
  */
 
 // Import static test data for HTTP endpoints, security validation, and cross-platform compatibility
-import {
+import testDataJson from './test-data.js' with { type: 'json' };
+const {
   httpEndpoints,
   securityTestData,
   performanceBenchmarks,
   crossPlatformData,
   pm2TestData
-} from './test-data.json';
+} = testDataJson;
 
 // Import mock HTTP response generators and validation utilities
 import {

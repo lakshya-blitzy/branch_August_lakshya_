@@ -10,9 +10,9 @@ const require = createRequire(import.meta.url);
 const crypto = require('node:crypto'); // Node.js built-in cryptographic utilities v18+
 
 import { SECURITY_CONSTANTS } from '../utils/constants.js';
-import { environmentConfig } from '../config/environment.js';
-import logger from '../utils/logger.js';
-import { SecurityConfigurationError } from '../utils/error-types.js';
+import { defaultEnvironmentConfig as environmentConfig } from '../config/environment.js';
+import logger, { logSecurityEvent } from '../utils/logger.js';
+import { SecurityError } from '../utils/error-types.js';
 
 // Extract CSP directives and security headers from security constants
 const { CSP_DIRECTIVES, SECURITY_HEADERS } = SECURITY_CONSTANTS;
@@ -43,7 +43,7 @@ export function generateCSPNonce(length = DEFAULT_CSP_NONCE_LENGTH) {
         
         // Validate nonce format and length meet CSP security requirements
         if (!nonce || nonce.length < 16) {
-            throw new SecurityConfigurationError('Generated nonce does not meet minimum security requirements');
+            throw new SecurityError('Generated nonce does not meet minimum security requirements');
         }
         
         // Log nonce generation for debugging and security auditing
@@ -61,7 +61,7 @@ export function generateCSPNonce(length = DEFAULT_CSP_NONCE_LENGTH) {
             length,
             environment: currentEnvironment
         });
-        throw new SecurityConfigurationError(`CSP nonce generation failed: ${error.message}`);
+        throw new SecurityError(`CSP nonce generation failed: ${error.message}`);
     }
 }
 
@@ -166,7 +166,7 @@ export function createBaseCspDirectives(environment) {
             error: error.message,
             environment
         });
-        throw new SecurityConfigurationError(`Failed to create base CSP directives: ${error.message}`);
+        throw new SecurityError(`Failed to create base CSP directives: ${error.message}`);
     }
 }
 
@@ -241,7 +241,7 @@ export function createDevelopmentCspPolicy(baseDirectives, options = {}) {
             error: error.message,
             options
         });
-        throw new SecurityConfigurationError(`Failed to create development CSP policy: ${error.message}`);
+        throw new SecurityError(`Failed to create development CSP policy: ${error.message}`);
     }
 }
 
@@ -323,7 +323,7 @@ export function createProductionCspPolicy(baseDirectives, options = {}) {
             error: error.message,
             options
         });
-        throw new SecurityConfigurationError(`Failed to create production CSP policy: ${error.message}`);
+        throw new SecurityError(`Failed to create production CSP policy: ${error.message}`);
     }
 }
 
@@ -383,7 +383,7 @@ export function createStagingCspPolicy(baseDirectives, options = {}) {
             error: error.message,
             options
         });
-        throw new SecurityConfigurationError(`Failed to create staging CSP policy: ${error.message}`);
+        throw new SecurityError(`Failed to create staging CSP policy: ${error.message}`);
     }
 }
 
@@ -487,7 +487,7 @@ export function validateCspDirectives(cspDirectives, environment) {
             error: error.message,
             environment
         });
-        throw new SecurityConfigurationError(`CSP validation failed: ${error.message}`);
+        throw new SecurityError(`CSP validation failed: ${error.message}`);
     }
 }
 
@@ -504,7 +504,7 @@ export function createContentSecurityPolicy(environment = currentEnvironment, op
         // Validate environment parameter against supported environment types
         const validEnvironments = ['development', 'production', 'staging'];
         if (!validEnvironments.includes(environment)) {
-            throw new SecurityConfigurationError(`Invalid environment: ${environment}. Must be one of: ${validEnvironments.join(', ')}`);
+            throw new SecurityError(`Invalid environment: ${environment}. Must be one of: ${validEnvironments.join(', ')}`);
         }
         
         // Check CSP policy cache for existing environment configuration
@@ -606,12 +606,12 @@ export function createContentSecurityPolicy(environment = currentEnvironment, op
         // Return complete CSP configuration ready for Helmet.js middleware integration
         return helmetConfig;
     } catch (error) {
-        logger.logSecurityEvent('csp_creation_failed', {
+        logSecurityEvent('csp_creation_failed', {
             error: error.message,
             environment,
             options
         });
-        throw new SecurityConfigurationError(`Failed to create CSP configuration: ${error.message}`);
+        throw new SecurityError(`Failed to create CSP configuration: ${error.message}`);
     }
 }
 
@@ -759,7 +759,7 @@ export function optimizeCspPolicy(cspPolicy, optimizationOptions = {}) {
             error: error.message,
             optimizationOptions
         });
-        throw new SecurityConfigurationError(`CSP optimization failed: ${error.message}`);
+        throw new SecurityError(`CSP optimization failed: ${error.message}`);
     }
 }
 
@@ -829,7 +829,7 @@ export function createCspDocumentation(cspPolicy, format = 'markdown') {
             error: error.message,
             format
         });
-        throw new SecurityConfigurationError(`CSP documentation generation failed: ${error.message}`);
+        throw new SecurityError(`CSP documentation generation failed: ${error.message}`);
     }
 }
 

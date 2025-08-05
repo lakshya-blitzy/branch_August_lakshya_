@@ -1325,7 +1325,7 @@ export async function startHTTPServer(config = {}) {
  * 
  * @returns {void} No return value, performs comprehensive statistics logging
  */
-export function logServerStatistics() {
+function logServerStatistics() {
   try {
     // Calculate server uptime since startup
     const uptime = serverStartTime ? Date.now() - serverStartTime : 0;

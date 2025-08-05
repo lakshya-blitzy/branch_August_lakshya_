@@ -53,7 +53,7 @@ import { createCorsConfig } from '../security/cors.config.js';
 
 // Environment and configuration imports for environment-aware security settings
 import { 
-  environmentConfig,
+  defaultEnvironmentConfig as environmentConfig,
   isProduction,
   isDevelopment,
   currentEnvironment
@@ -2449,7 +2449,7 @@ function assessComplianceStatus(securityConfig) {
 }
 
 // Export default security configuration for immediate use
-export const securityConfig = createSecurityConfig();
+export const defaultSecurityConfig = createSecurityConfig();
 
 // Export all public functions and current configuration
 export {

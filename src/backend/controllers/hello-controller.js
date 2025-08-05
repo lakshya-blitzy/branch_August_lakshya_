@@ -108,7 +108,7 @@ const CORS_HEADERS = {
  * @param {Function} next - Express.js next middleware function for error handling and pipeline continuation
  * @returns {Promise<void>} Asynchronous function that handles complete request processing and sends response or calls next middleware
  */
-export async function hello(req, res, next) {
+async function hello(req, res, next) {
   // Generate unique request correlation ID using generateRequestId for distributed tracking and debugging
   const correlationId = generateRequestId({
     prefix: 'hello',
@@ -235,7 +235,7 @@ export async function hello(req, res, next) {
  * @param {Function} next - Express.js next middleware function for error handling and pipeline continuation
  * @returns {Promise<void>} Asynchronous function that handles complete request processing and sends response or calls next middleware
  */
-export async function goodEvening(req, res, next) {
+async function goodEvening(req, res, next) {
   // Generate unique request correlation ID using generateRequestId for distributed tracking and debugging across systems
   const correlationId = generateRequestId({
     prefix: 'goodevening',
@@ -361,7 +361,7 @@ export async function goodEvening(req, res, next) {
  * @param {Function} next - Express.js next middleware function for continuing pipeline or error handling
  * @returns {void} Middleware function that continues to next middleware or sends error response with security logging
  */
-export function validateRequestMethod(req, res, next) {
+function validateRequestMethod(req, res, next) {
   // Extract HTTP method from request object and normalize to uppercase for consistent comparison with allowed methods
   const method = req.method.toUpperCase();
 
@@ -462,7 +462,7 @@ export function validateRequestMethod(req, res, next) {
  * @param {Function} next - Express.js next middleware function for passing to Express.js error handling middleware if needed
  * @returns {void} Error handling function that sends error response or passes to Express.js error middleware with comprehensive logging
  */
-export async function handleControllerError(error, req, res, next) {
+async function handleControllerError(error, req, res, next) {
   // Extract request correlation ID and context for comprehensive error tracking across distributed systems
   const correlationId = req.correlationId || 
                         (error.context && error.context.requestId) ||
@@ -608,7 +608,7 @@ export async function handleControllerError(error, req, res, next) {
  * @param {string} [contextOptions.endpoint] - Endpoint identifier for context categorization
  * @returns {Object} Request context object with correlation tracking, client info, performance data, and security validation ready for service layer consumption
  */
-export function createRequestContext(req, contextOptions = {}) {
+function createRequestContext(req, contextOptions = {}) {
   // Generate or extract request correlation ID for distributed tracking and debugging across microservices
   const correlationId = contextOptions.correlationId || 
                         req.correlationId ||
@@ -776,7 +776,7 @@ export function createRequestContext(req, contextOptions = {}) {
  * @param {Function} next - Express.js next middleware function for continuing pipeline or error handling
  * @returns {void} CORS preflight handler that sends appropriate headers and response with security validation and monitoring
  */
-export function handleOptionsRequest(req, res, next) {
+function handleOptionsRequest(req, res, next) {
   // Generate correlation ID for CORS preflight tracking and security monitoring across distributed requests
   const correlationId = generateRequestId({
     prefix: 'cors-preflight',
@@ -913,7 +913,7 @@ export function handleOptionsRequest(req, res, next) {
  * @param {Object} [performanceContext.memoryUsage] - Memory usage snapshot for resource monitoring
  * @returns {void} Performance tracking function that updates metrics and triggers monitoring with PM2 integration and alerting
  */
-export function trackControllerPerformance(controllerName, responseTime, performanceContext = {}) {
+function trackControllerPerformance(controllerName, responseTime, performanceContext = {}) {
   // Extract correlation ID and performance metadata for comprehensive tracking and debugging
   const correlationId = performanceContext.correlationId || generateRequestId({ prefix: 'perf' });
   const endpoint = performanceContext.endpoint || 'unknown';
@@ -1070,7 +1070,7 @@ export function trackControllerPerformance(controllerName, responseTime, perform
  * @param {Object} [compatibilityOptions.flaskConfig] - Flask-specific configuration and settings
  * @returns {Function} Flask-compatible controller function with equivalent functionality and response patterns for cross-platform testing
  */
-export function createFlaskCompatibleController(controllerType, compatibilityOptions = {}) {
+function createFlaskCompatibleController(controllerType, compatibilityOptions = {}) {
   const options = {
     includeFlaskDecorators: compatibilityOptions.includeFlaskDecorators !== false,
     responseFormat: compatibilityOptions.responseFormat || 'flask-json',

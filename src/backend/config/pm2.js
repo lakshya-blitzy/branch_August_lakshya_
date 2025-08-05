@@ -43,16 +43,15 @@ import fs from 'node:fs/promises'; // Node.js built-in - File system module for 
 
 // Internal imports with specific members for PM2 configuration functionality
 import { 
-  environmentConfig,
+  defaultEnvironmentConfig as environmentConfig,
   currentEnvironment,
   isProduction,
-  server,
-  pm2 as pm2EnvConfig
+  getServerConfig as server,
+  getPM2Config as pm2EnvConfig
 } from './environment.js';
 
 import {
-  PM2_CONSTANTS,
-  PERFORMANCE_CONSTANTS
+  PM2_CONSTANTS
 } from '../utils/constants.js';
 
 import logger, {
@@ -64,7 +63,7 @@ import logger, {
 
 import {
   PM2Error,
-  ConfigurationError
+  ValidationError
 } from '../utils/error-types.js';
 
 // Global PM2 configuration variables using environment defaults
@@ -81,6 +80,18 @@ const PM2_METRICS = {
   validationRuns: 0,
   optimizationApplied: 0,
   deploymentHooksExecuted: 0
+};
+
+// Performance constants for monitoring thresholds
+const PERFORMANCE_CONSTANTS = {
+  MEMORY_LIMITS: {
+    WARNING: Math.floor(PM2_CONSTANTS.MEMORY_THRESHOLD * 0.7), // 70% of limit
+    CRITICAL: PM2_CONSTANTS.MEMORY_THRESHOLD // 100% of limit
+  },
+  CPU_THRESHOLDS: {
+    WARNING: Math.floor(PM2_CONSTANTS.CPU_THRESHOLD * 0.75), // 75% of limit
+    CRITICAL: PM2_CONSTANTS.CPU_THRESHOLD // 100% of limit
+  }
 };
 
 /**
@@ -103,7 +114,7 @@ export function createPM2Config(environment = CURRENT_ENVIRONMENT, options = {})
   try {
     // Validate environment parameter and configuration options
     if (typeof environment !== 'string' || !environment.trim()) {
-      throw new ConfigurationError('Invalid environment parameter provided', {
+      throw new ValidationError('Invalid environment parameter provided', {
         environment,
         expectedTypes: ['development', 'staging', 'production']
       });
@@ -335,7 +346,7 @@ export function createPM2Config(environment = CURRENT_ENVIRONMENT, options = {})
     // Validate final configuration completeness and compatibility
     const validationResult = validatePM2Config(optimizedConfig, environment);
     if (!validationResult.isValid) {
-      throw new ConfigurationError('PM2 configuration validation failed', {
+      throw new ValidationError('PM2 configuration validation failed', {
         errors: validationResult.errors,
         warnings: validationResult.warnings,
         environment
@@ -1592,7 +1603,7 @@ export function optimizeForEnvironment(baseConfig, environment) {
     const optimizedConfig = JSON.parse(JSON.stringify(baseConfig));
 
     if (!optimizedConfig.apps || optimizedConfig.apps.length === 0) {
-      throw new ConfigurationError('No applications found in configuration for optimization');
+      throw new ValidationError('No applications found in configuration for optimization');
     }
 
     const app = optimizedConfig.apps[0];
@@ -1961,7 +1972,7 @@ module.exports = ${JSON.stringify(pm2Config, null, 2)};
       }
 
     } catch (validationError) {
-      throw new ConfigurationError('Ecosystem file validation failed', {
+      throw new ValidationError('Ecosystem file validation failed', {
         validationError: validationError.message,
         pm2Config
       });
@@ -2420,7 +2431,7 @@ export const deploymentHooks = {
 };
 
 // Generate default PM2 configuration based on current environment
-export const pm2Config = createPM2Config(currentEnvironment);
+export const defaultPM2Config = createPM2Config(currentEnvironment);
 
 // Helper functions for deployment hooks (would be implemented based on specific requirements)
 async function validateEnvironmentConfig() {

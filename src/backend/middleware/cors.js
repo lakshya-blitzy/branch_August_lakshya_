@@ -45,7 +45,7 @@ import {
 
 // Environment configuration imports for deployment-specific settings
 import {
-  environmentConfig
+  defaultEnvironmentConfig as environmentConfig
 } from '../config/environment.js';
 
 // Extract specific environment properties for CORS configuration

@@ -65,7 +65,7 @@ import {
   crossPlatformTestData,
   errorScenarios,
   mockResponses
-} from '../../fixtures/test-data.json';
+} from '../../fixtures/test-data.js';
 
 // Global test state management for performance optimization and test isolation
 let testHelpers = null;

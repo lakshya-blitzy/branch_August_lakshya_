@@ -45,7 +45,7 @@ import {
   securityTestData,
   performanceBenchmarks,
   errorScenarios
-} from '../fixtures/test-data.json';
+} from '../fixtures/test-data.js';
 
 // Constants imports for HTTP protocol and application configuration
 import {

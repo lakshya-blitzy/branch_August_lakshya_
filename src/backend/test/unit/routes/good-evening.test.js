@@ -65,7 +65,7 @@ import {
     performanceBenchmarks,
     securityTestData,
     errorScenarios
-} from '../../fixtures/test-data.json' assert { type: 'json' };
+} from '../../fixtures/test-data.js' assert { type: 'json' };
 
 // Internal Constants and Configuration - API endpoints and testing thresholds
 import {

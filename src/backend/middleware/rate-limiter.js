@@ -45,7 +45,7 @@ import {
 import { 
     currentEnvironment, 
     isProduction, 
-    security as securityConfig 
+    getSecurityConfig as securityConfig 
 } from '../config/environment.js';
 
 import logger from '../utils/logger.js';
@@ -54,8 +54,7 @@ import {
     HTTPError,
     SecurityError,
     createErrorResponse,
-    isSecurityError,
-    sanitizeErrorForClient
+    sanitizeErrorForResponse
 } from '../utils/error-types.js';
 
 // Global rate limiter state and metrics tracking
@@ -154,7 +153,7 @@ function formatHTTPResponse({ status, message, data = null, error = null, header
     // Include error details if provided and not successful
     if (error && !response.success) {
         response.error = isProduction ? 
-            sanitizeErrorForClient(error) : 
+            sanitizeErrorForResponse(error) : 
             error;
     }
 
@@ -183,7 +182,7 @@ function formatHTTPResponse({ status, message, data = null, error = null, header
  * @param {Object} options.monitoring - Monitoring and logging configuration
  * @returns {Function} Express.js middleware function for rate limiting
  */
-export function createRateLimiterMiddleware(options = {}) {
+function createRateLimiterMiddleware(options = {}) {
     try {
         // Extract and validate configuration options
         const {
@@ -366,7 +365,7 @@ export function createRateLimiterMiddleware(options = {}) {
  * @param {Object} keyOptions - Key generation configuration options
  * @returns {Function} Key generator function for rate limiting storage
  */
-export function createCustomKeyGenerator(keyOptions = {}) {
+function createCustomKeyGenerator(keyOptions = {}) {
     const {
         includeUserAgent = false,
         includeEndpoint = false,
@@ -374,7 +373,7 @@ export function createCustomKeyGenerator(keyOptions = {}) {
         keyPrefix = 'rl:'
     } = keyOptions;
 
-    return (req) => {
+    return async (req) => {
         try {
             // Start with client IP as base identifier
             const clientIp = getClientIp(req);
@@ -448,7 +447,7 @@ export function createCustomKeyGenerator(keyOptions = {}) {
  * @param {Object} handlerConfig - Handler configuration options
  * @returns {Function} Express middleware function for handling rate limit violations
  */
-export function createRateLimitHandler(handlerConfig = {}) {
+function createRateLimitHandler(handlerConfig = {}) {
     const {
         environment = currentEnvironment,
         includeEducational = !isProduction,
@@ -575,7 +574,7 @@ export function createRateLimitHandler(handlerConfig = {}) {
  * @param {Object} overrides - Configuration overrides for specific requirements
  * @returns {Function} Environment-optimized rate limiting middleware
  */
-export function createEnvironmentSpecificLimiter(environment, overrides = {}) {
+function createEnvironmentSpecificLimiter(environment, overrides = {}) {
     try {
         logger.info('Creating environment-specific rate limiter', {
             environment,
@@ -630,7 +629,7 @@ export function createEnvironmentSpecificLimiter(environment, overrides = {}) {
  * @param {Object} endpointConfig - Endpoint-specific rate limiting configuration
  * @returns {Function} Endpoint-specific rate limiting middleware
  */
-export function createEndpointSpecificLimiter(endpointPattern, endpointConfig = {}) {
+function createEndpointSpecificLimiter(endpointPattern, endpointConfig = {}) {
     try {
         logger.info('Creating endpoint-specific rate limiter', {
             endpointPattern,
@@ -714,7 +713,7 @@ export function createEndpointSpecificLimiter(endpointPattern, endpointConfig = 
  * @param {Object} config - Rate limiting configuration to validate
  * @returns {Object} Comprehensive validation result with recommendations
  */
-export function validateRateLimiterConfig(config) {
+function validateRateLimiterConfig(config) {
     const validation = {
         isValid: true,
         errors: [],
@@ -817,7 +816,7 @@ export function validateRateLimiterConfig(config) {
  * @param {Object} statusOptions - Status retrieval options
  * @returns {Object} Detailed rate limiter status and metrics
  */
-export function getRateLimiterStatus(statusOptions = {}) {
+function getRateLimiterStatus(statusOptions = {}) {
     try {
         const {
             includeMetrics = true,
@@ -910,7 +909,7 @@ export function getRateLimiterStatus(statusOptions = {}) {
  * @param {Object} resetOptions - Reset operation configuration
  * @returns {Object} Reset operation result with status and metrics
  */
-export function resetRateLimiter(clientKey = null, resetOptions = {}) {
+function resetRateLimiter(clientKey = null, resetOptions = {}) {
     try {
         const {
             resetMetrics = false,

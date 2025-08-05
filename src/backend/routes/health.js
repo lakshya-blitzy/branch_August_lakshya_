@@ -105,7 +105,7 @@ let ROUTE_INITIALIZATION_STATUS = {
  *   customConfig: { rateLimiting: { max: 200 } }
  * });
  */
-export function createHealthRouter(routerOptions = {}) {
+function createHealthRouter(routerOptions = {}) {
     const startTime = Date.now();
     const correlationId = logger.generateRequestId({ prefix: 'health-router' });
     
@@ -391,7 +391,7 @@ export function createHealthRouter(routerOptions = {}) {
  *   customConfig: { rateLimit: { max: 500 } }
  * });
  */
-export function configureHealthMiddleware(middlewareConfig = {}) {
+function configureHealthMiddleware(middlewareConfig = {}) {
     const correlationId = middlewareConfig.correlationId || logger.generateRequestId({ prefix: 'health-middleware' });
     
     try {
@@ -614,7 +614,7 @@ export function configureHealthMiddleware(middlewareConfig = {}) {
  *   enableCaching: true
  * });
  */
-export async function initializeHealthRoutes(initOptions = {}) {
+async function initializeHealthRoutes(initOptions = {}) {
     const startTime = Date.now();
     const correlationId = logger.generateRequestId({ prefix: 'health-init' });
 
@@ -914,7 +914,7 @@ export async function initializeHealthRoutes(initOptions = {}) {
  *   generateReport: true
  * });
  */
-export async function validateHealthRoutes(validationOptions = {}) {
+async function validateHealthRoutes(validationOptions = {}) {
     const startTime = Date.now();
     const correlationId = logger.generateRequestId({ prefix: 'health-validation' });
 
@@ -1222,7 +1222,7 @@ export async function validateHealthRoutes(validationOptions = {}) {
  *   includeTroubleshooting: true
  * });
  */
-export function getHealthRouteInfo(infoOptions = {}) {
+function getHealthRouteInfo(infoOptions = {}) {
     const correlationId = logger.generateRequestId({ prefix: 'health-info' });
 
     try {
@@ -1597,7 +1597,7 @@ export function getHealthRouteInfo(infoOptions = {}) {
  *   generateReport: true
  * });
  */
-export async function optimizeHealthRoutes(optimizationOptions = {}) {
+async function optimizeHealthRoutes(optimizationOptions = {}) {
     const startTime = Date.now();
     const correlationId = logger.generateRequestId({ prefix: 'health-optimization' });
 
@@ -1934,7 +1934,7 @@ export async function optimizeHealthRoutes(optimizationOptions = {}) {
  * @param {Object} config - Custom health router configuration
  * @returns {Router} Customized health router instance
  */
-export function createHealthRoutes(config = {}) {
+function createHealthRoutes(config = {}) {
     logger.info('Creating customized health routes with factory function', {
         config,
         factoryFunction: 'createHealthRoutes'

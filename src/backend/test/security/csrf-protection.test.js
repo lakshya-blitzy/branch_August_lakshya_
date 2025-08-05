@@ -49,7 +49,7 @@ import {
 } from '../helpers/test-helpers.js';
 import { 
   securityTestData 
-} from '../fixtures/test-data.json';
+} from '../fixtures/test-data.js';
 import { setupTestEnvironment } from '../setup.js';
 import { SECURITY_CONSTANTS } from '../../utils/constants.js';
 
@@ -968,7 +968,7 @@ export async function validateCrossPlatformCSRF(crossPlatformConfig = {}) {
  * @param {Object} clusterConfig - PM2 cluster testing configuration
  * @returns {Promise<object>} Promise resolving to PM2 cluster CSRF testing result
  */
-export async function testCSRFWithPM2Cluster(clusterConfig = {}) {
+async function testCSRFWithPM2Cluster(clusterConfig = {}) {
   const config = {
     instanceCount: clusterConfig.instanceCount || 4,
     testEndpoint: clusterConfig.testEndpoint || '/hello',
