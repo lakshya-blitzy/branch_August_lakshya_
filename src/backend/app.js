@@ -106,7 +106,7 @@ import {
 
 // Global application state and monitoring variables
 let app = null; // Express application instance
-let server = null; // HTTP server instance
+let httpServer = null; // HTTP server instance
 let healthService = null; // Health service instance
 let healthCheckManager = null; // Health check manager instance
 let isShuttingDown = false; // Graceful shutdown flag
@@ -838,8 +838,8 @@ export function startServer(expressApp, serverConfig = {}) {
       }
 
       // Start HTTP server with configured port and host
-      server = expressApp.listen(config.port, config.host, () => {
-        const address = server.address();
+      httpServer = expressApp.listen(config.port, config.host, () => {
+        const address = httpServer.address();
         const serverUrl = `http://${address.address}:${address.port}`;
 
         logger.info('HTTP server started successfully', {
@@ -852,28 +852,28 @@ export function startServer(expressApp, serverConfig = {}) {
         });
 
         // Log application startup summary
-        logApplicationStartup(config, server);
+        logApplicationStartup(config, httpServer);
 
         // Set up graceful shutdown if enabled
         if (config.enableGracefulShutdown) {
-          setupGracefulShutdown(server);
+          setupGracefulShutdown(httpServer);
         }
 
         // Validate application health after startup
         validateApplicationHealth(expressApp)
           .then(healthResult => {
             logger.info('Application health validation completed', healthResult);
-            resolve(server);
+            resolve(httpServer);
           })
           .catch(healthError => {
             logger.warn('Application health validation failed', healthError);
             // Don't reject, just warn - server is still functional
-            resolve(server);
+            resolve(httpServer);
           });
       });
 
       // Set up server error handling
-      server.on('error', (error) => {
+      httpServer.on('error', (error) => {
         handleServerError(error, {
           port: config.port,
           host: config.host,
@@ -884,9 +884,9 @@ export function startServer(expressApp, serverConfig = {}) {
 
       // Configure server timeout settings for production
       if (environment.NODE_ENV === ENV_CONSTANTS.ENVIRONMENT_TYPES.PRODUCTION) {
-        server.timeout = 30000; // 30 seconds
-        server.keepAliveTimeout = 65000; // 65 seconds
-        server.headersTimeout = 66000; // 66 seconds
+        httpServer.timeout = 30000; // 30 seconds
+        httpServer.keepAliveTimeout = 65000; // 65 seconds
+        httpServer.headersTimeout = 66000; // 66 seconds
       }
 
     } catch (error) {
@@ -1199,14 +1199,8 @@ export function logApplicationStartup(appConfig, httpServer) {
 // Export main application instance and utility functions for external use
 export {
   app,
-  createExpressApp,
-  startServer,
   healthService,
-  server,
-  setupGracefulShutdown,
-  handleServerError,
-  validateApplicationHealth,
-  logApplicationStartup
+  httpServer
 };
 
 // Initialize controllers if the module is run directly
