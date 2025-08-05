@@ -1781,6 +1781,14 @@ function getEnvironmentFiles(environment, directory) {
  */
 async function parseEnvironmentFile(filePath) {
   try {
+    // Check if file exists first
+    try {
+      await fs.access(filePath);
+    } catch (accessError) {
+      // File doesn't exist, return empty object for optional files
+      return {};
+    }
+    
     const content = await fs.readFile(filePath, 'utf8');
     const variables = {};
     
@@ -1796,6 +1804,10 @@ async function parseEnvironmentFile(filePath) {
     
     return variables;
   } catch (error) {
+    if (error.code === 'ENOENT' || error.message.includes('ENOENT')) {
+      // Re-throw file not found errors as-is for proper handling upstream
+      throw error;
+    }
     throw new ValidationError(
       `Failed to parse environment file: ${filePath}`,
       { code: 'ENV_FILE_PARSE_ERROR', filePath, cause: error }

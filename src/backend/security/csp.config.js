@@ -56,7 +56,7 @@ export function generateCSPNonce(length = DEFAULT_CSP_NONCE_LENGTH) {
         // Return base64-encoded nonce ready for CSP directive usage
         return nonce;
     } catch (error) {
-        logger.logSecurityEvent('csp_nonce_generation_failed', {
+        logSecurityEvent('csp_nonce_generation_failed', {
             error: error.message,
             length,
             environment: currentEnvironment
@@ -162,7 +162,7 @@ export function createBaseCspDirectives(environment) {
         // Return comprehensive base CSP directives object
         return baseDirectives;
     } catch (error) {
-        logger.logSecurityEvent('base_csp_creation_failed', {
+        logSecurityEvent('base_csp_creation_failed', {
             error: error.message,
             environment
         });
@@ -237,7 +237,7 @@ export function createDevelopmentCspPolicy(baseDirectives, options = {}) {
         // Return development-friendly CSP policy configuration
         return devPolicy;
     } catch (error) {
-        logger.logSecurityEvent('development_csp_creation_failed', {
+        logSecurityEvent('development_csp_creation_failed', {
             error: error.message,
             options
         });
@@ -319,7 +319,7 @@ export function createProductionCspPolicy(baseDirectives, options = {}) {
         // Return enterprise-grade production CSP policy
         return prodPolicy;
     } catch (error) {
-        logger.logSecurityEvent('production_csp_creation_failed', {
+        logSecurityEvent('production_csp_creation_failed', {
             error: error.message,
             options
         });
@@ -379,7 +379,7 @@ export function createStagingCspPolicy(baseDirectives, options = {}) {
         // Return staging-optimized CSP policy for security testing
         return stagingPolicy;
     } catch (error) {
-        logger.logSecurityEvent('staging_csp_creation_failed', {
+        logSecurityEvent('staging_csp_creation_failed', {
             error: error.message,
             options
         });
@@ -483,7 +483,7 @@ export function validateCspDirectives(cspDirectives, environment) {
         // Return comprehensive CSP validation report with actionable recommendations
         return validationResult;
     } catch (error) {
-        logger.logSecurityEvent('csp_validation_failed', {
+        logSecurityEvent('csp_validation_failed', {
             error: error.message,
             environment
         });
@@ -502,7 +502,7 @@ export function validateCspDirectives(cspDirectives, environment) {
 export function createContentSecurityPolicy(environment = currentEnvironment, options = {}) {
     try {
         // Validate environment parameter against supported environment types
-        const validEnvironments = ['development', 'production', 'staging'];
+        const validEnvironments = ['development', 'production', 'staging', 'test'];
         if (!validEnvironments.includes(environment)) {
             throw new SecurityError(`Invalid environment: ${environment}. Must be one of: ${validEnvironments.join(', ')}`);
         }
@@ -563,6 +563,17 @@ export function createContentSecurityPolicy(environment = currentEnvironment, op
                     ...options
                 });
                 break;
+                
+            case 'test':
+                // Use development-like policy for test environment with permissive settings
+                cspPolicy = createDevelopmentCspPolicy(baseDirectives, {
+                    allowUnsafeInline: true,
+                    allowUnsafeEval: true,
+                    reportOnly: true,
+                    reportUri: options.reportUri,
+                    ...options
+                });
+                break;
         }
         
         // Validate final CSP policy using validateCspDirectives function
@@ -593,7 +604,7 @@ export function createContentSecurityPolicy(environment = currentEnvironment, op
         CSP_POLICY_CACHE.set(cacheKey, helmetConfig);
         
         // Log comprehensive CSP policy creation with metadata and compliance status
-        logger.logSecurityEvent('csp_policy_created', {
+        logSecurityEvent('csp_policy_created', {
             environment,
             securityLevel: validationResult.securityLevel,
             reportOnly: cspPolicy.reportOnly,
@@ -649,7 +660,7 @@ export function getCspReportHandler(options = {}) {
             };
             
             // Log CSP violation with security event classification
-            logger.logSecurityEvent('csp_violation_reported', {
+            logSecurityEvent('csp_violation_reported', {
                 violation: violationDetails,
                 severity: options.severity || 'medium',
                 environment: currentEnvironment
@@ -664,7 +675,7 @@ export function getCspReportHandler(options = {}) {
             // Respond to browser with appropriate status code
             res.status(204).end(); // No Content - standard CSP report response
         } catch (error) {
-            logger.logSecurityEvent('csp_report_handler_error', {
+            logSecurityEvent('csp_report_handler_error', {
                 error: error.message,
                 requestPath: req.path
             });
@@ -755,7 +766,7 @@ export function optimizeCspPolicy(cspPolicy, optimizationOptions = {}) {
             }
         };
     } catch (error) {
-        logger.logSecurityEvent('csp_optimization_failed', {
+        logSecurityEvent('csp_optimization_failed', {
             error: error.message,
             optimizationOptions
         });
@@ -825,7 +836,7 @@ export function createCspDocumentation(cspPolicy, format = 'markdown') {
         // Return comprehensive educational CSP documentation
         return documentation;
     } catch (error) {
-        logger.logSecurityEvent('csp_documentation_failed', {
+        logSecurityEvent('csp_documentation_failed', {
             error: error.message,
             format
         });

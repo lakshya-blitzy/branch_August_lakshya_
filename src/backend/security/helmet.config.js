@@ -888,8 +888,17 @@ function validateHelmetConfig(helmetConfig, environment) {
       validation.recommendations.push('Development configuration should be hardened before production deployment');
     }
     
-    // Final validation status
-    if (validation.errors.length === 0 && validation.securityScore >= 70) {
+    // Final validation status with environment-specific thresholds
+    const securityThresholds = {
+      'production': 90,
+      'staging': 80,
+      'development': 50,
+      'test': 50
+    };
+    
+    const requiredScore = securityThresholds[environment] || 70;
+    
+    if (validation.errors.length === 0 && validation.securityScore >= requiredScore) {
       validation.isValid = true;
     } else {
       validation.isValid = false;

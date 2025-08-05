@@ -3,6 +3,10 @@
  * Provides minimal constants to bypass complex initialization
  */
 
+export const DEFAULT_TIMEOUT = 30000;
+export const MAX_REQUEST_SIZE = '10mb';
+export const CURRENT_NODE_VERSION = 'v20.19.4';
+
 export const ENV_CONSTANTS = {
   ENVIRONMENT_TYPES: {
     DEVELOPMENT: 'development',
@@ -35,13 +39,25 @@ export const HTTP_CONSTANTS = {
     AUTHORIZATION: 'authorization',
     X_POWERED_BY: 'x-powered-by'
   },
-  METHODS: {
+  HTTP_METHODS: {
     GET: 'GET',
     POST: 'POST',
     PUT: 'PUT',
     DELETE: 'DELETE',
     PATCH: 'PATCH',
-    OPTIONS: 'OPTIONS'
+    OPTIONS: 'OPTIONS',
+    HEAD: 'HEAD',
+    CONNECT: 'CONNECT',
+    TRACE: 'TRACE'
+  },
+  CONTENT_TYPES: {
+    JSON: 'application/json',
+    HTML: 'text/html',
+    PLAIN_TEXT: 'text/plain',
+    XML: 'application/xml',
+    FORM_URLENCODED: 'application/x-www-form-urlencoded',
+    MULTIPART_FORM: 'multipart/form-data',
+    OCTET_STREAM: 'application/octet-stream'
   }
 };
 
@@ -113,5 +129,69 @@ export const ERROR_CONSTANTS = {
     SERVER_START_FAILED: 'Failed to start server',
     CONFIG_VALIDATION_FAILED: 'Configuration validation failed',
     DEPENDENCY_NOT_FOUND: 'Required dependency not found'
+  }
+};
+
+export const API_CONSTANTS = {
+  ENDPOINTS: {
+    HELLO: '/hello',
+    GOOD_EVENING: '/good-evening',
+    HEALTH: '/health',
+    API_BASE: '/api',
+    API_V1: '/api/v1',
+    STATUS: '/status',
+    METRICS: '/metrics',
+    DOCS: '/docs',
+    NOT_FOUND: '*',
+    ERROR: '/error'
+  },
+  RESPONSE_FORMATS: {
+    JSON: 'application/json',
+    HTML: 'text/html',
+    TEXT: 'text/plain'
+  },
+  METHODS: {
+    GET: 'GET',
+    POST: 'POST',
+    PUT: 'PUT',
+    DELETE: 'DELETE',
+    PATCH: 'PATCH',
+    OPTIONS: 'OPTIONS'
+  }
+};
+
+export const FLASK_CONSTANTS = {
+  COMPATIBILITY_MAP: {
+    EXPRESS_TO_FLASK: {
+      'app.get()': 'app.route(methods=["GET"])',
+      'app.post()': 'app.route(methods=["POST"])',
+      'app.listen()': 'app.run()',
+      'res.json()': 'jsonify()',
+      'res.status()': 'return response, status_code',
+      'req.params': 'request.args',
+      'req.body': 'request.get_json()'
+    }
+  },
+  FILE_MAPPING: {
+    'app.js': 'app.py',
+    'server.js': 'app.py',
+    'routes/*.js': 'routes/*.py'
+  }
+};
+
+export const TUTORIAL_CONSTANTS = {
+  PHASES: {
+    PHASE_1: {
+      name: 'Basic HTTP Server',
+      description: 'Foundation HTTP server using Node.js core modules',
+      objectives: ['HTTP server creation', 'Request/response handling', 'Basic error handling'],
+      files: ['basic-server.js'],
+      dependencies: ['Node.js core HTTP module'],
+      completion_criteria: ['Server starts on port 3000', 'Returns "Hello world" response']
+    }
+  },
+  LEARNING_OBJECTIVES: {
+    PRIMARY: ['HTTP fundamentals', 'Express.js mastery', 'Production deployment'],
+    SECONDARY: ['Security implementation', 'Performance optimization', 'Cross-platform migration']
   }
 };

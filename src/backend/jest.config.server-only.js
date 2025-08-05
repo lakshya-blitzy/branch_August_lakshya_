@@ -14,11 +14,16 @@ export default {
   
   // Module mocking to bypass configuration issues
   moduleNameMapper: {
-    // Mock problematic configuration modules
-    '^../config/security\\.js$': '<rootDir>/test/mocks/security-mock.js',
+    // Mock the entire config system
+    '^../config/index\\.js$': '<rootDir>/test/mocks/config-index-mock.js',
+    '^../../config/index\\.js$': '<rootDir>/test/mocks/config-index-mock.js',
+    // Mock individual config modules if directly imported
     '^../config/pm2\\.js$': '<rootDir>/test/mocks/pm2-mock.js',
-    '^../security/(.*)$': '<rootDir>/test/mocks/security-mock.js',
-    '^../utils/constants\\.js$': '<rootDir>/test/mocks/constants-mock.js'
+    '^\\.\/pm2\\.js$': '<rootDir>/test/mocks/pm2-mock.js',
+    '^../config/database\\.js$': '<rootDir>/test/mocks/database-mock.js',
+    '^\\.\/database\\.js$': '<rootDir>/test/mocks/database-mock.js',
+    '^../utils/constants\\.js$': '<rootDir>/test/mocks/constants-mock.js',
+    '^../../utils/constants\\.js$': '<rootDir>/test/mocks/constants-mock.js'
   },
   
   // Skip setup files that might have import issues

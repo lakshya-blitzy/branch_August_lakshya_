@@ -10,17 +10,18 @@
     "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --config=jest.config.simple.js --coverage"
   },
   "dependencies": {
-    "express": "4.18.2",
-    "helmet": "7.1.0",
     "cors": "2.8.5",
     "dotenv": "16.0.3",
-    "winston": "3.8.2",
+    "express": "4.18.2",
     "express-rate-limit": "7.1.0",
+    "helmet": "7.1.0",
+    "on-headers": "1.0.2",
     "rate-limit-redis": "4.2.0",
-    "on-headers": "1.0.2"
+    "winston": "3.8.2"
   },
   "devDependencies": {
     "jest": "29.3.1",
+    "sinon": "^18.0.1",
     "supertest": "6.3.3"
   },
   "engines": {
