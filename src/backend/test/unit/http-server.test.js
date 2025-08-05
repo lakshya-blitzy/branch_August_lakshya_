@@ -27,7 +27,7 @@ import {
   performanceBenchmarks,
   securityTestData,
   errorScenarios
-} from '../fixtures/test-data.json' assert { type: 'json' };
+} from '../fixtures/test-data.json' with { type: 'json' };
 
 // Global test environment variables for test isolation and management
 let testEnvironment = null;

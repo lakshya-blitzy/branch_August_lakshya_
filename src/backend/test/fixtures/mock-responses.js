@@ -50,7 +50,7 @@ import {
   httpEndpoints,
   securityTestData,
   performanceBenchmarks
-} from './test-data.json' assert { type: 'json' };
+} from './test-data.json' with { type: 'json' };
 
 /**
  * Global Mock Response Infrastructure

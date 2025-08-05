@@ -64,7 +64,7 @@ import {
   initializeHealthMonitoring
 } from '../../services/health-service.js';
 import { environmentConfig } from '../../config/environment.js';
-import testData from '../fixtures/test-data.json' assert { type: 'json' };
+import testData from '../fixtures/test-data.json' with { type: 'json' };
 
 // Global test state management and infrastructure
 let TEST_SERVER_INSTANCE = null;
