@@ -598,9 +598,12 @@ function formatLogMessage(level, message, context = {}, options = {}) {
   const timestamp = new Date().toISOString();
   const environment = process.env.NODE_ENV || ENV_CONSTANTS.ENVIRONMENT_TYPES.DEVELOPMENT;
   
+  // Ensure level is a string to prevent toUpperCase errors
+  const levelStr = typeof level === 'string' ? level : String(level || 'INFO');
+  
   const baseLogEntry = {
     timestamp,
-    level: level.toUpperCase(),
+    level: levelStr.toUpperCase(),
     message,
     environment,
     pid: process.pid,
@@ -635,7 +638,8 @@ function formatLogMessage(level, message, context = {}, options = {}) {
   } else {
     // Pretty format for development
     const correlationTag = logEntry.correlationId ? ` [${logEntry.correlationId}]` : '';
-    return `${timestamp} [${level.toUpperCase()}]${correlationTag} ${message}`;
+    const levelStr = typeof level === 'string' ? level : String(level || 'INFO');
+    return `${timestamp} [${levelStr.toUpperCase()}]${correlationTag} ${message}`;
   }
 }
 

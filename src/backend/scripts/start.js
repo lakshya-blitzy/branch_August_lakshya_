@@ -51,7 +51,8 @@ import {
 } from '../server.js';
 
 // Internal imports from Express.js application factory
-import createApp, {
+import {
+  createApp,
   createDevelopmentApp,
   createProductionApp
 } from '../app.js';

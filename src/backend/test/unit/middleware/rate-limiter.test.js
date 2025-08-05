@@ -62,7 +62,8 @@ import {
 import {
     createRateLimitConfig,
     createDevelopmentConfig,
-    createProductionConfig
+    createProductionConfig,
+    clearAllRateLimitIntervals
 } from '../../../security/rate-limit.config.js';
 
 // Mock responses and test data for validation scenarios
@@ -292,6 +293,9 @@ export async function teardownTestEnvironment() {
         
         // Clean up test helpers using cleanupTestHelpers for proper resource disposal
         await cleanupTestHelpers();
+        
+        // Clear all rate limit intervals to prevent Jest hanging
+        clearAllRateLimitIntervals();
         
         // Reset global test variables and restore original environment state
         TEST_APP = null;
@@ -1362,17 +1366,5 @@ describe('Rate Limiter Middleware Unit Tests', () => {
 });
 
 // Export test functions for external test runner integration
-export {
-    testBasicRateLimiting,
-    testEnvironmentSpecificConfigurations,
-    testEndpointSpecificLimiting,
-    testCustomKeyGeneration,
-    testDistributedStorageIntegration,
-    testSecurityFeatures,
-    testPerformanceAndScaling,
-    testErrorHandlingAndEdgeCases,
-    testConfigurationValidation,
-    testStatusMonitoringAndMetrics,
-    testAdministrativeOperations,
-    testCrossPlatformCompatibility
-};
+// All exportable test utility functions are exported directly with their function declarations above
+// setupTestEnvironment, teardownTestEnvironment, and createTestApp are available for external use

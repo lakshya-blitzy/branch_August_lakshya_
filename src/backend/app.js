@@ -1211,16 +1211,60 @@ function logApplicationStartup(appConfig, httpServer) {
   }
 }
 
+/**
+ * Creates Express.js application with development-specific configurations
+ * @param {Object} config - Development-specific configuration options  
+ * @returns {Object} Express application instance with development settings
+ */
+export function createDevelopmentApp(config = {}) {
+  const developmentConfig = {
+    environment: 'development',
+    enableHealthMonitoring: true,
+    enableDetailedLogging: true,
+    enableCors: true,
+    enableRateLimiting: false, // More lenient for development
+    enableSecurityHeaders: true,
+    enableStaticFiles: true,
+    ...config
+  };
+  
+  return createExpressApp(developmentConfig);
+}
+
+/**
+ * Creates Express.js application with production-specific configurations
+ * @param {Object} config - Production-specific configuration options  
+ * @returns {Object} Express application instance with production settings
+ */
+export function createProductionApp(config = {}) {
+  const productionConfig = {
+    environment: 'production',
+    enableHealthMonitoring: true,
+    enableDetailedLogging: false,
+    enableCors: true,
+    enableRateLimiting: true, // Stricter for production
+    enableSecurityHeaders: true,
+    enableStaticFiles: false, // Usually served by CDN in production
+    enableGzip: true,
+    enableTrust: true, // Trust proxy headers in production
+    ...config
+  };
+  
+  return createExpressApp(productionConfig);
+}
+
 // Export main application instance and utility functions for external use
 export {
   app,
   createExpressApp,
+  createExpressApp as createApp, // Alias for tests
   startServer,
   healthService,
   httpServer,
   setupGracefulShutdown,
   handleServerError,
   validateApplicationHealth,
+  validateApplicationHealth as validateApplicationConfiguration, // Alias for tests
   logApplicationStartup
 };
 

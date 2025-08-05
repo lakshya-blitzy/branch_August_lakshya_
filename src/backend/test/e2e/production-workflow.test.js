@@ -40,7 +40,7 @@ import os from 'node:os'; // Node.js built-in - Operating system utilities for s
 
 // Internal imports with graceful fallback handling for missing dependencies
 let setupTestHelpers, HTTPTestClient, waitFor, createPerformanceTestHelper, createSecurityTestHelper;
-let main as deployMain, executeZeroDowntimeDeployment, monitorDeploymentHealth, executePostDeploymentValidation;
+let deployMain, executeZeroDowntimeDeployment, monitorDeploymentHealth, executePostDeploymentValidation;
 let setupPM2TestCluster, teardownPM2TestCluster, validateClusterLoadBalancing, testZeroDowntimeDeployment;
 let executeComprehensiveHealthCheck;
 

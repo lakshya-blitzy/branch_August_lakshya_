@@ -74,7 +74,6 @@ import {
   securityResponses,
   performanceResponses,
   crossPlatformResponses,
-  createMockResponse,
   createHealthResponse,
   createErrorResponse,
   createSecurityResponse,

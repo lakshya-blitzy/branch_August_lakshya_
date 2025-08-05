@@ -587,6 +587,62 @@ export async function startBasicServer(options = {}) {
  * 
  * @returns {void} No return value, performs logging side effect
  */
+/**
+ * Validates server configuration for security and reliability
+ * @param {Object} config - Server configuration to validate
+ * @returns {Object} Validation result with isValid and errors properties
+ */
+export function validateServerConfig(config = {}) {
+  const errors = [];
+  const warnings = [];
+
+  // Validate port
+  if (config.port !== undefined) {
+    if (typeof config.port !== 'number' || config.port <= 0 || config.port > 65535) {
+      errors.push('Port must be a valid number between 1 and 65535');
+    }
+    if (config.port < 1024 && process.getuid && process.getuid() !== 0) {
+      warnings.push('Port below 1024 may require root privileges');
+    }
+  }
+
+  // Validate host
+  if (config.host !== undefined) {
+    if (typeof config.host !== 'string' || config.host.trim() === '') {
+      errors.push('Host must be a non-empty string');
+    }
+  }
+
+  // Validate environment
+  if (config.environment !== undefined) {
+    const validEnvs = ['development', 'staging', 'production', 'test'];
+    if (!validEnvs.includes(config.environment)) {
+      errors.push(`Environment must be one of: ${validEnvs.join(', ')}`);
+    }
+  }
+
+  // Validate timeout settings
+  if (config.timeout !== undefined) {
+    if (typeof config.timeout !== 'number' || config.timeout < 0) {
+      errors.push('Timeout must be a non-negative number');
+    }
+  }
+
+  // Validate request size limits
+  if (config.maxRequestSize !== undefined) {
+    if (typeof config.maxRequestSize !== 'number' || config.maxRequestSize <= 0) {
+      errors.push('Max request size must be a positive number');
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings,
+    timestamp: new Date().toISOString()
+  };
+}
+
 export function logServerStats() {
   try {
     // Calculate server uptime since startup using serverStartTime global

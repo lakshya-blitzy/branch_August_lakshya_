@@ -313,7 +313,7 @@ export async function getHelloMessage(requestContext = {}, options = {}) {
       
       // Generate hello world message using API_CONSTANTS.RESPONSES template
       const messageData = {
-        message: API_CONSTANTS.RESPONSES.HELLO.MESSAGE,
+        message: API_CONSTANTS.RESPONSES.HELLO_WORLD.message,
         endpoint: API_CONSTANTS.ENDPOINTS.HELLO,
         method: 'GET',
         statusCode: HTTP_CONSTANTS.STATUS_CODES.OK
@@ -445,7 +445,7 @@ export async function getGoodEveningMessage(requestContext = {}, options = {}) {
       
       // Generate good evening message using API_CONSTANTS.RESPONSES template
       const messageData = {
-        message: API_CONSTANTS.RESPONSES.GOOD_EVENING.MESSAGE,
+        message: API_CONSTANTS.RESPONSES.GOOD_EVENING.message,
         endpoint: API_CONSTANTS.ENDPOINTS.GOOD_EVENING,
         method: 'GET',
         statusCode: HTTP_CONSTANTS.STATUS_CODES.OK

@@ -50,8 +50,8 @@ import process from 'node:process'; // Node.js built-in - Process utilities for 
 import os from 'node:os'; // Node.js built-in - Operating system utilities for system health validation
 
 // Internal application imports for health monitoring testing
-import createApp, { createProductionApp } from '../../app.js';
-import { createServer, startServer, getServerHealth } from '../../server.js';
+import { createApp, createProductionApp } from '../../app.js';
+import { startProductionServer, monitorServerHealth, initializeHealthMonitoring } from '../../server.js';
 import { 
   HealthService, 
   checkSystemHealth, 
@@ -60,8 +60,7 @@ import {
   createFlaskHealthResponse,
   getQuickHealth,
   getHealthMetrics,
-  performHealthCheck,
-  initializeHealthMonitoring
+  performHealthCheck
 } from '../../services/health-service.js';
 import { environmentConfig } from '../../config/environment.js';
 import testData from '../fixtures/test-data.js' assert { type: 'json' };
@@ -2019,7 +2018,7 @@ export function validateHealthResponseFormat(healthResponse, formatRequirements 
  * @param {Object} timingConfig - Timing measurement configuration
  * @returns {Object} Health check timing analysis with performance metrics
  */
-export function measureHealthCheckTiming(healthCheckFunction, timingConfig = {}) {
+export async function measureHealthCheckTiming(healthCheckFunction, timingConfig = {}) {
   const config = {
     iterations: timingConfig.iterations || 10,
     warmupRuns: timingConfig.warmupRuns || 3,
@@ -2228,22 +2227,7 @@ export function measureHealthCheckTiming(healthCheckFunction, timingConfig = {})
   }
 }
 
-// Export all health monitoring test functions and utilities
-export {
-  setupHealthMonitoringTest,
-  teardownHealthMonitoringTest,
-  testHealthEndpointBasicFunctionality,
-  testQuickHealthValidation,
-  testComprehensiveHealthCheck,
-  testHealthMetricsCollection,
-  testCrossPlatformHealthCompatibility,
-  testHealthMonitoringIntegrationWithPM2,
-  testHealthMonitoringPerformance,
-  testHealthMonitoringSecurity,
-  testHealthMonitoringErrorScenarios,
-  validateHealthResponseFormat,
-  measureHealthCheckTiming
-};
+// All test functions are exported directly with their function declarations above
 
 // Test suite implementation using the comprehensive test functions
 describe('Health Monitoring E2E Test Suite', () => {

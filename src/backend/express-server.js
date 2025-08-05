@@ -57,6 +57,11 @@ import {
   measurePerformance
 } from './basic-server.js';
 
+// Production server imports for health monitoring and advanced features
+import { 
+  initializeHealthMonitoring
+} from './server.js';
+
 // Middleware stack imports for comprehensive request processing pipeline
 import { 
   createMiddlewareStack,

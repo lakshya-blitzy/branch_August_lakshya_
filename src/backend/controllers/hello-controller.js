@@ -77,6 +77,9 @@ import {
   classifyErrorSeverity
 } from '../utils/error-types.js';
 
+// Internal imports from security module for security headers middleware
+import securityHeaders from '../security/security-headers.js';
+
 // Global controller cache for performance optimization and response caching
 const CONTROLLER_CACHE = new Map();
 
@@ -115,7 +118,7 @@ async function hello(req, res, next) {
     metadata: {
       method: req.method,
       url: req.url,
-      userAgent: req.headers['user-agent']
+      userAgent: req.headers ? req.headers['user-agent'] : 'unknown'
     }
   });
 
@@ -136,7 +139,7 @@ async function hello(req, res, next) {
       method: req.method,
       url: req.originalUrl,
       ip: req.ip,
-      userAgent: req.headers['user-agent']
+      userAgent: req.headers ? req.headers['user-agent'] : 'unknown'
     });
 
     // Validate request using validateMessageRequest for comprehensive security and parameter checking
@@ -146,10 +149,10 @@ async function hello(req, res, next) {
       securityCheck: true
     });
 
-    if (!validationResult.isValid) {
+    if (!validationResult.success) {
       throw new ValidationError(
         'Request validation failed',
-        validationResult.errors,
+        validationResult.error ? [validationResult.error] : [],
         {
           correlationId,
           requestContext: createRequestContext(req, { correlationId })
@@ -184,7 +187,10 @@ async function hello(req, res, next) {
     const endTime = process.hrtime.bigint();
     const responseTime = Number(endTime - startTime) / 1000000; // Convert to milliseconds
 
-    // Set comprehensive HTTP headers including CORS and security headers from CORS_HEADERS configuration
+    // Apply security headers middleware for comprehensive security protection
+    securityHeaders(req, res, () => {});
+
+    // Set comprehensive HTTP headers including CORS headers from CORS_HEADERS configuration
     Object.entries(CORS_HEADERS).forEach(([key, value]) => {
       res.setHeader(key, value);
     });
@@ -242,7 +248,7 @@ async function goodEvening(req, res, next) {
     metadata: {
       method: req.method,
       url: req.url,
-      userAgent: req.headers['user-agent']
+      userAgent: req.headers ? req.headers['user-agent'] : 'unknown'
     }
   });
 
@@ -263,7 +269,7 @@ async function goodEvening(req, res, next) {
       method: req.method,
       url: req.originalUrl,
       ip: req.ip,
-      userAgent: req.headers['user-agent']
+      userAgent: req.headers ? req.headers['user-agent'] : 'unknown'
     });
 
     // Validate request using validateMessageRequest for comprehensive security and parameter checking with endpoint-specific rules
@@ -273,10 +279,10 @@ async function goodEvening(req, res, next) {
       securityCheck: true
     });
 
-    if (!validationResult.isValid) {
+    if (!validationResult.success) {
       throw new ValidationError(
         'Request validation failed',
-        validationResult.errors,
+        validationResult.error ? [validationResult.error] : [],
         {
           correlationId,
           requestContext: createRequestContext(req, { correlationId })
@@ -311,7 +317,10 @@ async function goodEvening(req, res, next) {
     const endTime = process.hrtime.bigint();
     const responseTime = Number(endTime - startTime) / 1000000; // Convert to milliseconds
 
-    // Set comprehensive HTTP headers including CORS and security headers from CORS_HEADERS configuration for cross-origin support
+    // Apply security headers middleware for comprehensive security protection
+    securityHeaders(req, res, () => {});
+
+    // Set comprehensive HTTP headers including CORS headers from CORS_HEADERS configuration for cross-origin support
     Object.entries(CORS_HEADERS).forEach(([key, value]) => {
       res.setHeader(key, value);
     });
@@ -384,7 +393,7 @@ function validateRequestMethod(req, res, next) {
     url: req.url,
     allowedMethods,
     clientIp: req.ip,
-    userAgent: req.headers['user-agent']
+    userAgent: req.headers ? req.headers['user-agent'] : 'unknown'
   });
 
   // Check if method is GET for hello endpoints or OPTIONS for CORS preflight with security policy enforcement
@@ -413,7 +422,7 @@ function validateRequestMethod(req, res, next) {
       correlationId,
       requestContext: {
         ip: req.ip,
-        userAgent: req.headers['user-agent'],
+        userAgent: req.headers ? req.headers['user-agent'] : 'unknown',
         headers: req.headers
       }
     }
@@ -433,7 +442,7 @@ function validateRequestMethod(req, res, next) {
   }, {
     correlationId,
     ip: req.ip,
-    userAgent: req.headers['user-agent']
+    userAgent: req.headers ? req.headers['user-agent'] : 'unknown'
   });
 
   // Send appropriate error response with method validation details and security headers
@@ -475,7 +484,7 @@ async function handleControllerError(error, req, res, next) {
     method: req.method,
     url: req.originalUrl,
     ip: req.ip,
-    userAgent: req.headers['user-agent'],
+    userAgent: req.headers ? req.headers['user-agent'] : 'unknown',
     timestamp: new Date().toISOString(),
     headers: req.headers
   };
@@ -623,7 +632,7 @@ function createRequestContext(req, contextOptions = {}) {
   // Extract comprehensive client information including IP address, user agent, and headers for security and debugging
   const clientInfo = {
     ip: req.ip || req.connection?.remoteAddress || 'unknown',
-    userAgent: req.headers['user-agent'] || 'unknown',
+    userAgent: req.headers ? req.headers['user-agent'] : 'unknown' || 'unknown',
     acceptLanguage: req.headers['accept-language'],
     acceptEncoding: req.headers['accept-encoding'],
     referer: req.headers.referer,
@@ -635,7 +644,9 @@ function createRequestContext(req, contextOptions = {}) {
 
   // Create comprehensive request timestamp and performance tracking context for monitoring and optimization
   const performanceContext = {
-    requestStartTime: contextOptions.startTime || process.hrtime.bigint(),
+    requestStartTime: contextOptions.startTime ? 
+      (typeof contextOptions.startTime === 'bigint' ? contextOptions.startTime.toString() : contextOptions.startTime) : 
+      process.hrtime.bigint().toString(),
     timestamp: new Date().toISOString(),
     timestampMs: Date.now(),
     nodeProcessId: process.pid,
@@ -753,13 +764,20 @@ function createRequestContext(req, contextOptions = {}) {
   };
 
   // Log context creation with correlation ID and comprehensive request details for debugging and monitoring
+  // Safe JSON stringify that handles BigInt values by converting them to strings
+  const safeStringify = (obj) => {
+    return JSON.stringify(obj, (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    );
+  };
+  
   logger.debug('Request context created', {
     correlationId,
     endpoint: contextOptions.endpoint,
     method: req.method,
     clientIp: clientInfo.ip,
     userAgent: clientInfo.userAgent,
-    contextSize: JSON.stringify(requestContext).length
+    contextSize: safeStringify(requestContext).length
   });
 
   // Return comprehensive request context ready for service layer consumption and cross-platform compatibility
@@ -824,7 +842,7 @@ function handleOptionsRequest(req, res, next) {
     allowedMethods,
     allowedHeaders,
     clientIp: req.ip,
-    userAgent: req.headers['user-agent']
+    userAgent: req.headers ? req.headers['user-agent'] : 'unknown'
   });
 
   // Validate requested method and headers for security compliance and attack prevention
@@ -848,7 +866,7 @@ function handleOptionsRequest(req, res, next) {
     }, {
       correlationId,
       ip: req.ip,
-      userAgent: req.headers['user-agent']
+      userAgent: req.headers ? req.headers['user-agent'] : 'unknown'
     });
 
     // Return 403 Forbidden for invalid CORS preflight requests with security logging
@@ -866,6 +884,9 @@ function handleOptionsRequest(req, res, next) {
 
     return handleControllerError(corsError, req, res, next);
   }
+
+  // Apply security headers middleware for comprehensive security protection
+  securityHeaders(req, res, () => {});
 
   // Set comprehensive CORS headers from CORS_HEADERS global configuration for cross-origin support
   Object.entries(CORS_HEADERS).forEach(([key, value]) => {

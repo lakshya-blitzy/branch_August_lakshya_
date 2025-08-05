@@ -1528,18 +1528,7 @@ export async function validateTestCoverageAndReporting() {
 }
 
 // Export all test functions for external use and framework integration
-export {
-  describeExpressApplicationIntegration,
-  testBasicApplicationInitialization,
-  testHTTPEndpointIntegration,
-  testSecurityMiddlewareIntegration,
-  testPerformanceAndBenchmarking,
-  testCrossPlatformCompatibility,
-  testPM2CompatibilityAndStateless,
-  testErrorHandlingAndResilience,
-  testMiddlewareChainIntegration,
-  validateTestCoverageAndReporting
-};
+// All test functions are exported directly with their function declarations above
 
 // Auto-run tests if file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {

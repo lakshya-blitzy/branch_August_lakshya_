@@ -1352,16 +1352,7 @@ if (IS_MOCHA) {
 }
 
 // Export test functions for external usage and educational purposes
-export {
-    setupGoodEveningTests,
-    testGoodEveningBasicResponse,
-    testGoodEveningSecurityHeaders,
-    testGoodEveningPerformance,
-    testGoodEveningErrorHandling,
-    testGoodEveningCrossPlatformCompatibility,
-    testGoodEveningIntegration,
-    cleanupGoodEveningTests
-};
+// All test functions are exported directly with their function declarations above
 
 /**
  * Module Summary and Educational Value:

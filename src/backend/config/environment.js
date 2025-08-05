@@ -2362,6 +2362,7 @@ const defaultEnvironmentConfig = createEnvironmentConfig();
 export {
   // Main configuration object
   defaultEnvironmentConfig,
+  defaultEnvironmentConfig as environmentConfig,
   
   // Factory functions
   createEnvironmentConfig as loadEnvironmentConfig,

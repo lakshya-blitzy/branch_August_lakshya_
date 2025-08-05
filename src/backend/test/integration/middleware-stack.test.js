@@ -2249,15 +2249,4 @@ describeTest('Comprehensive Middleware Stack Integration Tests', () => {
 /**
  * Export all test functions for external use and integration
  */
-export {
-  testMiddlewareOrchestration,
-  testSecurityMiddlewareIntegration,
-  testMiddlewarePerformance,
-  testCORSPolicyEnforcement,
-  testRateLimitingIntegration,
-  testErrorHandlingMiddleware,
-  testCrossPlatformCompatibility,
-  testPM2ClusterCompatibility,
-  generateMiddlewareTestReport,
-  cleanupMiddlewareTests
-};
+// All test functions are exported directly with their function declarations above

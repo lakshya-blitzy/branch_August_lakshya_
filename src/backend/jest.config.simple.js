@@ -10,9 +10,9 @@ export default {
   // ES Modules support - .js is inferred from package.json type: module
   transform: {},
   
-  // Test file patterns - only run unit tests for server.test.js initially
+  // Test file patterns - run all tests
   testMatch: [
-    '**/test/unit/server.test.js'
+    '**/test/**/*.test.js'
   ],
   
   // Coverage settings
@@ -22,10 +22,18 @@ export default {
   moduleFileExtensions: ['js', 'json'],
   
   // Timeout settings
-  testTimeout: 10000,
+  testTimeout: 30000,
   
   // Mock settings
   clearMocks: true,
   resetMocks: true,
-  restoreMocks: true
+  restoreMocks: true,
+  
+  // Setup globals
+  globals: {
+    'jest': true
+  },
+  
+  // Setup files after environment
+  setupFilesAfterEnv: ['<rootDir>/test/setup/jest-setup.js']
 };

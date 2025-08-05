@@ -1432,12 +1432,5 @@ if (testFramework === 'mocha' || typeof describe !== 'undefined') {
 
 // Export all testing functions for external use
 export {
-  generateCSRFToken,
-  simulateCSRFAttack,
-  validateCSRFProtection,
-  testCSRFTokenLifecycle,
-  validateSecurityHeaders,
-  performCSRFLoadTesting,
-  validateCrossPlatformCSRF,
   testCSRFWithPM2Cluster
 };

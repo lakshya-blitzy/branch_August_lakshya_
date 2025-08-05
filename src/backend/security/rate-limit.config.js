@@ -13,6 +13,9 @@ import { SecurityError } from '../utils/error-types.js';
 // Global rate limiting store for memory-based rate limiting
 let RATE_LIMIT_STORE = new Map();
 
+// Cleanup interval registry for proper Jest teardown
+const CLEANUP_INTERVALS = new Set();
+
 // Default window duration - 15 minutes in milliseconds
 const DEFAULT_WINDOW_MS = 15 * 60 * 1000;
 
@@ -234,7 +237,7 @@ export function createStoreConfig(storeType = 'memory', storeOptions = {}) {
             
             // Set up periodic cleanup for memory stores
             if (storeType === 'memory' && storeOptions.enableCleanup !== false) {
-                setInterval(() => {
+                const cleanupInterval = setInterval(() => {
                     try {
                         // Cleanup expired entries (implementation depends on store internals)
                         RATE_LIMIT_METRICS.stores.memory.hits++;
@@ -244,6 +247,9 @@ export function createStoreConfig(storeType = 'memory', storeOptions = {}) {
                         });
                     }
                 }, 60000); // Cleanup every minute
+                
+                // Store interval for cleanup
+                CLEANUP_INTERVALS.add(cleanupInterval);
             }
         }
 
@@ -963,6 +969,17 @@ export function getRateLimitStatus(clientKey = null, statusOptions = {}) {
     }
 
     return status;
+}
+
+/**
+ * Cleanup function to clear all intervals for Jest teardown
+ * Call this function in test teardown to prevent hanging tests
+ */
+export function clearAllRateLimitIntervals() {
+    CLEANUP_INTERVALS.forEach(interval => {
+        clearInterval(interval);
+    });
+    CLEANUP_INTERVALS.clear();
 }
 
 // Default rate limiting configuration for the tutorial application

@@ -1948,7 +1948,7 @@ function isOperationalError(error) {
     'ReferenceError'
   ];
 
-  if (programmingPatterns.some(pattern => error.message.includes(pattern))) {
+  if (error.message && programmingPatterns.some(pattern => error.message.includes(pattern))) {
     return false;
   }
 
