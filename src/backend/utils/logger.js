@@ -918,18 +918,7 @@ const logger = createLogger({
 export default logger;
 export {
   logger,
-  createLogger,
-  debug,
-  info,
-  warn,
-  logError as error,
-  generateRequestId,
-  logPerformanceMetrics,
-  logSecurityEvent,
-  createRequestLogger,
-  formatLogMessage,
-  setupLogRotation,
-  createFlaskCompatibleLogger
+  logError as error
 };
 
 // Initialize performance metrics tracking
