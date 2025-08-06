@@ -64,14 +64,7 @@ const mockServerConfigs = {
 
 // Import all mock environment fixtures with required members access
 const mockEnvironmentModule = require('./mockEnvironment.js');
-const mockEnvironment = {
-    development: mockEnvironmentModule.development,
-    testing: mockEnvironmentModule.testing,
-    production: mockEnvironmentModule.production,
-    ci: mockEnvironmentModule.ci,
-    staging: mockEnvironmentModule.staging,
-    custom: mockEnvironmentModule.custom
-};
+const mockEnvironment = mockEnvironmentModule.mockEnvironment || mockEnvironmentModule.default;
 
 // Import file system mocking utilities and custom scenario creator
 const mockFileSystemModule = require('./mockFileSystem.js');
