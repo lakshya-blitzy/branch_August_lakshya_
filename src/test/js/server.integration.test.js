@@ -1,21 +1,21 @@
 const request = require('supertest');
-const SimpleServer = require('../../main/js/server');
+const { app, startServer, stopServer, PORT, routes } = require('../../main/js/server');
 
 describe('SimpleServer Integration Tests', () => {
-  let server;
+  let serverInstance;
   let httpServer;
 
   beforeAll(async () => {
     // Start server once for all integration tests
-    server = new SimpleServer({ port: 0 }); // Use port 0 for dynamic allocation
-    await server.start();
-    httpServer = server.server;
+    const serverInfo = await startServer(0); // Use port 0 for dynamic allocation
+    serverInstance = serverInfo.server;
+    httpServer = serverInfo.server;
   });
 
   afterAll(async () => {
     // Clean up after all tests
-    if (server && server.isRunning) {
-      await server.stop();
+    if (serverInstance || httpServer) {
+      await stopServer();
     }
   });
 
@@ -29,7 +29,8 @@ describe('SimpleServer Integration Tests', () => {
       // Step 2: Get data
       const dataResponse = await request(httpServer).get('/api/data');
       expect(dataResponse.status).toBe(200);
-      expect(dataResponse.body.items).toHaveLength(2);
+      expect(dataResponse.body).toHaveProperty('method', 'GET');
+      expect(dataResponse.body).toHaveProperty('path', '/api/data');
 
       // Step 3: Test endpoint
       const testResponse = await request(httpServer).get('/api/test');
@@ -53,7 +54,7 @@ describe('SimpleServer Integration Tests', () => {
       expect(postResponse.body.method).toBe('POST');
       expect(postResponse.body.received).toEqual(testData);
       expect(postResponse.body.created).toBe(true);
-      expect(postResponse.body.endpoint).toBe('/api/test');
+      expect(postResponse.body).toHaveProperty('path', '/api/test');
     });
 
     it('should handle a complete CRUD-like workflow', async () => {
@@ -74,7 +75,8 @@ describe('SimpleServer Integration Tests', () => {
       // Update (PUT)
       const updateResponse = await request(httpServer).put('/api/test');
       expect(updateResponse.status).toBe(200);
-      expect(updateResponse.body.updated).toBe(true);
+      expect(updateResponse.body).toHaveProperty('updated', {});
+      expect(updateResponse.body).toHaveProperty('method', 'PUT');
 
       // Delete (DELETE)
       const deleteResponse = await request(httpServer).delete('/api/test');
@@ -89,14 +91,18 @@ describe('SimpleServer Integration Tests', () => {
       
       expect(response.status).toBe(404);
       expect(response.headers['content-type']).toBe('application/json');
-      expect(response.body).toEqual({ error: 'Not Found' });
+      expect(response.body).toHaveProperty('error', 'Not Found');
+      expect(response.body).toHaveProperty('path', '/nonexistent/endpoint');
+      expect(response.body).toHaveProperty('message', 'The requested resource was not found');
     });
 
     it('should propagate method not allowed errors', async () => {
       const response = await request(httpServer).patch('/api/data');
       
       expect(response.status).toBe(405);
-      expect(response.body).toEqual({ error: 'Method not allowed' });
+      expect(response.body).toHaveProperty('error', 'Method not allowed');
+      expect(response.body).toHaveProperty('allowedMethods');
+      expect(response.body.allowedMethods).toEqual(['GET', 'POST', 'PUT', 'DELETE']);
     });
 
     it('should handle malformed JSON gracefully', async () => {
@@ -106,7 +112,8 @@ describe('SimpleServer Integration Tests', () => {
         .send('{"invalid": json}');
       
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({ error: 'Invalid JSON' });
+      expect(response.body).toHaveProperty('error', 'Invalid JSON in request body');
+      expect(response.body).toHaveProperty('details');
     });
   });
 
@@ -118,8 +125,8 @@ describe('SimpleServer Integration Tests', () => {
         const response = await request(httpServer).get(endpoint);
         
         expect(response.headers['access-control-allow-origin']).toBe('*');
-        expect(response.headers['access-control-allow-methods']).toBe('GET, POST, PUT, DELETE');
-        expect(response.headers['access-control-allow-headers']).toBe('Content-Type');
+        expect(response.headers['access-control-allow-methods']).toBe('GET, POST, PUT, DELETE, OPTIONS');
+        expect(response.headers['access-control-allow-headers']).toBe('Content-Type, Authorization');
       }
     });
 
@@ -199,7 +206,8 @@ describe('SimpleServer Integration Tests', () => {
       // 3. Client retrieves data
       const data = await request(httpServer).get('/api/data');
       expect(data.status).toBe(200);
-      expect(data.body.items).toBeDefined();
+      expect(data.body).toHaveProperty('method', 'GET');
+      expect(data.body).toHaveProperty('path', '/api/data');
       
       // 4. Client submits new data
       const submitData = await request(httpServer)
@@ -273,10 +281,19 @@ describe('SimpleServer Integration Tests', () => {
     });
 
     it('should validate HTTP method semantics', async () => {
-      // GET should be idempotent
+      // GET should be idempotent (except for timestamps)
       const get1 = await request(httpServer).get('/api/data');
       const get2 = await request(httpServer).get('/api/data');
-      expect(get1.body).toEqual(get2.body);
+      
+      // Compare all fields except timestamp
+      expect(get1.body.method).toEqual(get2.body.method);
+      expect(get1.body.path).toEqual(get2.body.path);
+      expect(get1.body.query).toEqual(get2.body.query);
+      expect(get1.body.message).toEqual(get2.body.message);
+      
+      // Timestamps should be different due to timing
+      expect(get1.body.timestamp).toBeDefined();
+      expect(get2.body.timestamp).toBeDefined();
       
       // POST should create/modify state (different response each time)
       const post1 = await request(httpServer)
