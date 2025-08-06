@@ -472,4 +472,4 @@ const mockServerConfigs = {
   dynamic: dynamicConfigs
 };
 
-export default mockServerConfigs;
+module.exports = mockServerConfigs;

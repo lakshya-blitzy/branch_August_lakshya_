@@ -656,5 +656,5 @@ const mockResponses = {
   custom
 };
 
-// Export the complete mock responses object as default export
-export default mockResponses;
+// Export using CommonJS to meet Node.js requirements
+module.exports = mockResponses;

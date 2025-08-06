@@ -483,5 +483,5 @@ const mockRequests = {
   }
 };
 
-// Export as default to meet schema requirements
-export default mockRequests;
+// Export using CommonJS to meet Node.js requirements
+module.exports = mockRequests;

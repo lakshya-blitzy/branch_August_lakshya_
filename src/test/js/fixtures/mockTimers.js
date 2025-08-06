@@ -17,15 +17,15 @@
  */
 
 // Import modules with fallbacks for standalone operation
-let jest;
+let jestAPI;
 try {
   // Try to access global Jest functions (available when running under Jest)
-  jest = (typeof global !== 'undefined' && global.jest) || 
-         (typeof window !== 'undefined' && window.jest) ||
-         // Create fallback Jest-like functions for standalone operation
-         createJestFallback();
+  jestAPI = (typeof global !== 'undefined' && global.jest) || 
+            (typeof window !== 'undefined' && window.jest) ||
+            // Create fallback Jest-like functions for standalone operation
+            createJestFallback();
 } catch (error) {
-  jest = createJestFallback();
+  jestAPI = createJestFallback();
 }
 
 const { performance } = require('perf_hooks');
@@ -69,9 +69,9 @@ function createJestFallback() {
         throw new Error(`Cannot spy on property ${method} because it is not a function`);
       }
       const originalMethod = object[method];
-      const spy = jest.fn(originalMethod);
+      const spy = jestAPI.fn(originalMethod);
       spy.mockImplementation = (impl) => {
-        object[method] = jest.fn(impl || originalMethod);
+        object[method] = jestAPI.fn(impl || originalMethod);
         return object[method];
       };
       spy.mockRestore = () => {
@@ -136,7 +136,7 @@ const performanceMocks = {
    */
   createNowMock: (startTime = 0) => {
     let currentTime = startTime;
-    return jest.fn(() => {
+    return jestAPI.fn(() => {
       return currentTime;
     });
   },
@@ -148,7 +148,7 @@ const performanceMocks = {
    */
   createAdvancableNowMock: (startTime = 0) => {
     let currentTime = startTime;
-    const nowMock = jest.fn(() => currentTime);
+    const nowMock = jestAPI.fn(() => currentTime);
     
     return {
       now: nowMock,
@@ -170,7 +170,7 @@ const performanceMocks = {
    */
   createMarkMock: () => {
     const marks = new Map();
-    return jest.fn((name) => {
+    return jestAPI.fn((name) => {
       marks.set(name, performance.now());
       return marks.get(name);
     });
@@ -183,7 +183,7 @@ const performanceMocks = {
    */
   createMeasureMock: (markMock) => {
     const measurements = new Map();
-    return jest.fn((name, startMark, endMark) => {
+    return jestAPI.fn((name, startMark, endMark) => {
       const startTime = markMock.mock.calls.find(call => call[0] === startMark)?.[1] || 0;
       const endTime = markMock.mock.calls.find(call => call[0] === endMark)?.[1] || performance.now();
       const duration = endTime - startTime;
@@ -219,7 +219,7 @@ const performanceMocks = {
     if (autoAdvance) {
       // Auto-advance timers when performance.now() is called
       const originalNow = nowController.now;
-      performanceMock.now = jest.fn(() => {
+      performanceMock.now = jestAPI.fn(() => {
         const result = originalNow();
         nowController.advance(1); // Advance by 1ms each call
         return result;
@@ -406,7 +406,7 @@ const jestTimers = {
    * @returns {void}
    */
   useFakeTimers: (options = {}) => {
-    return jest.useFakeTimers({
+    return jestAPI.useFakeTimers({
       advanceTimers: options.advanceTimers || false,
       doNotFake: options.doNotFake || [],
       now: options.now || Date.now(),
@@ -420,7 +420,7 @@ const jestTimers = {
    * @returns {void}
    */
   useRealTimers: () => {
-    return jest.useRealTimers();
+    return jestAPI.useRealTimers();
   },
 
   /**
@@ -429,7 +429,7 @@ const jestTimers = {
    * @returns {void}
    */
   advanceTimersByTime: (msToRun) => {
-    return jest.advanceTimersByTime(msToRun);
+    return jestAPI.advanceTimersByTime(msToRun);
   },
 
   /**
@@ -437,7 +437,7 @@ const jestTimers = {
    * @returns {void}
    */
   runOnlyPendingTimers: () => {
-    return jest.runOnlyPendingTimers();
+    return jestAPI.runOnlyPendingTimers();
   },
 
   /**
@@ -445,7 +445,7 @@ const jestTimers = {
    * @returns {void}
    */
   runAllTimers: () => {
-    return jest.runAllTimers();
+    return jestAPI.runAllTimers();
   },
 
   /**
@@ -454,7 +454,7 @@ const jestTimers = {
    * @returns {Function} Jest spy function
    */
   createTimerSpy: (implementation) => {
-    return jest.spyOn(global, 'setTimeout').mockImplementation(implementation || jest.fn());
+    return jestAPI.spyOn(global, 'setTimeout').mockImplementation(implementation || jestAPI.fn());
   },
 
   /**
@@ -463,7 +463,7 @@ const jestTimers = {
    * @returns {Function} Jest mock function
    */
   createTimerMock: (implementation) => {
-    return jest.fn(implementation);
+    return jestAPI.fn(implementation);
   },
 
   /**
@@ -471,8 +471,8 @@ const jestTimers = {
    * @returns {void}
    */
   resetTimerMocks: () => {
-    jest.restoreAllMocks();
-    jest.clearAllTimers();
+    jestAPI.restoreAllMocks();
+    jestAPI.clearAllTimers();
   }
 };
 
@@ -840,7 +840,7 @@ const timerMockFactory = {
       if (useFakeTimers) {
         jestTimers.useRealTimers();
       }
-      jest.restoreAllMocks();
+      jestAPI.restoreAllMocks();
     };
 
     return env;
@@ -937,7 +937,7 @@ module.exports = {
   timerMockFactory,
   
   // Direct access to external dependencies for advanced usage
-  jest,
+  jestAPI: jestAPI,
   performance,
   util
 };

@@ -20,10 +20,10 @@
  */
 
 // External dependencies - Node.js built-in modules
-import { randomBytes, randomInt, randomUUID, createHash } from 'crypto';
-import { cpus, hostname, platform, networkInterfaces, totalmem } from 'os';
-import { join, resolve, basename, dirname, extname, sep } from 'path';
-import { inspect, promisify, isError, format, callbackify } from 'util';
+const { randomBytes, randomInt, randomUUID, createHash } = require('crypto');
+const { cpus, hostname, platform, networkInterfaces, totalmem } = require('os');
+const { join, resolve, basename, dirname, extname, sep } = require('path');
+const { inspect, promisify, isError, format, callbackify } = require('util');
 // Mock function utilities for test data generation
 // These provide Jest-compatible functions when used in test environment
 const createMockFunction = (name = 'mockFunction') => {
@@ -88,12 +88,12 @@ const createMockFromModule = (modulePath) => {
 };
 
 // Internal dependencies - Mock fixture modules
-import mockRequests from './mockRequests.js';
-import mockResponses from './mockResponses.js';
-import mockServerConfigs from './mockServerConfigs.js';
-import mockEnvironment from './mockEnvironment.js';
-import { fs } from './mockFileSystem.js';
-import { jestTimers } from './mockTimers.js';
+const mockRequests = require('./mockRequests.js');
+const mockResponses = require('./mockResponses.js');
+const mockServerConfigs = require('./mockServerConfigs.js');
+const mockEnvironment = require('./mockEnvironment.js');
+const { fs } = require('./mockFileSystem.js');
+const { jestTimers } = require('./mockTimers.js');
 
 /**
  * Constants for test data generation configuration
@@ -240,7 +240,7 @@ const dataStore = new ThreadSafeDataStore();
  * });
  * console.log(customId); // "api-test_1d2e3f4g_w1_abcd1234"
  */
-export function generateUniqueTestId(options = {}) {
+function generateUniqueTestId(options = {}) {
     const {
         prefix = 'test',
         includeTimestamp = true,
@@ -296,7 +296,7 @@ export function generateUniqueTestId(options = {}) {
  *   excluded: [25000, 25001]
  * });
  */
-export function generateRandomPort(options = {}) {
+function generateRandomPort(options = {}) {
     const {
         min = TEST_DATA_CONFIG.PORT_RANGE.MIN,
         max = TEST_DATA_CONFIG.PORT_RANGE.MAX,
@@ -355,7 +355,7 @@ export function generateRandomPort(options = {}) {
  *   includeErrors: true
  * });
  */
-export function generateTestScenario(scenarioConfig = {}) {
+function generateTestScenario(scenarioConfig = {}) {
     const {
         type = 'http',
         complexity = 'standard',
@@ -448,7 +448,7 @@ export function generateTestScenario(scenarioConfig = {}) {
  * @param {Object} testCaseConfig.cleanup - Cleanup configuration
  * @returns {Object} Complete test case with all required data and metadata
  */
-export function generateCompleteTestCase(testCaseConfig = {}) {
+function generateCompleteTestCase(testCaseConfig = {}) {
     const {
         name = `test-case-${Date.now()}`,
         description = 'Generated test case with coordinated mock data',
@@ -555,7 +555,7 @@ export function generateCompleteTestCase(testCaseConfig = {}) {
  * @param {Object} coordinationConfig.customMappings - Custom field mappings between fixtures
  * @returns {Object} Coordinated mock data with consistent relationships
  */
-export function createCoordinatedMockData(coordinationConfig = {}) {
+function createCoordinatedMockData(coordinationConfig = {}) {
     const {
         fixtureTypes = ['requests', 'responses', 'configs', 'environment', 'filesystem', 'timers'],
         relationships = {},
@@ -633,7 +633,7 @@ export function createCoordinatedMockData(coordinationConfig = {}) {
  * @param {number} isolationConfig.maxConcurrency - Maximum concurrent test instances
  * @returns {Object} Isolated test data with guaranteed uniqueness
  */
-export function createIsolatedTestData(isolationConfig = {}) {
+function createIsolatedTestData(isolationConfig = {}) {
     const {
         isolationLevel = 'worker',
         useUniqueValues = true,
@@ -706,7 +706,7 @@ export function createIsolatedTestData(isolationConfig = {}) {
  * Main TestDataGenerator class providing comprehensive test data generation capabilities
  * Default export implementing all required members for coordinated test scenario creation
  */
-export default class TestDataGenerator {
+class TestDataGenerator {
     constructor(config = {}) {
         this.config = {
             enableCaching: config.enableCaching !== false,
@@ -980,7 +980,7 @@ export default class TestDataGenerator {
  * Pre-configured test data patterns for common testing scenarios
  * Provides ready-to-use patterns for different types of testing requirements
  */
-export const testDataPatterns = {
+const testDataPatterns = {
     /**
      * HTTP testing scenario patterns with request/response coordination
      */
@@ -1679,3 +1679,21 @@ function generateStepNetworkMocks(step) {
     
     return baseMocks;
 }
+
+// Export all functions and classes using CommonJS module.exports
+module.exports = {
+    // Utility functions
+    generateTestScenario,
+    generateRandomPort,
+    generateUniqueTestId,
+    generateCompleteTestCase,
+    createCoordinatedMockData,
+    createIsolatedTestData,
+    
+    // Test data patterns
+    testDataPatterns,
+    
+    // Main TestDataGenerator class (both as default and named export)
+    TestDataGenerator,
+    default: TestDataGenerator
+};
