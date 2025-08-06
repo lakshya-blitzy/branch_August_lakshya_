@@ -55,11 +55,15 @@ const routes = {
    */
   postHandler: (req, res, parsedUrl) => {
     let body = '';
+    let requestEnded = false;
     
     req.on('data', chunk => {
+      if (requestEnded) return; // Prevent processing if already handled
+      
       body += chunk.toString();
       // Prevent memory exhaustion from oversized requests
       if (body.length > 1048576) { // 1MB limit
+        requestEnded = true;
         res.writeHead(413, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Request entity too large', limit: '1MB' }));
         return;
@@ -67,6 +71,7 @@ const routes = {
     });
 
     req.on('end', () => {
+      if (requestEnded) return; // Prevent double handling
       try {
         const data = body ? JSON.parse(body) : {};
         
@@ -353,7 +358,13 @@ const app = {
  * Start server function for programmatic control
  * Implements server lifecycle management for testing frameworks
  */
-function startServer(port = PORT, host = 'localhost') {
+function startServer(port = (() => {
+  if (process.env.PORT) {
+    const envPort = parseInt(process.env.PORT, 10);
+    return !isNaN(envPort) ? envPort : PORT;
+  }
+  return PORT;
+})(), host = 'localhost') {
   return new Promise((resolve, reject) => {
     if (isServerRunning) {
       reject(new Error('Server is already running'));
@@ -364,11 +375,14 @@ function startServer(port = PORT, host = 'localhost') {
       if (error) {
         reject(error);
       } else {
+        // Get the actual port from the server (important for port 0 cases)
+        const actualPort = server.address().port;
+        const actualHost = server.address().address;
         resolve({
           server: server,
-          port: port,
-          host: host,
-          url: util.format('http://%s:%d', host, port)
+          port: actualPort,
+          host: actualHost,
+          url: util.format('http://%s:%d', actualHost, actualPort)
         });
       }
     });
@@ -385,6 +399,25 @@ function stopServer() {
       resolve();
     });
   });
+}
+
+/**
+ * Force reset server state for testing
+ * This function allows tests to reset the server state when needed
+ */
+function resetServerState() {
+  isServerRunning = false;
+  serverInstance = null;
+}
+
+/**
+ * Get current server state for debugging
+ */
+function getServerState() {
+  return {
+    isRunning: isServerRunning,
+    hasInstance: !!serverInstance
+  };
 }
 
 // Signal handling for graceful shutdown as per Node.js Service Resource Management
@@ -420,6 +453,8 @@ module.exports = {
   app,
   startServer,
   stopServer,
+  resetServerState,
+  getServerState,
   PORT,
   routes
 };
