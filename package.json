@@ -1,23 +1,52 @@
 {
-  "name": "testinium-qa-javascript",
+  "name": "testinium-qa-js",
   "version": "1.0.0",
-  "description": "JavaScript testing infrastructure for Testinium-QA framework",
+  "description": "Node.js testing infrastructure for Testinium-QA automation framework - JavaScript unit and integration tests for server.js components using Jest and Supertest",
   "main": "src/main/js/server.js",
+  "engines": {
+    "node": "^18.18.0 || ^20.9.0 || >=21.1.0"
+  },
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
-    "coverage:report": "jest --coverage --coverageReporters=html,json,text"
+    "test:verbose": "jest --verbose",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "test:server": "jest src/test/js/server.test.js",
+    "test:integration": "jest src/test/js/server.integration.test.js",
+    "test:errors": "jest src/test/js/errors.test.js",
+    "test:config": "jest src/test/js/config.test.js",
+    "test:routes": "jest src/test/js/routes/",
+    "coverage:report": "jest --coverage && open coverage/lcov-report/index.html",
+    "coverage:text": "jest --coverage --coverageReporters=text",
+    "coverage:json": "jest --coverage --coverageReporters=json"
   },
-  "keywords": ["testing", "jest", "javascript", "testinium"],
-  "author": "Testinium-QA Team",
+  "keywords": [
+    "testing",
+    "automation",
+    "jest",
+    "supertest",
+    "nodejs",
+    "javascript",
+    "server-testing",
+    "http-testing",
+    "unit-tests",
+    "integration-tests",
+    "testinium",
+    "qa"
+  ],
+  "author": "Blitzy Platform",
   "license": "MIT",
-  "engines": {
-    "node": "^18.18.0 || ^20.9.0 || >=21.1.0"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BalamiRR/Testinium-QA.git"
   },
+  "bugs": {
+    "url": "https://github.com/BalamiRR/Testinium-QA/issues"
+  },
+  "homepage": "https://github.com/BalamiRR/Testinium-QA#readme",
   "devDependencies": {
-    "jest": "^29.7.0",
-    "supertest": "^6.3.4",
-    "@types/jest": "^29.5.12"
+    "jest": "29.7.0",
+    "supertest": "6.3.4"
   }
 }
