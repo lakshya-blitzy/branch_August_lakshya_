@@ -74,6 +74,9 @@ const CORS_MIDDLEWARE_CACHE = new Map();
 // CORS violation counter for security monitoring and pattern analysis
 const CORS_VIOLATION_COUNTER = new Map();
 
+// Timeout tracking for cleanup in test environments
+const ACTIVE_TIMEOUTS = new Set();
+
 // Default CORS options for baseline security configuration
 const DEFAULT_CORS_OPTIONS = {
   credentials: false,
@@ -183,10 +186,14 @@ export function configureCorsForEnvironment(options = {}) {
       CORS_MIDDLEWARE_CACHE.set(cacheKey, enhancedCorsMiddleware);
       
       // Set cache expiration for dynamic configuration updates
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         CORS_MIDDLEWARE_CACHE.delete(cacheKey);
+        ACTIVE_TIMEOUTS.delete(timeoutId);
         logInfo('CORS middleware cache expired', { cacheKey, environment });
       }, isProduction ? 3600000 : 300000); // 1 hour production, 5 minutes development
+      
+      // Track timeout for cleanup
+      ACTIVE_TIMEOUTS.add(timeoutId);
     }
 
     // Log CORS middleware configuration initialization with security policy details
@@ -1504,6 +1511,24 @@ function createFallbackCorsMiddleware(options) {
   });
 }
 
+/**
+ * Cleans up all active CORS timeouts to prevent open handles in test environments
+ * @returns {void}
+ */
+export function clearCorsTimeouts() {
+  try {
+    for (const timeoutId of ACTIVE_TIMEOUTS) {
+      clearTimeout(timeoutId);
+    }
+    ACTIVE_TIMEOUTS.clear();
+    logInfo('CORS timeouts cleared for cleanup', { 
+      clearedCount: ACTIVE_TIMEOUTS.size 
+    });
+  } catch (error) {
+    logError('Failed to clear CORS timeouts', error);
+  }
+}
+
 // Export default CORS middleware configured for current environment
 export const corsMiddleware = configureCorsForEnvironment();
 
@@ -1532,7 +1557,8 @@ logInfo('CORS middleware module initialized', {
     'logCorsActivity',
     'optimizeCorsPerformance',
     'createDevelopmentCors',
-    'createProductionCors'
+    'createProductionCors',
+    'clearCorsTimeouts'
   ],
   timestamp: new Date().toISOString()
 });

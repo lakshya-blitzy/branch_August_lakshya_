@@ -1631,6 +1631,1945 @@ function analyzeClientIP(clientIP, clientContext) {
 }
 
 /**
+ * Analyzes request frequency and timing patterns for attack indicators
+ * @param {Object} req - Express request object
+ * @param {Object} clientContext - Client context information
+ * @returns {Object} Frequency analysis results
+ */
+function analyzeRequestFrequency(req, clientContext) {
+  try {
+    const frequencyAnalysis = {
+      riskScore: 0,
+      indicators: [],
+      requestRate: 0,
+      isAnomalous: false,
+      timePattern: 'normal'
+    };
+    
+    // Basic frequency analysis (placeholder implementation)
+    const clientIP = req.ip || req.connection?.remoteAddress;
+    const currentTime = Date.now();
+    
+    // Initialize client tracking if not exists
+    if (!clientContext.requestHistory) {
+      clientContext.requestHistory = [];
+    }
+    
+    // Clean old requests (older than 1 minute)
+    const oneMinuteAgo = currentTime - 60000;
+    clientContext.requestHistory = clientContext.requestHistory.filter(
+      timestamp => timestamp > oneMinuteAgo
+    );
+    
+    // Add current request
+    clientContext.requestHistory.push(currentTime);
+    
+    // Calculate request rate (requests per minute)
+    frequencyAnalysis.requestRate = clientContext.requestHistory.length;
+    
+    // Check for suspicious request frequency
+    const maxRequestsPerMinute = 60; // configurable threshold
+    if (frequencyAnalysis.requestRate > maxRequestsPerMinute) {
+      frequencyAnalysis.riskScore = Math.min(50, frequencyAnalysis.requestRate - maxRequestsPerMinute);
+      frequencyAnalysis.isAnomalous = true;
+      frequencyAnalysis.indicators.push('high-frequency-requests');
+    }
+    
+    // Check for rapid-fire requests (within 1 second)
+    const oneSecondAgo = currentTime - 1000;
+    const recentRequests = clientContext.requestHistory.filter(
+      timestamp => timestamp > oneSecondAgo
+    );
+    
+    if (recentRequests.length > 5) {
+      frequencyAnalysis.riskScore += 20;
+      frequencyAnalysis.indicators.push('rapid-fire-requests');
+    }
+    
+    return frequencyAnalysis;
+  } catch (error) {
+    return {
+      riskScore: 0,
+      indicators: [],
+      requestRate: 0,
+      isAnomalous: false,
+      timePattern: 'normal'
+    };
+  }
+}
+
+/**
+ * Validates request body content for security threats and malicious content
+ * @param {Object} body - Request body to validate
+ * @param {Object} config - Validation configuration
+ * @returns {Array} Array of body validation violations found
+ */
+function validateRequestBody(body, config) {
+  try {
+    const violations = [];
+    
+    // Check body size limits
+    const bodyString = JSON.stringify(body);
+    const bodySize = bodyString.length;
+    const maxBodySize = config.maxBodySize || 1024 * 1024; // 1MB default
+    
+    if (bodySize > maxBodySize) {
+      violations.push({
+        type: 'body-too-large',
+        severity: 'high',
+        description: `Request body size (${bodySize} bytes) exceeds limit (${maxBodySize} bytes)`,
+        actualSize: bodySize,
+        maxSize: maxBodySize
+      });
+    }
+    
+    // Check for deeply nested objects (potential DoS attack)
+    const maxDepth = config.maxObjectDepth || 10;
+    const depth = getObjectDepth(body);
+    
+    if (depth > maxDepth) {
+      violations.push({
+        type: 'object-too-deep',
+        severity: 'medium',
+        description: `Object nesting depth (${depth}) exceeds limit (${maxDepth})`,
+        actualDepth: depth,
+        maxDepth: maxDepth
+      });
+    }
+    
+    // Check for suspicious patterns in string values
+    if (typeof body === 'object' && body !== null) {
+      const suspiciousPatterns = [
+        /(<script|javascript:|vbscript:|onload=|onerror=)/i, // XSS patterns
+        /(union|select|insert|delete|drop|alter|exec|script)/i, // SQL injection patterns
+        /(\.\.\/|\.\.\\|\/etc\/|\/bin\/|cmd\.exe|powershell)/i // Path traversal patterns
+      ];
+      
+      const checkValue = (value, path = '') => {
+        if (typeof value === 'string') {
+          for (const pattern of suspiciousPatterns) {
+            if (pattern.test(value)) {
+              violations.push({
+                type: 'malicious-content',
+                severity: 'high',
+                description: `Suspicious pattern detected in request body at path: ${path}`,
+                pattern: pattern.source,
+                value: value.length > 100 ? value.substring(0, 100) + '...' : value
+              });
+            }
+          }
+        } else if (typeof value === 'object' && value !== null) {
+          for (const [key, val] of Object.entries(value)) {
+            checkValue(val, path ? `${path}.${key}` : key);
+          }
+        }
+      };
+      
+      checkValue(body);
+    }
+    
+    return violations;
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Analyzes user agent strings for known attack tools and malicious patterns
+ * @param {string} userAgent - User agent string to analyze
+ * @param {Object} clientContext - Client context information
+ * @returns {Object} User agent analysis results
+ */
+function analyzeUserAgent(userAgent, clientContext) {
+  try {
+    const analysis = {
+      riskScore: 0,
+      indicators: [],
+      isBot: false,
+      isSuspicious: false,
+      toolType: 'unknown'
+    };
+    
+    if (!userAgent || typeof userAgent !== 'string') {
+      analysis.riskScore = 15;
+      analysis.indicators.push('missing-user-agent');
+      analysis.isSuspicious = true;
+      return analysis;
+    }
+    
+    // Known attack tools and scanners
+    const attackTools = [
+      'nmap', 'sqlmap', 'nikto', 'dirb', 'gobuster', 'wfuzz', 'burpsuite',
+      'zaproxy', 'metasploit', 'nessus', 'openvas', 'w3af', 'skipfish',
+      'arachni', 'acunetix', 'netsparker', 'appscan', 'webscarab'
+    ];
+    
+    // Suspicious patterns in user agents
+    const suspiciousPatterns = [
+      /bot|crawler|spider|scraper|scanner/i,
+      /curl|wget|python|perl|ruby|java/i,
+      /masscan|zmap|angry/i,
+      /havij|pangolin|absinthe/i
+    ];
+    
+    // Check for known attack tools
+    const lowerUserAgent = userAgent.toLowerCase();
+    for (const tool of attackTools) {
+      if (lowerUserAgent.includes(tool)) {
+        analysis.riskScore = 50;
+        analysis.indicators.push(`attack-tool-${tool}`);
+        analysis.isSuspicious = true;
+        analysis.toolType = tool;
+        break;
+      }
+    }
+    
+    // Check for suspicious patterns
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(userAgent)) {
+        analysis.riskScore += 20;
+        analysis.indicators.push('suspicious-pattern');
+        analysis.isSuspicious = true;
+        break;
+      }
+    }
+    
+    // Check for legitimate bots (lower risk)
+    const legitimateBots = [
+      'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
+      'yandexbot', 'facebookexternalhit', 'twitterbot', 'linkedinbot'
+    ];
+    
+    for (const bot of legitimateBots) {
+      if (lowerUserAgent.includes(bot)) {
+        analysis.isBot = true;
+        analysis.riskScore = Math.max(0, analysis.riskScore - 10);
+        analysis.indicators.push(`legitimate-bot-${bot}`);
+        break;
+      }
+    }
+    
+    // Check for unusual user agent length
+    if (userAgent.length < 10) {
+      analysis.riskScore += 10;
+      analysis.indicators.push('short-user-agent');
+    } else if (userAgent.length > 500) {
+      analysis.riskScore += 5;
+      analysis.indicators.push('long-user-agent');
+    }
+    
+    return analysis;
+  } catch (error) {
+    return {
+      riskScore: 0,
+      indicators: [],
+      isBot: false,
+      isSuspicious: false,
+      toolType: 'unknown'
+    };
+  }
+}
+
+/**
+ * Helper function to calculate object nesting depth
+ * @param {Object} obj - Object to analyze
+ * @returns {number} Maximum depth of nested objects
+ */
+function getObjectDepth(obj) {
+  if (typeof obj !== 'object' || obj === null) {
+    return 0;
+  }
+  
+  let maxDepth = 0;
+  for (const value of Object.values(obj)) {
+    if (typeof value === 'object' && value !== null) {
+      maxDepth = Math.max(maxDepth, getObjectDepth(value));
+    }
+  }
+  
+  return maxDepth + 1;
+}
+
+/**
+ * Validates user agent string for suspicious patterns and attack indicators
+ * @param {string} userAgent - User agent string to validate
+ * @param {Object} config - Validation configuration
+ * @returns {Array} Array of user agent violations found
+ */
+function validateUserAgent(userAgent, config) {
+  try {
+    const violations = [];
+    
+    if (!userAgent || typeof userAgent !== 'string') {
+      violations.push({
+        type: 'missing-user-agent',
+        severity: 'medium',
+        description: 'Missing or invalid User-Agent header',
+        userAgent: userAgent
+      });
+      return violations;
+    }
+    
+    // Check for suspicious user agent patterns
+    const suspiciousPatterns = [
+      { pattern: /sqlmap/i, type: 'sql-injection-tool', severity: 'high' },
+      { pattern: /nikto|dirb|gobuster/i, type: 'web-scanner', severity: 'high' },
+      { pattern: /nmap|masscan/i, type: 'port-scanner', severity: 'high' },
+      { pattern: /burpsuite|zaproxy|w3af/i, type: 'penetration-tool', severity: 'high' },
+      { pattern: /bot|crawler|spider|scraper/i, type: 'automated-tool', severity: 'low' },
+      { pattern: /<script|javascript:|eval\(/i, type: 'xss-attempt', severity: 'high' },
+      { pattern: /\.\.\//i, type: 'path-traversal', severity: 'medium' }
+    ];
+    
+    for (const { pattern, type, severity } of suspiciousPatterns) {
+      if (pattern.test(userAgent)) {
+        violations.push({
+          type: type,
+          severity: severity,
+          description: `Suspicious user agent pattern detected: ${type}`,
+          userAgent: userAgent,
+          pattern: pattern.source
+        });
+      }
+    }
+    
+    // Check for unusually short or long user agents
+    if (userAgent.length < 10) {
+      violations.push({
+        type: 'suspicious-user-agent-length',
+        severity: 'low',
+        description: `User agent too short (${userAgent.length} characters)`,
+        userAgent: userAgent
+      });
+    } else if (userAgent.length > 500) {
+      violations.push({
+        type: 'suspicious-user-agent-length',
+        severity: 'medium',
+        description: `User agent too long (${userAgent.length} characters)`,
+        userAgent: userAgent.substring(0, 100) + '...'
+      });
+    }
+    
+    return violations;
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Analyzes request for injection attack patterns (SQL, XSS, Command injection)
+ * @param {Object} req - Express request object
+ * @param {Object} clientContext - Client context information
+ * @returns {Object} Injection analysis results
+ */
+function analyzeInjectionPatterns(req, clientContext) {
+  try {
+    const analysis = {
+      riskScore: 0,
+      indicators: [],
+      detectedAttacks: [],
+      suspiciousPayloads: []
+    };
+    
+    // SQL Injection patterns
+    const sqlPatterns = [
+      /(\b(union|select|insert|delete|drop|alter|exec|script)\b)/i,
+      /((\')(.*)(or|and)(.*)(\=)(.*)(\'))/i,
+      /((\')(.*)(or|and)(.*)(like)(.*)(\'))/i,
+      /((.*)(or|and)(\s+)?\d+(\s+)?(\=)(\s+)?\d+)/i,
+      /((\*)|(%2a))/i,
+      /(\b(sp_executesql)\b)/i
+    ];
+    
+    // XSS patterns
+    const xssPatterns = [
+      /<script[^>]*>.*?<\/script>/gi,
+      /javascript:/gi,
+      /vbscript:/gi,
+      /onload\s*=/gi,
+      /onerror\s*=/gi,
+      /onmouseover\s*=/gi,
+      /eval\s*\(/gi,
+      /expression\s*\(/gi
+    ];
+    
+    // Command injection patterns
+    const commandPatterns = [
+      /(\||;|&|\$\(|\`)/gi,
+      /(^|\s)(cat|ls|pwd|whoami|id|uname|wget|curl)\s/gi,
+      /\.\.\//gi,
+      /(\/etc\/passwd|\/bin\/sh|cmd\.exe|powershell)/gi
+    ];
+    
+    // Function to analyze string for patterns
+    const analyzeString = (value, source) => {
+      if (typeof value !== 'string') return;
+      
+      // Check SQL injection
+      for (const pattern of sqlPatterns) {
+        if (pattern.test(value)) {
+          analysis.riskScore += 30;
+          analysis.indicators.push('sql-injection-attempt');
+          analysis.detectedAttacks.push({
+            type: 'sql-injection',
+            source: source,
+            payload: value.length > 100 ? value.substring(0, 100) + '...' : value,
+            pattern: pattern.source
+          });
+          break;
+        }
+      }
+      
+      // Check XSS
+      for (const pattern of xssPatterns) {
+        if (pattern.test(value)) {
+          analysis.riskScore += 25;
+          analysis.indicators.push('xss-attempt');
+          analysis.detectedAttacks.push({
+            type: 'xss',
+            source: source,
+            payload: value.length > 100 ? value.substring(0, 100) + '...' : value,
+            pattern: pattern.source
+          });
+          break;
+        }
+      }
+      
+      // Check command injection
+      for (const pattern of commandPatterns) {
+        if (pattern.test(value)) {
+          analysis.riskScore += 35;
+          analysis.indicators.push('command-injection-attempt');
+          analysis.detectedAttacks.push({
+            type: 'command-injection',
+            source: source,
+            payload: value.length > 100 ? value.substring(0, 100) + '...' : value,
+            pattern: pattern.source
+          });
+          break;
+        }
+      }
+    };
+    
+    // Analyze request URL
+    if (req.url) {
+      analyzeString(req.url, 'url');
+    }
+    
+    // Analyze query parameters
+    if (req.query) {
+      for (const [key, value] of Object.entries(req.query)) {
+        analyzeString(key, 'query-key');
+        if (typeof value === 'string') {
+          analyzeString(value, `query-value:${key}`);
+        }
+      }
+    }
+    
+    // Analyze request body
+    if (req.body) {
+      const analyzeObject = (obj, path = 'body') => {
+        for (const [key, value] of Object.entries(obj)) {
+          const currentPath = `${path}.${key}`;
+          analyzeString(key, `${currentPath}-key`);
+          
+          if (typeof value === 'string') {
+            analyzeString(value, currentPath);
+          } else if (typeof value === 'object' && value !== null) {
+            analyzeObject(value, currentPath);
+          }
+        }
+      };
+      
+      if (typeof req.body === 'object') {
+        analyzeObject(req.body);
+      } else if (typeof req.body === 'string') {
+        analyzeString(req.body, 'body');
+      }
+    }
+    
+    // Analyze headers
+    if (req.headers) {
+      for (const [key, value] of Object.entries(req.headers)) {
+        if (typeof value === 'string') {
+          analyzeString(value, `header:${key}`);
+        }
+      }
+    }
+    
+    return analysis;
+  } catch (error) {
+    return {
+      riskScore: 0,
+      indicators: [],
+      detectedAttacks: [],
+      suspiciousPayloads: []
+    };
+  }
+}
+
+/**
+ * Validates HTTP method for security compliance and restrictions
+ * @param {string} method - HTTP method to validate (GET, POST, PUT, etc.)
+ * @param {Object} config - Validation configuration
+ * @returns {Array} Array of HTTP method violations found
+ */
+function validateHttpMethod(method, config) {
+  try {
+    const violations = [];
+    
+    if (!method || typeof method !== 'string') {
+      violations.push({
+        type: 'invalid-method',
+        severity: 'high',
+        description: 'Missing or invalid HTTP method',
+        method: method
+      });
+      return violations;
+    }
+    
+    // Define allowed HTTP methods
+    const allowedMethods = config.allowedMethods || [
+      'GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'
+    ];
+    
+    // Define dangerous HTTP methods that should typically be blocked
+    const dangerousMethods = config.dangerousMethods || [
+      'TRACE', 'TRACK', 'CONNECT', 'DEBUG'
+    ];
+    
+    const upperMethod = method.toUpperCase();
+    
+    // Check if method is explicitly dangerous
+    if (dangerousMethods.includes(upperMethod)) {
+      violations.push({
+        type: 'dangerous-method',
+        severity: 'high',
+        description: `Dangerous HTTP method detected: ${upperMethod}`,
+        method: upperMethod,
+        reason: 'Method can be used for security attacks or information disclosure'
+      });
+    }
+    
+    // Check if method is allowed
+    if (!allowedMethods.includes(upperMethod)) {
+      violations.push({
+        type: 'disallowed-method',
+        severity: 'medium',
+        description: `HTTP method not in allowed list: ${upperMethod}`,
+        method: upperMethod,
+        allowedMethods: allowedMethods
+      });
+    }
+    
+    // Check for non-standard or unusual methods
+    const standardMethods = [
+      'GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS',
+      'TRACE', 'TRACK', 'CONNECT'
+    ];
+    
+    if (!standardMethods.includes(upperMethod)) {
+      violations.push({
+        type: 'non-standard-method',
+        severity: 'low',
+        description: `Non-standard HTTP method detected: ${upperMethod}`,
+        method: upperMethod,
+        standardMethods: standardMethods
+      });
+    }
+    
+    // Check for method spoofing attempts via special characters
+    if (/[^A-Z]/.test(upperMethod) && upperMethod !== method) {
+      violations.push({
+        type: 'method-spoofing',
+        severity: 'medium',
+        description: `Potential HTTP method spoofing detected`,
+        originalMethod: method,
+        normalizedMethod: upperMethod
+      });
+    }
+    
+    return violations;
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Sanitizes request data by removing potentially malicious content
+ * @param {Object} requestData - Request data to sanitize
+ * @param {Object} config - Sanitization configuration
+ * @returns {Object} Sanitized request data
+ */
+function sanitizeRequestData(requestData, config) {
+  try {
+    const sanitized = {
+      method: requestData.method,
+      url: requestData.url,
+      headers: {},
+      query: {},
+      body: null,
+      sanitizationLog: []
+    };
+    
+    // Sanitization patterns for different attack types
+    const sanitizationPatterns = [
+      { name: 'xss', pattern: /<script[^>]*>.*?<\/script>/gi, replacement: '' },
+      { name: 'xss-events', pattern: /on\w+\s*=/gi, replacement: '' },
+      { name: 'javascript-protocol', pattern: /javascript:/gi, replacement: '' },
+      { name: 'vbscript-protocol', pattern: /vbscript:/gi, replacement: '' },
+      { name: 'data-protocol', pattern: /data:/gi, replacement: '' },
+      { name: 'sql-injection', pattern: /(union|select|insert|delete|drop|alter|exec)\s+/gi, replacement: '' },
+      { name: 'command-injection', pattern: /[;&|`$()]/g, replacement: '' },
+      { name: 'path-traversal', pattern: /\.\.\//g, replacement: '' },
+      { name: 'null-bytes', pattern: /\x00/g, replacement: '' }
+    ];
+    
+    // Function to sanitize a string value
+    const sanitizeString = (value, source) => {
+      if (typeof value !== 'string') return value;
+      
+      let sanitized = value;
+      let modified = false;
+      
+      for (const { name, pattern, replacement } of sanitizationPatterns) {
+        const matches = sanitized.match(pattern);
+        if (matches) {
+          sanitized = sanitized.replace(pattern, replacement);
+          modified = true;
+          sanitized.sanitizationLog.push({
+            action: 'removed-pattern',
+            pattern: name,
+            source: source,
+            matches: matches.length,
+            originalLength: value.length,
+            sanitizedLength: sanitized.length
+          });
+        }
+      }
+      
+      // Remove excessive whitespace
+      if (config.normalizeWhitespace !== false) {
+        const trimmed = sanitized.trim();
+        const normalized = trimmed.replace(/\s+/g, ' ');
+        if (normalized !== sanitized) {
+          sanitized.sanitizationLog.push({
+            action: 'normalized-whitespace',
+            source: source,
+            originalLength: sanitized.length,
+            sanitizedLength: normalized.length
+          });
+          sanitized = normalized;
+          modified = true;
+        }
+      }
+      
+      // Enforce maximum length limits
+      const maxLength = config.maxStringLength || 10000;
+      if (sanitized.length > maxLength) {
+        sanitized.sanitizationLog.push({
+          action: 'truncated-length',
+          source: source,
+          originalLength: sanitized.length,
+          maxLength: maxLength
+        });
+        sanitized = sanitized.substring(0, maxLength);
+        modified = true;
+      }
+      
+      return modified ? sanitized : value;
+    };
+    
+    // Function to sanitize an object recursively
+    const sanitizeObject = (obj, source, maxDepth = 10) => {
+      if (maxDepth <= 0) return {};
+      if (typeof obj !== 'object' || obj === null) return obj;
+      
+      const result = {};
+      for (const [key, value] of Object.entries(obj)) {
+        const sanitizedKey = sanitizeString(key, `${source}.key`);
+        
+        if (typeof value === 'string') {
+          result[sanitizedKey] = sanitizeString(value, `${source}.${key}`);
+        } else if (typeof value === 'object' && value !== null) {
+          result[sanitizedKey] = sanitizeObject(value, `${source}.${key}`, maxDepth - 1);
+        } else {
+          result[sanitizedKey] = value;
+        }
+      }
+      return result;
+    };
+    
+    // Sanitize URL
+    if (requestData.url) {
+      sanitized.url = sanitizeString(requestData.url, 'url');
+    }
+    
+    // Sanitize headers
+    if (requestData.headers) {
+      for (const [key, value] of Object.entries(requestData.headers)) {
+        const sanitizedKey = sanitizeString(key.toLowerCase(), 'header.key');
+        if (typeof value === 'string') {
+          sanitized.headers[sanitizedKey] = sanitizeString(value, `header.${key}`);
+        } else {
+          sanitized.headers[sanitizedKey] = value;
+        }
+      }
+    }
+    
+    // Sanitize query parameters
+    if (requestData.query) {
+      sanitized.query = sanitizeObject(requestData.query, 'query');
+    }
+    
+    // Sanitize body
+    if (requestData.body) {
+      if (typeof requestData.body === 'string') {
+        sanitized.body = sanitizeString(requestData.body, 'body');
+      } else if (typeof requestData.body === 'object') {
+        sanitized.body = sanitizeObject(requestData.body, 'body');
+      } else {
+        sanitized.body = requestData.body;
+      }
+    }
+    
+    return sanitized;
+  } catch (error) {
+    // Return original data if sanitization fails
+    return {
+      ...requestData,
+      sanitizationLog: [{
+        action: 'sanitization-failed',
+        error: error.message
+      }]
+    };
+  }
+}
+
+/**
+ * Calculates threat level based on security violations
+ * @param {Array} violations - Array of security violations
+ * @returns {string} Threat level: 'none', 'low', 'medium', 'high', or 'critical'
+ */
+function calculateThreatLevel(violations) {
+  try {
+    if (!violations || violations.length === 0) {
+      return 'none';
+    }
+    
+    let totalScore = 0;
+    let highSeverityCount = 0;
+    let mediumSeverityCount = 0;
+    let lowSeverityCount = 0;
+    let criticalIndicators = 0;
+    
+    // Severity scoring system
+    const severityScores = {
+      'critical': 50,
+      'high': 25,
+      'medium': 10,
+      'low': 3
+    };
+    
+    // Critical threat indicators
+    const criticalPatterns = [
+      'sql-injection-attempt',
+      'command-injection-attempt',
+      'xss-attempt',
+      'attack-tool',
+      'path-traversal',
+      'dangerous-method'
+    ];
+    
+    for (const violation of violations) {
+      const severity = violation.severity || 'low';
+      const violationType = violation.type || '';
+      
+      // Add severity score
+      totalScore += severityScores[severity] || severityScores.low;
+      
+      // Count violations by severity
+      switch (severity) {
+        case 'critical':
+          highSeverityCount++;
+          criticalIndicators++;
+          break;
+        case 'high':
+          highSeverityCount++;
+          break;
+        case 'medium':
+          mediumSeverityCount++;
+          break;
+        case 'low':
+        default:
+          lowSeverityCount++;
+          break;
+      }
+      
+      // Check for critical attack patterns
+      for (const pattern of criticalPatterns) {
+        if (violationType.includes(pattern)) {
+          criticalIndicators++;
+          totalScore += 20; // Additional penalty for critical patterns
+          break;
+        }
+      }
+    }
+    
+    // Determine threat level based on score and violation counts
+    if (criticalIndicators >= 2 || totalScore >= 100) {
+      return 'critical';
+    } else if (highSeverityCount >= 3 || totalScore >= 75) {
+      return 'high';
+    } else if (highSeverityCount >= 1 || mediumSeverityCount >= 3 || totalScore >= 30) {
+      return 'medium';
+    } else if (mediumSeverityCount >= 1 || lowSeverityCount >= 5 || totalScore >= 10) {
+      return 'low';
+    } else {
+      return 'none';
+    }
+  } catch (error) {
+    // Default to medium threat level if calculation fails
+    return 'medium';
+  }
+}
+
+/**
+ * Analyzes URL patterns for security threats and attack indicators
+ * @param {string} url - URL to analyze
+ * @param {Object} clientContext - Client context information
+ * @returns {Object} URL analysis results with risk score and indicators
+ */
+function analyzeUrlPatterns(url, clientContext) {
+  try {
+    const analysis = {
+      riskScore: 0,
+      indicators: [],
+      suspiciousPatterns: [],
+      attackVectors: []
+    };
+    
+    if (!url || typeof url !== 'string') {
+      return analysis;
+    }
+    
+    // Directory traversal patterns
+    const traversalPatterns = [
+      { pattern: /\.\.\//g, name: 'directory-traversal', risk: 25 },
+      { pattern: /\.\.\\/g, name: 'windows-traversal', risk: 25 },
+      { pattern: /\.\.%2f/gi, name: 'encoded-traversal', risk: 30 },
+      { pattern: /\.\.%5c/gi, name: 'encoded-windows-traversal', risk: 30 },
+      { pattern: /%2e%2e%2f/gi, name: 'double-encoded-traversal', risk: 35 },
+      { pattern: /\/etc\/passwd/i, name: 'linux-passwd-access', risk: 40 },
+      { pattern: /\/windows\/system32/i, name: 'windows-system-access', risk: 40 }
+    ];
+    
+    // File access patterns
+    const fileAccessPatterns = [
+      { pattern: /\.(conf|config|ini|log|bak|old|tmp)$/i, name: 'config-file-access', risk: 20 },
+      { pattern: /\.(php|asp|aspx|jsp|py|pl|cgi)$/i, name: 'script-file-access', risk: 15 },
+      { pattern: /\/admin|\/administrator|\/wp-admin/i, name: 'admin-path-enumeration', risk: 15 },
+      { pattern: /\/\.git|\/\.svn|\/\.env/i, name: 'vcs-file-access', risk: 30 },
+      { pattern: /\/db|\/database|\/backup/i, name: 'database-path-enumeration', risk: 25 }
+    ];
+    
+    // Enumeration and scanning patterns
+    const enumerationPatterns = [
+      { pattern: /\/robots\.txt|\/sitemap\.xml/i, name: 'info-gathering', risk: 5 },
+      { pattern: /\/phpmyadmin|\/adminer|\/phpinfo/i, name: 'tool-enumeration', risk: 25 },
+      { pattern: /\/cgi-bin|\/scripts|\/includes/i, name: 'common-path-scan', risk: 15 },
+      { pattern: /\/test|\/debug|\/dev/i, name: 'development-path-scan', risk: 20 },
+      { pattern: /\/backup|\/old|\/temp|\/tmp/i, name: 'sensitive-path-scan', risk: 20 }
+    ];
+    
+    // Injection attempt patterns in URL
+    const injectionPatterns = [
+      { pattern: /(union|select|insert|delete|drop|alter)\s+/gi, name: 'sql-injection', risk: 35 },
+      { pattern: /<script|javascript:|vbscript:/gi, name: 'xss-injection', risk: 30 },
+      { pattern: /(exec|system|cmd|shell_exec|passthru)/gi, name: 'command-injection', risk: 40 },
+      { pattern: /(base64_decode|eval|assert)/gi, name: 'code-injection', risk: 35 },
+      { pattern: /(\/etc\/|cmd\.exe|powershell)/gi, name: 'system-access', risk: 35 }
+    ];
+    
+    // Suspicious encoding patterns
+    const encodingPatterns = [
+      { pattern: /%[0-9a-f]{2}/gi, name: 'url-encoding', risk: 5 },
+      { pattern: /%00/gi, name: 'null-byte-injection', risk: 30 },
+      { pattern: /%0[ad]/gi, name: 'line-terminator-injection', risk: 20 },
+      { pattern: /%3[ce]/gi, name: 'angle-bracket-encoding', risk: 15 },
+      { pattern: /%2[27]/gi, name: 'quote-encoding', risk: 15 }
+    ];
+    
+    // Long URL attack patterns
+    if (url.length > 2048) {
+      analysis.riskScore += 10;
+      analysis.indicators.push('oversized-url');
+      analysis.suspiciousPatterns.push({
+        type: 'oversized-url',
+        description: `URL length (${url.length}) exceeds normal limits`,
+        risk: 10
+      });
+    }
+    
+    // Excessive parameter count
+    const queryString = url.split('?')[1];
+    if (queryString) {
+      const paramCount = queryString.split('&').length;
+      if (paramCount > 50) {
+        analysis.riskScore += 15;
+        analysis.indicators.push('excessive-parameters');
+        analysis.suspiciousPatterns.push({
+          type: 'excessive-parameters',
+          description: `Excessive parameter count (${paramCount})`,
+          risk: 15
+        });
+      }
+    }
+    
+    // Check all pattern categories
+    const patternCategories = [
+      { patterns: traversalPatterns, category: 'traversal' },
+      { patterns: fileAccessPatterns, category: 'file-access' },
+      { patterns: enumerationPatterns, category: 'enumeration' },
+      { patterns: injectionPatterns, category: 'injection' },
+      { patterns: encodingPatterns, category: 'encoding' }
+    ];
+    
+    for (const { patterns, category } of patternCategories) {
+      for (const { pattern, name, risk } of patterns) {
+        const matches = url.match(pattern);
+        if (matches) {
+          analysis.riskScore += risk;
+          analysis.indicators.push(name);
+          analysis.attackVectors.push({
+            category: category,
+            type: name,
+            matches: matches.length,
+            risk: risk,
+            samples: matches.slice(0, 3) // First 3 matches as samples
+          });
+        }
+      }
+    }
+    
+    return analysis;
+  } catch (error) {
+    return {
+      riskScore: 0,
+      indicators: [],
+      suspiciousPatterns: [],
+      attackVectors: []
+    };
+  }
+}
+
+/**
+ * Analyzes authentication patterns for brute force and credential stuffing attacks
+ * @param {Object} req - Express request object
+ * @param {Object} clientContext - Client context information
+ * @returns {Object} Authentication analysis results with risk score and indicators
+ */
+function analyzeAuthenticationPatterns(req, clientContext) {
+  try {
+    const analysis = {
+      riskScore: 0,
+      indicators: [],
+      attackPatterns: [],
+      suspiciousActivity: []
+    };
+    
+    // Authentication endpoints to monitor
+    const authEndpoints = [
+      '/login', '/signin', '/auth', '/authenticate', '/session',
+      '/token', '/oauth', '/sso', '/admin', '/wp-admin',
+      '/wp-login.php', '/administrator', '/manager'
+    ];
+    
+    const url = req.url || req.originalUrl || '';
+    const method = req.method || '';
+    const userAgent = req.headers['user-agent'] || '';
+    const referer = req.headers.referer || req.headers.referrer || '';
+    const authorization = req.headers.authorization || '';
+    
+    // Check if this is an authentication-related request
+    const isAuthRequest = authEndpoints.some(endpoint => 
+      url.toLowerCase().includes(endpoint.toLowerCase())
+    );
+    
+    if (isAuthRequest) {
+      analysis.indicators.push('auth-endpoint-access');
+      
+      // Check for brute force patterns
+      if (method === 'POST') {
+        analysis.riskScore += 5; // POST to auth endpoint is normal but monitored
+        
+        // Check for rapid requests (if client context provides timing info)
+        if (clientContext.requestCount && clientContext.timeWindow) {
+          const requestRate = clientContext.requestCount / (clientContext.timeWindow / 1000);
+          if (requestRate > 10) { // More than 10 requests per second
+            analysis.riskScore += 25;
+            analysis.indicators.push('high-frequency-auth');
+            analysis.attackPatterns.push({
+              type: 'brute-force-rate',
+              description: `High authentication request rate: ${requestRate.toFixed(2)}/sec`,
+              severity: 'high'
+            });
+          }
+        }
+        
+        // Check for credential stuffing patterns in request body
+        if (req.body) {
+          const bodyStr = JSON.stringify(req.body).toLowerCase();
+          
+          // Common credential stuffing indicators
+          const stuffingPatterns = [
+            { pattern: /password.*123|123.*password/i, name: 'weak-password-pattern', risk: 15 },
+            { pattern: /admin.*admin|admin.*password/i, name: 'default-credentials', risk: 20 },
+            { pattern: /test.*test|demo.*demo/i, name: 'test-credentials', risk: 10 },
+            { pattern: /(email|username).*@.*\.(ru|cn|tk)/i, name: 'suspicious-email-domain', risk: 10 }
+          ];
+          
+          for (const { pattern, name, risk } of stuffingPatterns) {
+            if (pattern.test(bodyStr)) {
+              analysis.riskScore += risk;
+              analysis.indicators.push(name);
+              analysis.attackPatterns.push({
+                type: name,
+                description: `Suspicious credential pattern detected`,
+                severity: risk > 15 ? 'high' : 'medium'
+              });
+            }
+          }
+        }
+      }
+    }
+    
+    // Check for suspicious user agents targeting auth systems
+    const authTargetingAgents = [
+      /hydra|medusa|brutus|thc|ncrack/i,
+      /dirb|dirbuster|gobuster|wfuzz/i,
+      /burp|zaproxy|w3af|acunetix/i,
+      /sqlmap|havij|pangolin/i
+    ];
+    
+    for (const pattern of authTargetingAgents) {
+      if (pattern.test(userAgent)) {
+        analysis.riskScore += 30;
+        analysis.indicators.push('auth-targeting-tool');
+        analysis.attackPatterns.push({
+          type: 'auth-targeting-tool',
+          description: `User agent indicates authentication targeting tool`,
+          severity: 'high',
+          userAgent: userAgent.substring(0, 100)
+        });
+        break;
+      }
+    }
+    
+    // Check for missing or suspicious referer on auth requests
+    if (isAuthRequest && method === 'POST') {
+      if (!referer) {
+        analysis.riskScore += 10;
+        analysis.indicators.push('missing-referer-auth');
+        analysis.suspiciousActivity.push({
+          type: 'missing-referer',
+          description: 'Authentication request missing referer header',
+          severity: 'medium'
+        });
+      } else if (!referer.includes(req.headers.host || '')) {
+        analysis.riskScore += 15;
+        analysis.indicators.push('external-referer-auth');
+        analysis.suspiciousActivity.push({
+          type: 'external-referer',
+          description: 'Authentication request from external referer',
+          severity: 'medium',
+          referer: referer.substring(0, 100)
+        });
+      }
+    }
+    
+    // Check for authorization header anomalies
+    if (authorization) {
+      // Basic auth with suspicious patterns
+      if (authorization.toLowerCase().startsWith('basic ')) {
+        try {
+          const credentials = Buffer.from(
+            authorization.split(' ')[1], 'base64'
+          ).toString('utf8');
+          
+          const suspiciousCredentials = [
+            /admin:admin|admin:password|admin:123/i,
+            /test:test|demo:demo|guest:guest/i,
+            /root:root|root:password|root:123/i
+          ];
+          
+          for (const pattern of suspiciousCredentials) {
+            if (pattern.test(credentials)) {
+              analysis.riskScore += 20;
+              analysis.indicators.push('suspicious-basic-auth');
+              analysis.attackPatterns.push({
+                type: 'suspicious-basic-auth',
+                description: 'Basic auth with suspicious credentials',
+                severity: 'high'
+              });
+              break;
+            }
+          }
+        } catch (error) {
+          // Invalid base64 encoding
+          analysis.riskScore += 15;
+          analysis.indicators.push('malformed-basic-auth');
+        }
+      }
+      
+      // Bearer token anomalies
+      if (authorization.toLowerCase().startsWith('bearer ')) {
+        const token = authorization.split(' ')[1];
+        if (token && token.length < 10) {
+          analysis.riskScore += 10;
+          analysis.indicators.push('short-bearer-token');
+        }
+      }
+    }
+    
+    // Check for multiple authentication methods in single request (suspicious)
+    const authHeaderCount = [
+      authorization ? 1 : 0,
+      req.headers.cookie && req.headers.cookie.includes('session') ? 1 : 0,
+      req.headers['x-api-key'] ? 1 : 0,
+      req.query.token ? 1 : 0
+    ].reduce((sum, count) => sum + count, 0);
+    
+    if (authHeaderCount > 1) {
+      analysis.riskScore += 15;
+      analysis.indicators.push('multiple-auth-methods');
+      analysis.suspiciousActivity.push({
+        type: 'multiple-auth-methods',
+        description: 'Multiple authentication methods in single request',
+        severity: 'medium',
+        count: authHeaderCount
+      });
+    }
+    
+    return analysis;
+  } catch (error) {
+    return {
+      riskScore: 0,
+      indicators: [],
+      attackPatterns: [],
+      suspiciousActivity: []
+    };
+  }
+}
+
+/**
+ * Analyzes request headers for attack tool fingerprints and security anomalies
+ * @param {Object} headers - Request headers object
+ * @param {Object} clientContext - Client context information
+ * @returns {Object} Header analysis results with risk score and indicators
+ */
+function analyzeRequestHeaders(headers, clientContext) {
+  try {
+    const analysis = {
+      riskScore: 0,
+      indicators: [],
+      suspiciousHeaders: [],
+      missingHeaders: [],
+      fingerprints: []
+    };
+    
+    if (!headers || typeof headers !== 'object') {
+      analysis.riskScore += 10;
+      analysis.indicators.push('missing-headers');
+      return analysis;
+    }
+    
+    // Convert all header names to lowercase for consistent checking
+    const normalizedHeaders = {};
+    for (const [key, value] of Object.entries(headers)) {
+      normalizedHeaders[key.toLowerCase()] = value;
+    }
+    
+    // Check for missing security headers
+    const expectedSecurityHeaders = [
+      'user-agent',
+      'accept',
+      'accept-language',
+      'accept-encoding'
+    ];
+    
+    for (const expectedHeader of expectedSecurityHeaders) {
+      if (!normalizedHeaders[expectedHeader]) {
+        analysis.riskScore += 5;
+        analysis.indicators.push(`missing-${expectedHeader}`);
+        analysis.missingHeaders.push({
+          header: expectedHeader,
+          description: `Missing expected header: ${expectedHeader}`,
+          severity: 'low'
+        });
+      }
+    }
+    
+    // Analyze User-Agent header for attack tools
+    const userAgent = normalizedHeaders['user-agent'] || '';
+    if (userAgent) {
+      const attackToolPatterns = [
+        { pattern: /curl|wget|python|perl|ruby|java|go-http/i, name: 'automated-tool', risk: 15 },
+        { pattern: /nmap|masscan|zmap/i, name: 'network-scanner', risk: 25 },
+        { pattern: /sqlmap|havij|pangolin|bbqsql/i, name: 'sql-injection-tool', risk: 35 },
+        { pattern: /nikto|dirb|dirbuster|gobuster|wfuzz/i, name: 'web-scanner', risk: 30 },
+        { pattern: /burp|zaproxy|w3af|acunetix|netsparker/i, name: 'vulnerability-scanner', risk: 30 },
+        { pattern: /metasploit|nessus|openvas|arachni/i, name: 'penetration-tool', risk: 35 },
+        { pattern: /scrapy|beautifulsoup|selenium|phantomjs/i, name: 'scraping-tool', risk: 10 }
+      ];
+      
+      for (const { pattern, name, risk } of attackToolPatterns) {
+        if (pattern.test(userAgent)) {
+          analysis.riskScore += risk;
+          analysis.indicators.push(name);
+          analysis.fingerprints.push({
+            type: name,
+            description: `Attack tool detected in User-Agent`,
+            userAgent: userAgent.substring(0, 100),
+            severity: risk > 25 ? 'high' : risk > 15 ? 'medium' : 'low'
+          });
+          break; // Only flag one tool type per request
+        }
+      }
+    }
+    
+    // Check for suspicious accept headers
+    const accept = normalizedHeaders['accept'] || '';
+    if (accept) {
+      // Unusual accept headers that might indicate automated tools
+      const suspiciousAcceptPatterns = [
+        { pattern: /\*\/\*/, name: 'wildcard-accept', risk: 5 },
+        { pattern: /text\/plain/, name: 'text-only-accept', risk: 3 },
+        { pattern: /application\/octet-stream/, name: 'binary-accept', risk: 5 }
+      ];
+      
+      for (const { pattern, name, risk } of suspiciousAcceptPatterns) {
+        if (pattern.test(accept)) {
+          analysis.riskScore += risk;
+          analysis.indicators.push(name);
+          analysis.suspiciousHeaders.push({
+            header: 'accept',
+            type: name,
+            value: accept,
+            description: `Suspicious accept header pattern`,
+            severity: 'low'
+          });
+        }
+      }
+    }
+    
+    // Check for suspicious custom headers
+    const customHeaders = Object.keys(normalizedHeaders).filter(header => 
+      header.startsWith('x-') || 
+      !['host', 'user-agent', 'accept', 'accept-language', 'accept-encoding', 
+        'connection', 'upgrade-insecure-requests', 'sec-fetch-site', 
+        'sec-fetch-mode', 'sec-fetch-dest', 'referer', 'cookie',
+        'authorization', 'content-type', 'content-length', 'cache-control'].includes(header)
+    );
+    
+    for (const customHeader of customHeaders) {
+      const value = normalizedHeaders[customHeader];
+      
+      // Check for injection attempts in custom headers
+      const injectionPatterns = [
+        /<script|javascript:|vbscript:/i,
+        /(union|select|insert|delete|drop|alter)\s+/i,
+        /(\||;|&|`|\$\()/,
+        /(\.\.\/|\.\.\\|\/etc\/|\/bin\/|cmd\.exe)/i
+      ];
+      
+      for (const pattern of injectionPatterns) {
+        if (pattern.test(value)) {
+          analysis.riskScore += 20;
+          analysis.indicators.push('header-injection-attempt');
+          analysis.suspiciousHeaders.push({
+            header: customHeader,
+            type: 'injection-attempt',
+            value: value.substring(0, 100),
+            description: `Potential injection attempt in custom header`,
+            severity: 'high'
+          });
+          break;
+        }
+      }
+    }
+    
+    // Check for header order anomalies (if order information is preserved)
+    const headerNames = Object.keys(normalizedHeaders);
+    if (headerNames.length > 0) {
+      // Check for suspicious header count
+      if (headerNames.length < 3) {
+        analysis.riskScore += 10;
+        analysis.indicators.push('minimal-headers');
+        analysis.suspiciousHeaders.push({
+          type: 'minimal-headers',
+          count: headerNames.length,
+          description: `Unusually few headers (${headerNames.length})`,
+          severity: 'medium'
+        });
+      } else if (headerNames.length > 50) {
+        analysis.riskScore += 15;
+        analysis.indicators.push('excessive-headers');
+        analysis.suspiciousHeaders.push({
+          type: 'excessive-headers',
+          count: headerNames.length,
+          description: `Excessive number of headers (${headerNames.length})`,
+          severity: 'medium'
+        });
+      }
+    }
+    
+    // Check for missing browser security headers in responses (if this is a browser request)
+    const acceptLanguage = normalizedHeaders['accept-language'];
+    const acceptEncoding = normalizedHeaders['accept-encoding'];
+    const secFetchSite = normalizedHeaders['sec-fetch-site'];
+    
+    if (acceptLanguage && acceptEncoding && !secFetchSite) {
+      // Looks like a browser request but missing security headers
+      analysis.riskScore += 5;
+      analysis.indicators.push('missing-browser-security-headers');
+    }
+    
+    // Check for header value length anomalies
+    for (const [header, value] of Object.entries(normalizedHeaders)) {
+      if (typeof value === 'string' && value.length > 2000) {
+        analysis.riskScore += 10;
+        analysis.indicators.push('oversized-header-value');
+        analysis.suspiciousHeaders.push({
+          header: header,
+          type: 'oversized-value',
+          length: value.length,
+          description: `Header value exceeds normal length (${value.length} chars)`,
+          severity: 'medium'
+        });
+      }
+    }
+    
+    return analysis;
+  } catch (error) {
+    return {
+      riskScore: 0,
+      indicators: [],
+      suspiciousHeaders: [],
+      missingHeaders: [],
+      fingerprints: []
+    };
+  }
+}
+
+/**
+ * Analyzes bot behavior and automated scanning characteristics
+ * @param {Object} req - Express request object
+ * @param {Object} clientContext - Client context information
+ * @returns {Object} Bot behavior analysis results with risk score and indicators
+ */
+function analyzeBotBehavior(req, clientContext) {
+  try {
+    const analysis = {
+      riskScore: 0,
+      indicators: [],
+      botSignatures: [],
+      automationPatterns: []
+    };
+    
+    const userAgent = req.headers['user-agent'] || '';
+    const acceptLanguage = req.headers['accept-language'] || '';
+    const acceptEncoding = req.headers['accept-encoding'] || '';
+    const accept = req.headers['accept'] || '';
+    
+    // Check for legitimate search engine bots (lower risk)
+    const legitimateBots = [
+      { pattern: /googlebot/i, name: 'googlebot', risk: -5 },
+      { pattern: /bingbot/i, name: 'bingbot', risk: -5 },
+      { pattern: /slurp/i, name: 'yahoo-slurp', risk: -5 },
+      { pattern: /duckduckbot/i, name: 'duckduckbot', risk: -5 },
+      { pattern: /baiduspider/i, name: 'baiduspider', risk: -5 },
+      { pattern: /yandexbot/i, name: 'yandexbot', risk: -5 },
+      { pattern: /facebookexternalhit/i, name: 'facebook-bot', risk: -3 },
+      { pattern: /twitterbot/i, name: 'twitter-bot', risk: -3 },
+      { pattern: /linkedinbot/i, name: 'linkedin-bot', risk: -3 }
+    ];
+    
+    // Check for malicious bots and scrapers
+    const maliciousBots = [
+      { pattern: /bot|crawler|spider|scraper/i, name: 'generic-bot', risk: 10 },
+      { pattern: /wget|curl|python|perl|ruby|java|go-http/i, name: 'automated-tool', risk: 15 },
+      { pattern: /scrapy|beautifulsoup|selenium|phantomjs|headless/i, name: 'scraping-tool', risk: 20 },
+      { pattern: /masscan|zmap|nmap/i, name: 'network-scanner', risk: 30 },
+      { pattern: /sqlmap|nikto|dirb|gobuster|wfuzz/i, name: 'vulnerability-scanner', risk: 35 },
+      { pattern: /burp|zaproxy|w3af|acunetix/i, name: 'penetration-tool', risk: 40 }
+    ];
+    
+    let isLegitimateBot = false;
+    
+    // Check for legitimate bots first
+    for (const { pattern, name, risk } of legitimateBots) {
+      if (pattern.test(userAgent)) {
+        analysis.riskScore += risk; // Negative risk (reduces overall risk)
+        analysis.indicators.push(`legitimate-${name}`);
+        analysis.botSignatures.push({
+          type: 'legitimate-bot',
+          name: name,
+          description: `Legitimate search engine bot detected`,
+          risk: risk
+        });
+        isLegitimateBot = true;
+        break;
+      }
+    }
+    
+    // If not a legitimate bot, check for malicious patterns
+    if (!isLegitimateBot) {
+      for (const { pattern, name, risk } of maliciousBots) {
+        if (pattern.test(userAgent)) {
+          analysis.riskScore += risk;
+          analysis.indicators.push(name);
+          analysis.botSignatures.push({
+            type: 'malicious-bot',
+            name: name,
+            description: `Suspicious automated tool detected`,
+            risk: risk,
+            userAgent: userAgent.substring(0, 100)
+          });
+          break;
+        }
+      }
+    }
+    
+    // Check for bot-like behavior patterns
+    const botBehaviorPatterns = [
+      {
+        condition: !acceptLanguage,
+        name: 'missing-accept-language',
+        description: 'Missing Accept-Language header (common in bots)',
+        risk: 8
+      },
+      {
+        condition: !acceptEncoding,
+        name: 'missing-accept-encoding',
+        description: 'Missing Accept-Encoding header (common in bots)',
+        risk: 8
+      },
+      {
+        condition: accept === '*/*',
+        name: 'wildcard-accept',
+        description: 'Wildcard Accept header (common in bots)',
+        risk: 5
+      },
+      {
+        condition: userAgent.length < 20,
+        name: 'short-user-agent',
+        description: `Very short User-Agent string (${userAgent.length} chars)`,
+        risk: 10
+      },
+      {
+        condition: userAgent.length > 500,
+        name: 'long-user-agent',
+        description: `Unusually long User-Agent string (${userAgent.length} chars)`,
+        risk: 8
+      },
+      {
+        condition: !userAgent.includes('Mozilla') && !isLegitimateBot,
+        name: 'non-browser-user-agent',
+        description: 'User-Agent does not appear to be from a browser',
+        risk: 12
+      }
+    ];
+    
+    for (const { condition, name, description, risk } of botBehaviorPatterns) {
+      if (condition) {
+        analysis.riskScore += risk;
+        analysis.indicators.push(name);
+        analysis.automationPatterns.push({
+          pattern: name,
+          description: description,
+          risk: risk,
+          severity: risk > 10 ? 'medium' : 'low'
+        });
+      }
+    }
+    
+    // Check for rapid request patterns (if clientContext provides this info)
+    if (clientContext.requestCount && clientContext.timeWindow) {
+      const requestRate = clientContext.requestCount / (clientContext.timeWindow / 1000);
+      
+      if (requestRate > 5) { // More than 5 requests per second
+        const riskIncrease = Math.min(requestRate * 2, 30); // Cap at 30 points
+        analysis.riskScore += riskIncrease;
+        analysis.indicators.push('high-request-rate');
+        analysis.automationPatterns.push({
+          pattern: 'high-request-rate',
+          description: `High request rate: ${requestRate.toFixed(2)} req/sec`,
+          risk: riskIncrease,
+          severity: requestRate > 10 ? 'high' : 'medium'
+        });
+      }
+    }
+    
+    // Check for sequential URL patterns (common in bots)
+    const url = req.url || req.originalUrl || '';
+    if (clientContext.recentUrls && clientContext.recentUrls.length > 1) {
+      const sequentialPatterns = [
+        /\/page\/\d+/,
+        /\/item\/\d+/,
+        /\/post\/\d+/,
+        /\/category\/\d+/,
+        /\/user\/\d+/
+      ];
+      
+      let sequentialCount = 0;
+      for (const pattern of sequentialPatterns) {
+        if (clientContext.recentUrls.some(recentUrl => pattern.test(recentUrl))) {
+          sequentialCount++;
+        }
+      }
+      
+      if (sequentialCount > 2) {
+        analysis.riskScore += 15;
+        analysis.indicators.push('sequential-url-pattern');
+        analysis.automationPatterns.push({
+          pattern: 'sequential-url-pattern',
+          description: 'Sequential URL access pattern detected',
+          risk: 15,
+          severity: 'medium'
+        });
+      }
+    }
+    
+    // Check for missing common browser headers
+    const browserHeaders = ['referer', 'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest'];
+    const missingBrowserHeaders = browserHeaders.filter(header => 
+      !req.headers[header] && !req.headers[header.toLowerCase()]
+    );
+    
+    if (missingBrowserHeaders.length >= 3 && !isLegitimateBot) {
+      analysis.riskScore += 12;
+      analysis.indicators.push('missing-browser-headers');
+      analysis.automationPatterns.push({
+        pattern: 'missing-browser-headers',
+        description: `Missing ${missingBrowserHeaders.length} common browser headers`,
+        risk: 12,
+        severity: 'medium',
+        missingHeaders: missingBrowserHeaders
+      });
+    }
+    
+    return analysis;
+  } catch (error) {
+    return {
+      riskScore: 0,
+      indicators: [],
+      botSignatures: [],
+      automationPatterns: []
+    };
+  }
+}
+
+/**
+ * Calculates threat confidence score based on security indicators
+ * @param {Array} indicators - Array of security threat indicators
+ * @returns {number} Confidence score between 0 and 100
+ */
+function calculateThreatConfidence(indicators) {
+  try {
+    if (!indicators || !Array.isArray(indicators) || indicators.length === 0) {
+      return 0;
+    }
+    
+    // Define confidence weights for different indicator types
+    const confidenceWeights = {
+      'sql-injection': 90,
+      'xss-attempt': 85,
+      'directory-traversal': 80,
+      'command-injection': 95,
+      'attack-tool': 75,
+      'malicious-bot': 70,
+      'brute-force': 60,
+      'rate-limit-exceeded': 50,
+      'suspicious-user-agent': 40,
+      'missing-headers': 30,
+      'suspicious-payload': 65,
+      'vulnerability-scanner': 85,
+      'penetration-tool': 80
+    };
+    
+    let totalConfidence = 0;
+    let indicatorCount = 0;
+    
+    for (const indicator of indicators) {
+      if (typeof indicator === 'string') {
+        // Check for exact matches first
+        if (confidenceWeights[indicator]) {
+          totalConfidence += confidenceWeights[indicator];
+          indicatorCount++;
+        } else {
+          // Check for partial matches
+          for (const [key, weight] of Object.entries(confidenceWeights)) {
+            if (indicator.includes(key) || key.includes(indicator)) {
+              totalConfidence += weight * 0.7; // Reduce confidence for partial matches
+              indicatorCount++;
+              break;
+            }
+          }
+        }
+      }
+    }
+    
+    if (indicatorCount === 0) {
+      return 0;
+    }
+    
+    // Calculate average confidence with diminishing returns for multiple indicators
+    const avgConfidence = totalConfidence / indicatorCount;
+    const diminishingFactor = 1 - Math.exp(-indicatorCount / 3); // Logarithmic scaling
+    
+    return Math.min(Math.round(avgConfidence * diminishingFactor), 100);
+  } catch (error) {
+    return 0;
+  }
+}
+
+/**
+ * Classifies threat types based on security indicators
+ * @param {Array} indicators - Array of security threat indicators
+ * @returns {Array} Array of classified threat types
+ */
+function classifyThreatTypes(indicators) {
+  try {
+    if (!indicators || !Array.isArray(indicators)) {
+      return [];
+    }
+    
+    const threatTypes = new Set();
+    
+    // Define threat classification patterns
+    const threatPatterns = {
+      'injection-attack': ['sql-injection', 'xss-attempt', 'command-injection', 'ldap-injection', 'nosql-injection'],
+      'reconnaissance': ['directory-traversal', 'file-enumeration', 'admin-path-enumeration', 'info-gathering', 'vulnerability-scanner'],
+      'automated-attack': ['attack-tool', 'malicious-bot', 'penetration-tool', 'scanner', 'crawler'],
+      'brute-force': ['brute-force', 'credential-stuffing', 'password-spray', 'multiple-failed-attempts'],
+      'abuse': ['rate-limit-exceeded', 'high-request-rate', 'excessive-requests', 'ddos-pattern'],
+      'evasion': ['suspicious-user-agent', 'missing-headers', 'header-manipulation', 'encoding-evasion'],
+      'malware': ['malicious-payload', 'suspicious-file', 'virus-signature', 'trojan-pattern'],
+      'data-exfiltration': ['sensitive-file-access', 'database-enumeration', 'backup-access', 'config-access']
+    };
+    
+    // Classify each indicator
+    for (const indicator of indicators) {
+      if (typeof indicator === 'string') {
+        for (const [threatType, patterns] of Object.entries(threatPatterns)) {
+          for (const pattern of patterns) {
+            if (indicator.includes(pattern) || pattern.includes(indicator)) {
+              threatTypes.add(threatType);
+              break;
+            }
+          }
+        }
+      }
+    }
+    
+    return Array.from(threatTypes);
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Updates threat intelligence database with new attack patterns and indicators
+ * @param {Object} threatAnalysis - Analysis results containing threat indicators
+ * @param {Object} req - Express request object for context
+ * @returns {Object} Update status and metadata
+ */
+function updateThreatIntelligence(threatAnalysis, req) {
+  try {
+    if (!threatAnalysis || typeof threatAnalysis !== 'object') {
+      return {
+        updated: false,
+        reason: 'invalid-threat-analysis',
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    const timestamp = new Date().toISOString();
+    const updateResult = {
+      updated: false,
+      timestamp,
+      entriesAdded: 0,
+      patternsUpdated: 0,
+      confidenceUpdated: false
+    };
+
+    // Extract threat patterns for intelligence database
+    const threatPatterns = [];
+    
+    if (threatAnalysis.indicators && Array.isArray(threatAnalysis.indicators)) {
+      for (const indicator of threatAnalysis.indicators) {
+        if (typeof indicator === 'string' && indicator.length > 2) {
+          threatPatterns.push({
+            pattern: indicator,
+            type: 'indicator',
+            severity: threatAnalysis.riskScore || 0,
+            source: req ? req.ip || 'unknown' : 'unknown',
+            userAgent: req && req.headers ? req.headers['user-agent'] || 'unknown' : 'unknown',
+            timestamp,
+            confidence: threatAnalysis.confidenceScore || 0
+          });
+        }
+      }
+    }
+
+    // Update patterns from bot signatures
+    if (threatAnalysis.botSignatures && Array.isArray(threatAnalysis.botSignatures)) {
+      for (const signature of threatAnalysis.botSignatures) {
+        if (typeof signature === 'string' && signature.length > 2) {
+          threatPatterns.push({
+            pattern: signature,
+            type: 'bot-signature',
+            severity: Math.min((threatAnalysis.riskScore || 0) + 10, 100),
+            source: req ? req.ip || 'unknown' : 'unknown',
+            userAgent: req && req.headers ? req.headers['user-agent'] || 'unknown' : 'unknown',
+            timestamp,
+            confidence: Math.min((threatAnalysis.confidenceScore || 0) + 15, 100)
+          });
+        }
+      }
+    }
+
+    // Update patterns from automation patterns
+    if (threatAnalysis.automationPatterns && Array.isArray(threatAnalysis.automationPatterns)) {
+      for (const pattern of threatAnalysis.automationPatterns) {
+        if (typeof pattern === 'string' && pattern.length > 2) {
+          threatPatterns.push({
+            pattern: pattern,
+            type: 'automation-pattern',
+            severity: Math.min((threatAnalysis.riskScore || 0) + 5, 100),
+            source: req ? req.ip || 'unknown' : 'unknown',
+            userAgent: req && req.headers ? req.headers['user-agent'] || 'unknown' : 'unknown',
+            timestamp,
+            confidence: (threatAnalysis.confidenceScore || 0)
+          });
+        }
+      }
+    }
+
+    // Simulate database update (in a real implementation, this would connect to a database)
+    if (threatPatterns.length > 0) {
+      updateResult.updated = true;
+      updateResult.entriesAdded = threatPatterns.length;
+      updateResult.patternsUpdated = threatPatterns.filter(p => p.type === 'indicator').length;
+      
+      // Update confidence scoring if high-confidence threats detected
+      if (threatAnalysis.confidenceScore && threatAnalysis.confidenceScore > 75) {
+        updateResult.confidenceUpdated = true;
+      }
+
+      // Log the intelligence update for monitoring
+      const updateSummary = {
+        event: 'threat-intelligence-updated',
+        timestamp,
+        patterns: threatPatterns.length,
+        highConfidence: threatPatterns.filter(p => p.confidence > 75).length,
+        sources: [...new Set(threatPatterns.map(p => p.source))],
+        types: [...new Set(threatPatterns.map(p => p.type))]
+      };
+
+      // Educational note about threat intelligence
+      updateResult.educational = {
+        purpose: 'Threat intelligence helps improve future detection accuracy',
+        impact: 'Updated patterns enhance real-time threat detection capabilities',
+        dataRetention: 'Intelligence data is anonymized and retained for trend analysis',
+        compliance: 'Updates follow security frameworks and privacy regulations'
+      };
+    }
+
+    return updateResult;
+  } catch (error) {
+    return {
+      updated: false,
+      error: error.message,
+      timestamp: new Date().toISOString(),
+      reason: 'update-failed'
+    };
+  }
+}
+
+/**
+ * Provides human-readable explanations for different threat indicator types
+ * @param {string} indicatorType - Type of threat indicator
+ * @returns {string} Human-readable explanation of the threat indicator
+ */
+function getThreatIndicatorExplanation(indicatorType) {
+  if (!indicatorType || typeof indicatorType !== 'string') {
+    return 'Unknown threat indicator - requires manual analysis';
+  }
+
+  const explanations = {
+    'sql-injection': 'Attempts to inject SQL commands into database queries through user input',
+    'xss-attempt': 'Cross-site scripting attempts to inject malicious scripts into web pages',
+    'path-traversal': 'Attempts to access files and directories outside the web root',
+    'command-injection': 'Attempts to execute system commands through application vulnerabilities',
+    'suspicious-user-agent': 'Non-standard or potentially malicious user agent strings',
+    'rate-limit-violation': 'Excessive request rates that may indicate DoS attacks or scraping',
+    'invalid-authentication': 'Attempts to access protected resources with invalid credentials',
+    'suspicious-headers': 'HTTP headers that contain potentially malicious or unusual content',
+    'file-upload-threat': 'Potentially dangerous file uploads that could contain malware',
+    'session-hijack-attempt': 'Attempts to steal or manipulate user session tokens',
+    'csrf-attempt': 'Cross-site request forgery attempts to perform unauthorized actions',
+    'bot-detection': 'Automated bot traffic that may indicate scraping or attack patterns',
+    'geolocation-anomaly': 'Requests from unusual geographic locations for the user',
+    'time-anomaly': 'Requests at unusual times that deviate from normal user patterns',
+    'frequency-anomaly': 'Request patterns that indicate automated or scripted behavior',
+    'payload-anomaly': 'Request payloads that contain unusual or suspicious content',
+    'encoding-anomaly': 'Unusual character encoding that may be used to bypass security filters',
+    'protocol-violation': 'Requests that violate HTTP protocol standards or best practices',
+    'fingerprinting-attempt': 'Attempts to gather information about the server infrastructure',
+    'brute-force-attempt': 'Systematic attempts to guess passwords or access credentials',
+    'directory-traversal': 'Attempts to navigate the server file system through URL manipulation',
+    'header-injection': 'Attempts to inject malicious content through HTTP headers',
+    'response-splitting': 'Attempts to manipulate HTTP responses to inject content',
+    'ldap-injection': 'Attempts to manipulate LDAP queries through user input',
+    'xml-injection': 'Attempts to inject malicious XML content or manipulate XML parsing',
+    'nosql-injection': 'Attempts to manipulate NoSQL database queries through user input',
+    'template-injection': 'Attempts to inject code into template engines',
+    'deserialization-attack': 'Attempts to exploit unsafe deserialization of data objects',
+    'privilege-escalation': 'Attempts to gain higher access privileges than authorized',
+    'data-exfiltration': 'Patterns indicating attempts to steal or extract sensitive data'
+  };
+
+  // Return specific explanation or a generic fallback
+  return explanations[indicatorType.toLowerCase()] || 
+         `${indicatorType} - Security indicator requiring investigation and monitoring`;
+}
+
+/**
+ * Provides mitigation strategies for detected threat types
+ * @param {Array} threatTypes - Array of detected threat types
+ * @returns {Array} Array of recommended mitigation strategies
+ */
+function getMitigationStrategies(threatTypes) {
+  if (!Array.isArray(threatTypes) || threatTypes.length === 0) {
+    return [{
+      strategy: 'baseline-security',
+      priority: 'medium',
+      description: 'Maintain standard security monitoring and logging',
+      implementation: 'Continue with current security baseline configuration'
+    }];
+  }
+
+  const mitigationMap = {
+    'sql-injection': {
+      strategy: 'parameterized-queries',
+      priority: 'critical',
+      description: 'Use parameterized queries and input validation',
+      implementation: 'Deploy prepared statements, input sanitization, and database access controls'
+    },
+    'xss-attempt': {
+      strategy: 'content-security-policy',
+      priority: 'high',
+      description: 'Implement strict Content Security Policy and output encoding',
+      implementation: 'Deploy CSP headers, input/output validation, and DOM sanitization'
+    },
+    'path-traversal': {
+      strategy: 'path-validation',
+      priority: 'high',
+      description: 'Validate and sanitize all file path inputs',
+      implementation: 'Implement whitelist-based path validation and chroot environments'
+    },
+    'command-injection': {
+      strategy: 'input-sanitization',
+      priority: 'critical',
+      description: 'Sanitize all user inputs and avoid system command execution',
+      implementation: 'Use safe APIs, input validation, and sandboxed execution environments'
+    },
+    'brute-force-attempt': {
+      strategy: 'rate-limiting',
+      priority: 'high',
+      description: 'Implement progressive rate limiting and account lockouts',
+      implementation: 'Deploy adaptive rate limiting, CAPTCHA, and temporary IP blocking'
+    },
+    'bot-detection': {
+      strategy: 'bot-mitigation',
+      priority: 'medium',
+      description: 'Implement bot detection and challenge mechanisms',
+      implementation: 'Deploy CAPTCHA, JavaScript challenges, and behavioral analysis'
+    },
+    'suspicious-user-agent': {
+      strategy: 'user-agent-filtering',
+      priority: 'low',
+      description: 'Monitor and filter suspicious user agent patterns',
+      implementation: 'Implement user agent validation and behavior-based detection'
+    },
+    'csrf-attempt': {
+      strategy: 'csrf-protection',
+      priority: 'high',
+      description: 'Implement CSRF tokens and SameSite cookie attributes',
+      implementation: 'Deploy anti-CSRF tokens, SameSite cookies, and origin validation'
+    },
+    'session-hijack-attempt': {
+      strategy: 'session-security',
+      priority: 'critical',
+      description: 'Enhance session security and monitoring',
+      implementation: 'Use secure session tokens, HTTPS enforcement, and session rotation'
+    },
+    'data-exfiltration': {
+      strategy: 'data-loss-prevention',
+      priority: 'critical',
+      description: 'Implement data loss prevention and monitoring',
+      implementation: 'Deploy DLP controls, access monitoring, and data classification'
+    }
+  };
+
+  const strategies = [];
+  const uniqueStrategies = new Set();
+
+  // Process each threat type and collect unique mitigation strategies
+  for (const threatType of threatTypes) {
+    if (typeof threatType === 'string' && mitigationMap[threatType.toLowerCase()]) {
+      const strategy = mitigationMap[threatType.toLowerCase()];
+      const strategyKey = strategy.strategy;
+      
+      if (!uniqueStrategies.has(strategyKey)) {
+        uniqueStrategies.add(strategyKey);
+        strategies.push({
+          ...strategy,
+          threatTypes: [threatType],
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        // If strategy already exists, add the threat type to its list
+        const existingStrategy = strategies.find(s => s.strategy === strategyKey);
+        if (existingStrategy && !existingStrategy.threatTypes.includes(threatType)) {
+          existingStrategy.threatTypes.push(threatType);
+        }
+      }
+    }
+  }
+
+  // If no specific strategies found, return general recommendations
+  if (strategies.length === 0) {
+    return [{
+      strategy: 'general-security-enhancement',
+      priority: 'medium',
+      description: 'Enhance general security monitoring for detected threats',
+      implementation: 'Increase logging verbosity, review security policies, and monitor for patterns',
+      threatTypes: threatTypes,
+      timestamp: new Date().toISOString()
+    }];
+  }
+
+  // Sort strategies by priority (critical > high > medium > low)
+  const priorityOrder = { 'critical': 0, 'high': 1, 'medium': 2, 'low': 3 };
+  strategies.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+  return strategies;
+}
+
+/**
  * Validates request headers for security compliance and threats
  * @param {Object} headers - Request headers object
  * @param {Object} config - Validation configuration
@@ -1737,6 +3676,66 @@ function validateQueryParameters(query, config) {
           });
         }
       }
+    }
+    
+    return violations;
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Validates request size and complexity against configured limits
+ * @param {Object} requestData - Request data to validate
+ * @param {Object} config - Validation configuration
+ * @returns {Array} Array of size violations found
+ */
+function validateRequestSize(requestData, config) {
+  try {
+    const violations = [];
+    
+    // Check request body size if present
+    if (requestData.body) {
+      const bodySize = JSON.stringify(requestData.body).length;
+      const maxBodySize = config.maxRequestSize || 1024 * 1024; // 1MB default
+      
+      if (bodySize > maxBodySize) {
+        violations.push({
+          type: 'request-too-large',
+          severity: 'medium',
+          description: `Request body size (${bodySize} bytes) exceeds limit (${maxBodySize} bytes)`,
+          actualSize: bodySize,
+          maxSize: maxBodySize
+        });
+      }
+    }
+    
+    // Check URL length
+    const urlLength = (requestData.url || '').length;
+    const maxUrlLength = config.maxUrlLength || 2048;
+    
+    if (urlLength > maxUrlLength) {
+      violations.push({
+        type: 'url-too-long',
+        severity: 'low',
+        description: `URL length (${urlLength} chars) exceeds limit (${maxUrlLength} chars)`,
+        actualLength: urlLength,
+        maxLength: maxUrlLength
+      });
+    }
+    
+    // Check header count and size
+    const headerCount = Object.keys(requestData.headers || {}).length;
+    const maxHeaderCount = config.maxHeaderCount || 50;
+    
+    if (headerCount > maxHeaderCount) {
+      violations.push({
+        type: 'too-many-headers',
+        severity: 'low',
+        description: `Header count (${headerCount}) exceeds limit (${maxHeaderCount})`,
+        actualCount: headerCount,
+        maxCount: maxHeaderCount
+      });
     }
     
     return violations;

@@ -58,7 +58,7 @@ import {
     HTTP_CONSTANTS
 } from '../utils/constants.js';
 
-import logger, { generateRequestId } from '../utils/logger.js';
+import logger, { generateRequestId, createRequestLogger } from '../utils/logger.js';
 
 // Global Route State Management - Optimized for PM2 cluster mode compatibility
 let GOOD_EVENING_ROUTE_INITIALIZED = false;
@@ -163,7 +163,7 @@ function createGoodEveningRouter(routerOptions = {}) {
         // Configure request logging middleware with correlation tracking for good-evening route
         if (enableLogging) {
             router.use((req, res, next) => {
-                const requestLogger = logger.createRequestLogger(req);
+                const requestLogger = createRequestLogger(req);
                 req.logger = requestLogger;
                 req.correlationId = requestLogger.correlationId;
                 

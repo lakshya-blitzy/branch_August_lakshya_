@@ -1904,7 +1904,7 @@ const helloRouter = await createHelloRouter({
 
 // Export all route functions and utilities for application integration
 export {
-  createHelloRouter as helloRouter,
+  helloRouter,           // ✅ FIX: Export the actual router INSTANCE
   createHelloRouter as createHelloRoute,
   initializeHelloRoute,
   validateHelloRoute,

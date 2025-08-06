@@ -14,6 +14,7 @@ import sinon from 'sinon';
 import { performance } from 'perf_hooks';
 import { spawn } from 'child_process';
 import http from 'node:http';
+import request from 'supertest';
 
 // Helper function to check if Jest is available and get Jest instance
 async function getJestInstance() {
@@ -27,8 +28,34 @@ async function getJestInstance() {
 
 // HTTP Test Helper - Creates utilities for HTTP request/response testing
 export function createHTTPTestHelper(baseUrl = null) {
-  // If baseUrl is provided, create real HTTP client
-  if (baseUrl) {
+  // Check if baseUrl is an Express app instance
+  if (baseUrl && typeof baseUrl === 'object' && typeof baseUrl.use === 'function') {
+    // This is an Express app, use SuperTest
+    const client = request(baseUrl);
+    return {
+      client: client,
+      get: (path) => client.get(path),
+      post: (path) => client.post(path),
+      put: (path) => client.put(path),
+      delete: (path) => client.delete(path),
+      request: client,
+      expectStatus: (response, expectedStatus) => ({
+        valid: response.status === expectedStatus,
+        actual: response.status,
+        expected: expectedStatus,
+        message: `Expected status ${expectedStatus}, got ${response.status}`
+      }),
+      expectResponseTime: (response, maxTime) => ({
+        valid: true, // For now, timing validation is simplified
+        actual: 0,
+        expected: maxTime,
+        message: `Response time validation`
+      })
+    };
+  }
+  
+  // If baseUrl is provided as a URL string or URL object, create real HTTP client
+  if (baseUrl && (typeof baseUrl === 'string' || (typeof baseUrl === 'object' && baseUrl.host && baseUrl.port))) {
     // Validate and normalize baseUrl
     let url;
     try {

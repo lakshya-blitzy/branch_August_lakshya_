@@ -414,6 +414,33 @@ async function createRoutesAggregator(aggregatorOptions = {}) {
       tutorialPhase: 'Phase 2: Express.js Framework Integration - Route Aggregation'
     });
 
+    // Add catch-all handler for unmatched routes to prevent hanging requests
+    routesAggregator.use('*', (req, res) => {
+      // Update aggregation metrics for 404 tracking
+      AGGREGATION_METRICS.totalRequests++;
+      AGGREGATION_METRICS.errors = (AGGREGATION_METRICS.errors || 0) + 1;
+      
+      const notFoundResponse = {
+        error: 'Not Found',
+        message: `The requested resource '${req.originalUrl}' was not found on this server`,
+        timestamp: new Date().toISOString(),
+        requestId: req.correlationId,
+        endpoint: req.path,
+        method: req.method,
+        statusCode: 404
+      };
+
+      res.status(404).json(notFoundResponse);
+
+      logger.warn('404 Not Found response sent by routes aggregator', {
+        correlationId: req.correlationId,
+        endpoint: req.path,
+        originalUrl: req.originalUrl,
+        method: req.method,
+        userAgent: req.headers['user-agent']
+      });
+    });
+
     // Store aggregated router instance for global access and PM2 compatibility
     AGGREGATED_ROUTER_INSTANCE = routesAggregator;
 

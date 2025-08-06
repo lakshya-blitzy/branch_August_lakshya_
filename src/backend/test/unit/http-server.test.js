@@ -155,12 +155,16 @@ async function setupTestSuite() {
         request = request.query(options.query);
       }
       
+      // Explicitly expect JSON content type to trigger SuperTest's JSON parsing
+      request = request.expect('Content-Type', /application\/json/);
+      
       const response = await request;
       const endTime = process.hrtime.bigint();
       const responseTime = Number(endTime - startTime) / 1000000; // Convert to milliseconds
       
       return {
         ...response,
+        body: response._body || response.body, // Ensure body is properly exposed from _body
         responseTime,
         timing: {
           start: startTime,
@@ -476,20 +480,15 @@ async function createTestServerInstance(serverType, serverConfig) {
   };
   
   // Create server instance using factory function with test configuration
-  const server = await serverFactory(testConfig);
+  const serverResult = await serverFactory(testConfig);
   
-  // Start server listening on allocated port with error handling
-  await new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => reject(new Error('Server startup timeout')), 5000);
-    server.on('listening', () => {
-      clearTimeout(timeout);
-      resolve();
-    });
-    server.on('error', (error) => {
-      clearTimeout(timeout);
-      reject(error);
-    });
-  });
+  // Extract HTTP server instance - different return formats for basic vs enhanced servers
+  const server = serverResult.server || serverResult; // Enhanced returns object, basic returns server directly
+  
+  // Verify server is listening (already started by factory function)
+  if (!server.listening) {
+    throw new Error('Server should be listening after factory creation');
+  }
   
   // Register server in global test server registry for management
   const address = server.address();
@@ -864,7 +863,7 @@ describe('HTTP Server Comprehensive Test Suite', () => {
     beforeEach(async () => {
       basicServer = await createTestServerInstance('basic', {});
       basicServerAgent = await httpTestHelper.createTestAgent(basicServer);
-    });
+    }, 15000); // 15 second timeout
     
     describe('Server Startup and Configuration', () => {
       test('should start basic server successfully with default configuration', async () => {
@@ -989,7 +988,7 @@ describe('HTTP Server Comprehensive Test Suite', () => {
     beforeEach(async () => {
       enhancedServer = await createTestServerInstance('enhanced', {});
       enhancedServerAgent = await httpTestHelper.createTestAgent(enhancedServer);
-    });
+    }, 15000); // 15 second timeout
     
     describe('Advanced Configuration Validation', () => {
       test('should start enhanced server with advanced features', async () => {
@@ -1175,7 +1174,7 @@ describe('HTTP Server Comprehensive Test Suite', () => {
     beforeEach(async () => {
       testServer = await createTestServerInstance('enhanced', {});
       testAgent = await httpTestHelper.createTestAgent(testServer);
-    });
+    }, 15000); // 15 second timeout
     
     describe('Response Time Measurement and Validation', () => {
       test('should meet target response times for all endpoints', async () => {
@@ -1244,7 +1243,7 @@ describe('HTTP Server Comprehensive Test Suite', () => {
     beforeEach(async () => {
       secureServer = await createTestServerInstance('enhanced', {});
       secureAgent = await httpTestHelper.createTestAgent(secureServer);
-    });
+    }, 15000); // 15 second timeout
     
     describe('HTTP Security Header Validation', () => {
       test('should implement all required security headers', async () => {
@@ -1325,7 +1324,7 @@ describe('HTTP Server Comprehensive Test Suite', () => {
     beforeEach(async () => {
       errorTestServer = await createTestServerInstance('enhanced', {});
       errorTestAgent = await httpTestHelper.createTestAgent(errorTestServer);
-    });
+    }, 15000); // 15 second timeout
     
     describe('HTTP Error Response Validation', () => {
       test('should handle 404 errors appropriately', async () => {

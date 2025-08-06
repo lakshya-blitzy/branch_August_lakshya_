@@ -623,6 +623,13 @@ describe('Express.js Server Implementation - Comprehensive Unit Testing', () => 
       httpHelper = createHTTPTestHelper(testApp);
     });
 
+    afterAll(async () => {
+      // Clean up HTTP helper connections
+      if (httpHelper && httpHelper.client) {
+        httpHelper.client = null;
+      }
+    });
+
     /**
      * Test: /hello endpoint functionality validation
      * @description Tests hello endpoint response content and status codes
@@ -717,6 +724,13 @@ describe('Express.js Server Implementation - Comprehensive Unit Testing', () => 
       securityHelper = createSecurityTestHelper(testApp);
     });
 
+    afterAll(async () => {
+      // Clean up security helper connections
+      if (securityHelper && securityHelper.client) {
+        securityHelper.client = null;
+      }
+    });
+
     /**
      * Test: Helmet.js security headers validation
      * @description Tests comprehensive security header implementation
@@ -772,16 +786,22 @@ describe('Express.js Server Implementation - Comprehensive Unit Testing', () => 
       httpHelper = createHTTPTestHelper(testApp);
     });
 
+    afterAll(async () => {
+      // Clean up HTTP helper connections
+      if (httpHelper && httpHelper.client) {
+        httpHelper.client = null;
+      }
+    });
+
     /**
      * Test: 404 Not Found error handling
      * @description Tests proper 404 error responses for non-existent routes
      */
     test('should handle 404 Not Found errors for non-existent routes', async () => {
-      // Act: Request non-existent route
-      const response = await supertest(testApp)
+      // Act: Request non-existent route without explicit expect() to avoid timeout
+      const response = await httpHelper.client
         .get('/non-existent-route')
-        .set('X-Test-Correlation-ID', TEST_CORRELATION_ID)
-        .expect(HTTP_CONSTANTS.STATUS_CODES.NOT_FOUND);
+        .set('X-Test-Correlation-ID', TEST_CORRELATION_ID);
 
       // Assert: Validate 404 error response format
       expect(response.status).toBe(HTTP_CONSTANTS.STATUS_CODES.NOT_FOUND);
@@ -789,7 +809,7 @@ describe('Express.js Server Implementation - Comprehensive Unit Testing', () => 
 
       // Educational annotation: RESTful error handling patterns
       console.log('✓ 404 Not Found error handling validated with proper status codes');
-    });
+    }, 10000);
 
     /**
      * Test: Express.js configuration validation
@@ -820,9 +840,18 @@ describe('Express.js Server Implementation - Comprehensive Unit Testing', () => 
    */
   describe('PM2 Cluster Mode Compatibility', () => {
     let testApp;
+    let httpHelper;
 
     beforeAll(() => {
       testApp = createExpressServer();
+      httpHelper = createHTTPTestHelper(testApp);
+    });
+
+    afterAll(async () => {
+      // Clean up HTTP helper connections
+      if (httpHelper && httpHelper.client) {
+        httpHelper.client = null;
+      }
     });
 
     /**
@@ -853,11 +882,11 @@ describe('Express.js Server Implementation - Comprehensive Unit Testing', () => 
     test('should handle concurrent requests efficiently', async () => {
       // Arrange: Create async test helper for concurrent operations
       const asyncHelper = createAsyncTestHelper();
-      const httpHelper = createHTTPTestHelper(testApp);
+      // Use the existing httpHelper instead of creating a new one
 
-      // Act: Execute concurrent requests
+      // Act: Execute concurrent requests using shared client
       const concurrentOperations = Array(10).fill().map(() => 
-        () => httpHelper.get('/hello')
+        () => httpHelper.client.get('/hello').expect(200)
       );
 
       const concurrentResult = await asyncHelper.concurrent(concurrentOperations);
@@ -883,6 +912,13 @@ describe('Express.js Server Implementation - Comprehensive Unit Testing', () => 
     beforeAll(() => {
       testApp = createExpressServer();
       httpHelper = createHTTPTestHelper(testApp);
+    });
+
+    afterAll(async () => {
+      // Clean up HTTP helper connections
+      if (httpHelper && httpHelper.client) {
+        httpHelper.client = null;
+      }
     });
 
     /**
@@ -939,6 +975,13 @@ describe('Express.js Server Implementation - Comprehensive Unit Testing', () => 
 
     beforeAll(() => {
       testApp = createExpressServer();
+    });
+
+    afterAll(async () => {
+      // Clean up test app resources
+      if (testApp) {
+        testApp = null;
+      }
     });
 
     /**

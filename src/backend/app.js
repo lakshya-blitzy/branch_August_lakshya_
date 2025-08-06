@@ -177,11 +177,11 @@ async function createExpressApp(options = {}) {
       await initializeHealthMonitoring(app);
     }
 
-    // Set up error handling middleware for centralized error processing
-    setupErrorHandling(app);
-
-    // Configure 404 handler for unmatched routes
+    // Configure 404 handler for unmatched routes (must be before error handler)
     setup404Handler(app);
+
+    // Set up error handling middleware for centralized error processing (must be last)
+    setupErrorHandling(app);
 
     logger.info('Express.js application created successfully', {
       middlewareCount: app._router ? app._router.stack.length : 0,
@@ -690,29 +690,30 @@ function setupErrorHandling(app) {
  */
 function setup404Handler(app) {
   app.use('*', (req, res) => {
-    const error = new HTTPError(
-      `Route not found: ${req.method} ${req.originalUrl}`,
-      HTTP_CONSTANTS.STATUS_CODES.NOT_FOUND,
-      {
+    try {
+      logger.warn('Route not found', {
         method: req.method,
         url: req.originalUrl,
+        correlationId: req.correlationId,
+        userAgent: req.get('User-Agent'),
+        ip: req.ip
+      });
+
+      // Simple 404 response without complex error handling to avoid circular issues
+      res.status(HTTP_CONSTANTS.STATUS_CODES.NOT_FOUND).json({
+        error: 'Not Found',
+        message: `Route not found: ${req.method} ${req.originalUrl}`,
+        statusCode: HTTP_CONSTANTS.STATUS_CODES.NOT_FOUND,
+        timestamp: new Date().toISOString(),
         correlationId: req.correlationId
-      }
-    );
-
-    logger.warn('Route not found', {
-      method: req.method,
-      url: req.originalUrl,
-      correlationId: req.correlationId,
-      userAgent: req.get('User-Agent'),
-      ip: req.ip
-    });
-
-    const errorResponse = createErrorResponse(error, {
-      environment: environment.NODE_ENV
-    });
-
-    res.status(HTTP_CONSTANTS.STATUS_CODES.NOT_FOUND).json(errorResponse);
+      });
+    } catch (handlerError) {
+      // Fallback to simple response if any issues in 404 handler
+      res.status(HTTP_CONSTANTS.STATUS_CODES.NOT_FOUND).json({
+        error: 'Not Found',
+        message: 'The requested resource was not found'
+      });
+    }
   });
 }
 

@@ -436,6 +436,9 @@ async function setupTestServer(serverOptions = {}) {
   // Update TEST_PORT global variable with the actual assigned port
   TEST_PORT = actualPort;
 
+  // Create client URL from the actual assigned port
+  const clientUrl = `http://localhost:${actualPort}`;
+
   // Create HTTP test client using the actual assigned port
   TEST_HTTP_CLIENT = createHTTPTestHelper(clientUrl);
 

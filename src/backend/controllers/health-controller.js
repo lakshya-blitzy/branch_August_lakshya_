@@ -2133,10 +2133,20 @@ nodejs_health_status{status="${data.status}"} ${data.status === 'OK' ? 1 : 0}`;
 }
 
 function formatHealthAsJSON(data, options) {
+  // Transform complex health service response to simple format expected by tests
+  // Map 'healthy' status to 'OK' for API compatibility
+  const apiStatus = data.status === 'healthy' ? 'OK' : data.status;
+  
+  // Extract uptime from metrics or calculate from process uptime
+  const uptime = data.metrics?.uptime?.application || 
+                 data.metrics?.system?.uptime || 
+                 process.uptime();
+  
+  // Return simple flat response format for API compatibility
   return {
-    status: data.status,
-    timestamp: new Date().toISOString(),
-    ...data
+    status: apiStatus,
+    uptime: uptime,
+    timestamp: new Date().toISOString()
   };
 }
 

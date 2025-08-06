@@ -178,32 +178,29 @@ export function createRequestHandler(options = {}) {
         return;
       }
 
-      // Set HTTP response headers including Content-Type text/plain from HTTP_CONSTANTS
+      // Calculate performance metrics first for response headers
+      const performanceEnd = process.hrtime.bigint();
+      const duration = Number(performanceEnd - performanceStart) / 1000000; // Convert to milliseconds
+
+      // Set HTTP response headers including Content-Type application/json from HTTP_CONSTANTS
       res.writeHead(HTTP_CONSTANTS.STATUS_CODES.OK, {
-        [HTTP_CONSTANTS.HEADERS.CONTENT_TYPE]: HTTP_CONSTANTS.CONTENT_TYPES.PLAIN_TEXT,
+        [HTTP_CONSTANTS.HEADERS.CONTENT_TYPE]: HTTP_CONSTANTS.CONTENT_TYPES.JSON,
         'X-Request-ID': requestId,
-        'X-Response-Time': 'pending',
+        'X-Response-Time': `${duration.toFixed(2)}ms`,
         'X-Server': 'Node.js Basic HTTP Server v1.0.0'
       });
 
-      // Write 'Hello world' response using message from API_CONSTANTS.RESPONSES
+      // Create JSON response with 'Hello world' message from API_CONSTANTS.RESPONSES
       const responseMessage = typeof API_CONSTANTS.RESPONSES.HELLO_WORLD.message === 'function' 
         ? API_CONSTANTS.RESPONSES.HELLO_WORLD.message() 
         : API_CONSTANTS.RESPONSES.HELLO_WORLD.message;
       
-      res.write(config.responseMessage || responseMessage);
-
-      // Send 200 status code from HTTP_CONSTANTS.STATUS_CODES and end response
-      res.end();
-
-      // Calculate performance metrics
-      const performanceEnd = process.hrtime.bigint();
-      const duration = Number(performanceEnd - performanceStart) / 1000000; // Convert to milliseconds
-
-      // Update response time header if possible (for educational demonstration)
-      if (res.headersSent === false) {
-        res.setHeader('X-Response-Time', `${duration.toFixed(2)}ms`);
-      }
+      const jsonResponse = {
+        message: config.responseMessage || responseMessage
+      };
+      
+      // Send JSON response and end - this ensures SuperTest can parse the body properly
+      res.end(JSON.stringify(jsonResponse));
 
       // Log request completion with performance metrics and response time
       logger.info('Request completed successfully', {
