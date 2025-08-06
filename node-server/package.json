@@ -1,0 +1,26 @@
+{
+  "name": "testinium-node-server",
+  "version": "1.0.0",
+  "description": "Node.js Express server with REST endpoints for Testinium-QA framework",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "express",
+    "nodejs",
+    "server",
+    "rest",
+    "api",
+    "testinium",
+    "qa"
+  ],
+  "author": "Testinium-QA Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}
