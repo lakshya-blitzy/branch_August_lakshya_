@@ -83,6 +83,10 @@ const mockRequests = {
         'User-Agent': 'TestRunner/1.0',
         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
         'X-Request-ID': 'test-req-004'
+      },
+      query: {
+        confirm: 'true',
+        reason: 'user_request'
       }
     },
 
@@ -209,6 +213,9 @@ const mockRequests = {
    * Tests handling of corrupted, incomplete, or unusual request patterns
    */
   malformed: {
+    // Invalid JSON for error handling tests
+    invalidJson: '{"invalid": json}',
+
     // Request with null values
     nullValues: {
       method: null,
@@ -295,6 +302,15 @@ const mockRequests = {
    * Tests server handling of large payloads and resource exhaustion scenarios
    */
   oversized: {
+    // Large payload for size limit testing
+    largePayload: {
+      data: 'x'.repeat(2000000), // 2MB of data
+      metadata: {
+        size: '2MB',
+        type: 'oversized-test-payload'
+      }
+    },
+
     // Large JSON payload (1MB+)
     largeJson: {
       method: 'POST',
