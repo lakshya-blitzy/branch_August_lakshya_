@@ -83,11 +83,13 @@ let frameworkDetected = null;
  */
 function detectTestingFramework() {
   // Check for Jest-specific globals and environment indicators
-  if (typeof jest !== 'undefined' && typeof expect !== 'undefined' && expect.extend) {
+  if (typeof expect !== 'undefined' && expect.extend) {
     frameworkDetected = 'jest';
     
     // Configure Jest-specific settings and custom matchers
-    jest.setTimeout(TESTING_CONSTANTS.TEST_TIMEOUTS.UNIT_TESTS);
+    if (typeof jest !== 'undefined') {
+      jest.setTimeout(TESTING_CONSTANTS.TEST_TIMEOUTS.UNIT_TESTS);
+    }
     
     // Add custom Jest matchers for service testing
     expect.extend({
@@ -288,7 +290,7 @@ async function setupHelloServiceTests(testConfig = {}) {
             minimum: minDuration,
             maximum: maxDuration,
             iterations: durations.length,
-            successRate: (durations.length / iterations * 100).toFixed(2) + '%'
+            successRate: parseFloat((durations.length / iterations * 100).toFixed(2)) + '%'
           }
         };
       },
@@ -733,7 +735,7 @@ function generateTestReport(testResults, reportConfig = {}) {
   
   report.summary.failedTests = report.summary.totalTests - report.summary.passedTests;
   report.summary.successRate = report.summary.totalTests > 0 ? 
-    ((report.summary.passedTests / report.summary.totalTests) * 100).toFixed(2) + '%' : '0%';
+    parseFloat(((report.summary.passedTests / report.summary.totalTests) * 100).toFixed(2)) + '%' : '0%';
   
   // Add educational insights
   report.educationalInsights = [

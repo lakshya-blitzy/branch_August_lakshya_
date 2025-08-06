@@ -36,8 +36,11 @@
 // External Testing Dependencies - Production-ready versions with comprehensive features
 import supertest from 'supertest'; // v6.3.3 - SuperAgent driven library for HTTP servers testing
 
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+
 // Internal Application Dependencies - Good evening route and Express application
-import { createExpressApp } from '../../../express-server.js';
+import { createExpressApp } from '../../../app.js';
 import { 
     goodEveningRouter,
     createGoodEveningRoute,
@@ -65,7 +68,7 @@ import {
     performanceBenchmarks,
     securityTestData,
     errorScenarios
-} from '../../fixtures/test-data.js' assert { type: 'json' };
+} from '../../fixtures/test-data.js' with { type: 'json' };
 
 // Internal Constants and Configuration - API endpoints and testing thresholds
 import {

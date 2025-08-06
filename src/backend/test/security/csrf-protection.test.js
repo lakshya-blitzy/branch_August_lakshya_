@@ -35,6 +35,9 @@
 
 // External testing framework imports with version compatibility
 import supertest from 'supertest'; // ^6.3.3 - SuperAgent driven library for HTTP server testing
+
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
 import { randomBytes, createHash, timingSafeEqual } from 'node:crypto'; // Built-in - Cryptographic utilities for secure token operations
 import { v4 as uuidv4 } from 'uuid'; // ^9.0.0 - UUID generation for unique test identifiers
 
@@ -1160,7 +1163,7 @@ const testFramework = typeof describe !== 'undefined' ? 'mocha' : 'jest';
 if (testFramework === 'mocha' || typeof describe !== 'undefined') {
   
   describe('CSRF Protection Comprehensive Testing Suite', function() {
-    this.timeout(30000); // 30 second timeout for comprehensive tests
+    jest.setTimeout(30000); // 30 second timeout for comprehensive tests
 
     before(async function() {
       // Initialize test environment

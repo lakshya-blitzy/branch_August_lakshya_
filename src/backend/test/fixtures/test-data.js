@@ -4,6 +4,9 @@
  * cross-platform compatibility data, error scenarios, mock responses, and validation rules
  */
 
+// Import constants for test fixtures
+import { SECURITY_CONSTANTS, TESTING_CONSTANTS } from '../../utils/constants.js';
+
 const testData = {
   "httpEndpoints": {
     "hello": {
@@ -242,6 +245,10 @@ const testData = {
   },
   "performanceBenchmarks": {
     "responseTimeLimits": {
+      "target": 100,
+      "maximum": 500,
+      "concurrent": 200,
+      "variance": 50,
       "hello": {
         "target": 50,
         "warning": 75,
@@ -262,6 +269,8 @@ const testData = {
       }
     },
     "memoryThresholds": {
+      "maxHeapSize": 134217728, // 128MB in bytes
+      "maxIncrease": 52428800,  // 50MB in bytes
       "perProcess": {
         "target": 50,
         "warning": 75,
@@ -954,6 +963,44 @@ const testData = {
         }
       }
     }
+  },
+  
+  "middlewareTestData": {
+    "securityHeaders": {
+      "expected": ["X-Content-Type-Options", "X-Frame-Options", "X-XSS-Protection"],
+      "forbidden": ["Server", "X-Powered-By"],
+      "values": {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block"
+      }
+    },
+    "corsScenarios": [
+      {
+        "name": "valid_cors_request",
+        "origin": "https://example.com",
+        "method": "GET",
+        "expectedAllowed": true
+      },
+      {
+        "name": "invalid_cors_request", 
+        "origin": "https://malicious.com",
+        "method": "GET",
+        "expectedAllowed": false
+      }
+    ],
+    "performanceBenchmarks": {
+      "responseTime": {
+        "target": 100,
+        "warning": 200,
+        "critical": 500
+      },
+      "throughput": {
+        "target": 1000,
+        "warning": 500,
+        "critical": 100
+      }
+    }
   }
 };
 
@@ -967,6 +1014,10 @@ export const mockResponses = testData.mockResponses;
 export const testEnvironments = testData.testEnvironments;
 export const pm2TestData = testData.pm2TestData;
 export const validationRules = testData.validationRules;
+export const middlewareTestData = testData.middlewareTestData;
+
+// Export constants for test usage
+export { SECURITY_CONSTANTS, TESTING_CONSTANTS };
 
 // Export the entire test data object as default
 export default testData;

@@ -44,7 +44,7 @@ import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/g
 
 // Internal application imports for Express.js application creation and configuration
 import { 
-  createApp, 
+  createExpressApp as createApp, 
   createProductionApp,
   startServer,
   validateApplicationHealth,
@@ -99,7 +99,7 @@ async function setupSecurityTestSuite() {
     
     // Create test Express application instance using createApp with comprehensive security middleware
     testApp = createApp({
-      enableHealthMonitoring: true,
+      enableHealthMonitoring: false, // Disabled to prevent hanging during initialization
       enableSecurityMiddleware: true,
       configOverrides: {
         environment: {

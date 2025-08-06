@@ -31,7 +31,7 @@
  */
 
 // External library imports with version comments
-import { describe, test, beforeAll, afterAll, expect } from 'jest'; // ^29.7.0 - Jest testing framework for comprehensive test organization and execution
+import { describe, test, beforeAll, afterAll, expect } from '@jest/globals'; // ^29.7.0 - Jest testing framework for comprehensive test organization and execution
 import { spawn } from 'node:child_process'; // Node.js built-in - Child process utilities for spawning deployment scripts and PM2 commands
 import { setTimeout } from 'node:timers/promises'; // Node.js built-in - Promise-based timers for deployment delays and async test synchronization
 import process from 'node:process'; // Node.js built-in - Process utilities for environment variable management and process monitoring

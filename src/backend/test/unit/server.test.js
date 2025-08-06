@@ -20,6 +20,9 @@ import http from 'node:http';
 import events from 'node:events';
 import process from 'node:process';
 
+// Import port allocation utilities for preventing port conflicts
+import { getTestPort, releaseTestPort } from '../helpers/test-helpers.js';
+
 // Comprehensive logger mock for all server.js functions
 const mockLogger = {
   info: jest.fn(),
@@ -106,10 +109,13 @@ jest.unstable_mockModule('../../utils/logger.js', () => ({
   ...mockLoggerFunctions
 }));
 
+// Generate a unique port for this test suite to prevent conflicts
+const TEST_PORT = getTestPort();
+
 // Mock config module to prevent complex configuration loading
 jest.unstable_mockModule('../../config/index.js', () => ({
   config: {
-    server: { port: 3001, host: 'localhost' },
+    server: { port: TEST_PORT, host: 'localhost' },
     security: { enabled: true },
     pm2: { monitoring: true },
     environment: { currentEnvironment: 'test' }
@@ -118,7 +124,7 @@ jest.unstable_mockModule('../../config/index.js', () => ({
   securityConfig: { enabled: true },
   pm2Config: { monitoring: true },
   getConfiguration: jest.fn(() => ({
-    server: { port: 3001, host: 'localhost' },
+    server: { port: TEST_PORT, host: 'localhost' },
     security: { enabled: true },
     pm2: { monitoring: true },
     environment: { currentEnvironment: 'test' }
@@ -1244,4 +1250,10 @@ describe('Server Module Unit Tests - Enhanced Coverage', () => {
       });
     });
   });
+});
+
+// Cleanup after all tests complete
+afterAll(() => {
+  // Release the allocated test port
+  releaseTestPort(TEST_PORT);
 });

@@ -38,6 +38,7 @@
 // Node.js built-in module imports with version comments
 import http from 'node:http'; // Node.js built-in - Core HTTP server functionality for creating web servers
 import url from 'node:url'; // Node.js built-in - URL parsing utilities for request path and query extraction
+import os from 'node:os'; // Node.js built-in - Operating system utilities for system metrics
 
 // Internal module imports for logging and configuration
 import logger, { generateRequestId } from './utils/logger.js';
@@ -279,6 +280,12 @@ export function setupGracefulShutdown(server) {
   // Track shutdown process state
   let shutdownInProgress = false;
   
+  // Check if signal handlers are already configured to prevent memory leaks
+  if (process._gracefulShutdownConfigured) {
+    return;
+  }
+  process._gracefulShutdownConfigured = true;
+  
   /**
    * Graceful shutdown handler function
    * @param {string} signal - Signal type that triggered shutdown (SIGTERM or SIGINT)
@@ -433,8 +440,9 @@ export async function startBasicServer(options = {}) {
     };
 
     // Validate configuration parameters and check port availability
-    if (!serverConfig.port || serverConfig.port < 1 || serverConfig.port > 65535) {
-      throw new Error(`Invalid port number: ${serverConfig.port}. Port must be between 1 and 65535.`);
+    // Port 0 is valid and means "let OS assign an available port"
+    if (serverConfig.port == null || serverConfig.port < 0 || serverConfig.port > 65535) {
+      throw new Error(`Invalid port number: ${serverConfig.port}. Port must be between 0 and 65535 (0 = OS-assigned).`);
     }
 
     if (typeof serverConfig.host !== 'string' || serverConfig.host.length === 0) {
@@ -598,8 +606,9 @@ export function validateServerConfig(config = {}) {
 
   // Validate port
   if (config.port !== undefined) {
-    if (typeof config.port !== 'number' || config.port <= 0 || config.port > 65535) {
-      errors.push('Port must be a valid number between 1 and 65535');
+    // Port 0 is valid and means "let OS assign an available port"
+    if (typeof config.port !== 'number' || config.port < 0 || config.port > 65535) {
+      errors.push('Port must be a valid number between 0 and 65535 (0 = OS-assigned)');
     }
     if (config.port < 1024 && process.getuid && process.getuid() !== 0) {
       warnings.push('Port below 1024 may require root privileges');
@@ -681,7 +690,7 @@ export function logServerStats() {
     const performanceMetrics = {
       cpuUsage: process.cpuUsage(),
       resourceUsage: process.resourceUsage ? process.resourceUsage() : null,
-      loadAverage: process.platform !== 'win32' ? require('os').loadavg() : null
+      loadAverage: process.platform !== 'win32' ? os.loadavg() : null
     };
 
     // Server status information

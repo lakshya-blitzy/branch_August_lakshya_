@@ -42,9 +42,14 @@
 // External library imports with version specifications
 import supertest from 'supertest'; // v6.3.3 - SuperAgent driven library for testing HTTP servers
 
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+
 // Internal application imports for server and middleware functionality
 import { 
-  createExpressApp, 
+  createExpressApp 
+} from '../../app.js';
+import { 
   createExpressServer 
 } from '../../express-server.js';
 

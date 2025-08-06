@@ -175,7 +175,8 @@ export function createTestJestConfig(options = {}) {
     globalSetup: path.join(__dirname, 'setup.js'),
     globalTeardown: path.join(__dirname, 'teardown.js'),
     setupFilesAfterEnv: [
-      path.join(__dirname, 'helpers/test-helpers.js')
+      path.join(__dirname, 'helpers/test-helpers.js'),
+      path.join(__dirname, 'setup/jest-setup.js')
     ],
 
     // Test directory specific environment variables for test execution mode and configuration

@@ -30,6 +30,9 @@
 
 // External testing libraries with version comments for dependency management
 import supertest from 'supertest'; // v6.3.3 - SuperAgent driven library for testing HTTP servers
+
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
 import express from 'express'; // v5.1.0 - Express.js framework for test applications
 import helmet from 'helmet'; // v8.1.0 - Helmet.js security middleware for validation testing
 
@@ -53,7 +56,7 @@ import {
 } from '../../../middleware/helmet-config.js';
 
 // Express server factory for testing middleware integration
-import { createExpressApp } from '../../../express-server.js';
+import { createExpressApp } from '../../../app.js';
 
 // Test data imports for comprehensive security validation scenarios
 import {

@@ -63,7 +63,7 @@ import {
   performHealthCheck
 } from '../../services/health-service.js';
 import { environmentConfig } from '../../config/environment.js';
-import testData from '../fixtures/test-data.js' assert { type: 'json' };
+import testData from '../fixtures/test-data.js' with { type: 'json' };
 
 // Global test state management and infrastructure
 let TEST_SERVER_INSTANCE = null;
@@ -2489,8 +2489,8 @@ describe('Health Monitoring E2E Test Suite', () => {
   });
 });
 
-// Initialize test suite when run directly
-if (require.main === module) {
+// Initialize test suite when run directly (ES modules don't support require.main)
+if (false) {
   console.log('🎯 Starting Health Monitoring E2E Test Suite...');
   console.log('📊 Test Data Configuration:', {
     endpoints: Object.keys(testData.httpEndpoints).length,

@@ -40,6 +40,9 @@
 
 // External testing framework imports with version specifications
 import express from 'express'; // v5.1.0 - Express.js web framework for test application creation
+
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
 import supertest from 'supertest'; // v6.3.3 - SuperAgent driven library for HTTP servers testing
 import sinon from 'sinon'; // v17.0.1 - Standalone test spies, stubs and mocks for JavaScript testing
 import { EventEmitter } from 'node:events'; // built-in - Node.js events module for event-driven testing

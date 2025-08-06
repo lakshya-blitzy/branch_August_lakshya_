@@ -29,10 +29,8 @@ export default {
   resetMocks: true,
   restoreMocks: true,
   
-  // Setup globals
-  globals: {
-    'jest': true
-  },
+  // Inject Jest globals into the test environment
+  injectGlobals: true,
   
   // Setup files after environment
   setupFilesAfterEnv: ['<rootDir>/test/setup/jest-setup.js']

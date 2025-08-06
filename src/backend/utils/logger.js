@@ -674,6 +674,11 @@ async function setupLogRotation(rotationConfig) {
       maxSizeBytes,
       
       async checkRotation(logFileName) {
+        if (!config || !config.logDirectory) {
+          console.warn(`Log rotation skipped for ${logFileName}: config.logDirectory is not defined`);
+          return;
+        }
+        
         const logPath = path.join(config.logDirectory, logFileName);
         
         try {
@@ -743,9 +748,15 @@ async function setupLogRotation(rotationConfig) {
     };
 
     // Start rotation monitoring interval
-    const rotationInterval = setInterval(() => {
-      ['app.log', 'errors.log', 'security.log', 'performance.log', 'debug.log', 'warnings.log']
-        .forEach(logFile => rotationMonitor.checkRotation(logFile));
+    const rotationInterval = setInterval(async () => {
+      const logFiles = ['app.log', 'errors.log', 'security.log', 'performance.log', 'debug.log', 'warnings.log'];
+      for (const logFile of logFiles) {
+        try {
+          await rotationMonitor.checkRotation(logFile);
+        } catch (error) {
+          console.error(`Log rotation check failed for ${logFile}:`, error);
+        }
+      }
     }, config.checkInterval);
 
     // Cleanup interval on process exit

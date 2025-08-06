@@ -80,6 +80,19 @@ export function validateSecurityHeaders(headers) {
 }
 
 /**
+ * Creates security headers configuration for customization
+ * 
+ * @param {Object} options - Configuration options
+ * @returns {Object} Security headers configuration
+ */
+export function createSecurityHeadersConfig(options = {}) {
+  return {
+    ...SECURITY_HEADERS,
+    ...options
+  };
+}
+
+/**
  * Creates a security helper object for testing
  * 
  * @returns {Object} Security helper with validation functions
@@ -89,3 +102,6 @@ export function createSecurityHelper() {
     validateSecurityHeaders
   };
 }
+
+// Alias for backward compatibility and test imports
+export const applySecurityHeaders = securityHeaders;

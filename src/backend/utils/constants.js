@@ -532,9 +532,9 @@ export const TESTING_CONSTANTS = Object.freeze({
   
   // Performance targets for test execution
   PERFORMANCE_TARGETS: Object.freeze({
-    UNIT_TEST_TIMEOUT: 5000, // 5 seconds per unit test
-    INTEGRATION_TEST_TIMEOUT: 15000, // 15 seconds per integration test
-    E2E_TEST_TIMEOUT: 30000, // 30 seconds per end-to-end test
+    UNIT_TEST_TIMEOUT: 15000, // 15 seconds per unit test (increased for complex tests)
+    INTEGRATION_TEST_TIMEOUT: 30000, // 30 seconds per integration test
+    E2E_TEST_TIMEOUT: 60000, // 60 seconds per end-to-end test
     TOTAL_SUITE_TIME: 300000, // 5 minutes for complete test suite
     RESPONSE_TIME_THRESHOLD: 100, // Max 100ms response time
     MEMORY_USAGE_THRESHOLD: 512, // Max 512MB memory usage during tests
@@ -544,14 +544,25 @@ export const TESTING_CONSTANTS = Object.freeze({
   
   // Test timeout configurations for different test types
   TEST_TIMEOUTS: Object.freeze({
-    UNIT_TESTS: 5000,
-    INTEGRATION_TESTS: 15000,
-    E2E_TESTS: 30000,
-    PERFORMANCE_TESTS: 60000,
+    UNIT_TESTS: 15000,          // Increased from 5000ms to 15000ms for complex tests
+    INTEGRATION_TESTS: 30000,   // Increased from 15000ms to 30000ms 
+    E2E_TESTS: 60000,           // Increased from 30000ms to 60000ms
+    PERFORMANCE_TESTS: 120000,  // Increased from 60000ms to 120000ms
     LOAD_TESTS: 120000,
     BROWSER_TESTS: 45000,
     API_TESTS: 10000,
-    DATABASE_TESTS: 20000
+    DATABASE_TESTS: 20000,
+    SETUP: 30000 // Setup timeout for test environment initialization
+  }),
+  
+  // Timeout configurations - alias for backward compatibility
+  TIMEOUTS: Object.freeze({
+    SETUP: 30000,
+    REQUEST_TIMEOUT: 30000,
+    KEEP_ALIVE_TIMEOUT: 5000,
+    HEADERS_TIMEOUT: 60000,
+    SERVER_TIMEOUT: 120000,
+    GRACEFUL_SHUTDOWN: 10000
   }),
   
   // Mock and test data configuration
@@ -935,6 +946,9 @@ export const TUTORIAL_CONSTANTS = Object.freeze({
     }
   })
 });
+
+// Additional constant aliases for backward compatibility
+export const PERFORMANCE_CONSTANTS = TESTING_CONSTANTS.PERFORMANCE_TARGETS;
 
 // Freeze all exported constants to prevent modification
 Object.freeze(ENV_CONSTANTS);

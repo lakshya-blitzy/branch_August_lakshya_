@@ -37,6 +37,9 @@
 import express from 'express'; // ^5.1.0 - Express.js framework for test application creation
 import request from 'supertest'; // ^6.3.3 - HTTP testing library for API endpoint validation
 
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+
 // Import error handling middleware components for comprehensive testing
 import errorHandler, {
   createErrorHandler,

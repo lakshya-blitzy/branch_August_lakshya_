@@ -2378,6 +2378,7 @@ export {
   getSecurityConfig,
   getLoggingConfig,
   getPM2Config,
+  getPM2Config as pm2,
   getTestingConfig,
   
   // Utility functions

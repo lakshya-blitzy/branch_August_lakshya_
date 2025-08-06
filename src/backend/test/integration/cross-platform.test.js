@@ -39,6 +39,9 @@
  * @requires node:process - Node.js built-in module for environment and process management
  */
 
+// Jest testing framework imports for ES module compatibility
+import { jest } from '@jest/globals';
+
 // External testing and HTTP client library imports with version documentation
 import supertest from 'supertest'; // v7.0.0 - Comprehensive HTTP testing framework for API validation
 import axios from 'axios'; // v1.6.0 - Promise-based HTTP client for Flask endpoint testing

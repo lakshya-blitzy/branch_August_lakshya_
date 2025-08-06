@@ -1584,7 +1584,8 @@ function validateMiddlewareConfiguration(result) {
 }
 
 function validateStartupConfiguration(config) {
-  if (config.port < 1 || config.port > 65535) {
+  // Port 0 is valid and means "let OS assign an available port"
+  if (config.port < 0 || config.port > 65535) {
     throw new Error(`Invalid port: ${config.port}`);
   }
   return config;
@@ -1771,6 +1772,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 export {
   expressApp,
   createExpressServer,
+  createExpressServer as createExpressApp, // Alias for test compatibility
   startExpressServer,
   validateExpressConfiguration,
   compareWithBasicServer,

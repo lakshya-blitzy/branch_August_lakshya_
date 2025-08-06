@@ -1507,6 +1507,9 @@ function createFallbackCorsMiddleware(options) {
 // Export default CORS middleware configured for current environment
 export const corsMiddleware = configureCorsForEnvironment();
 
+// Default export for CommonJS compatibility
+export default corsMiddleware;
+
 // Log CORS middleware initialization
 logInfo('CORS middleware module initialized', {
   version: '1.0.0',

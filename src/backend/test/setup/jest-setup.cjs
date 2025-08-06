@@ -1,12 +1,27 @@
 /**
- * Simple Jest Setup File for Test Environment
+ * Simple Jest Setup File for Test Environment (CommonJS)
  * Provides Jest globals and custom matchers
  */
 
-console.log('Loading jest-setup.js file with custom matchers...');
+console.log('Loading jest-setup.cjs file with custom matchers...');
 
-// Jest globals are automatically provided by Jest test environment
-// No need to manually define jest globals - they should be available automatically
+// Ensure Jest globals are available
+if (typeof global.jest === 'undefined') {
+  global.jest = {
+    fn: (implementation) => {
+      const mock = implementation || (() => {});
+      mock.mock = { calls: [], results: [] };
+      mock.mockReturnValue = (value) => { mock._returnValue = value; return mock; };
+      mock.mockImplementation = (impl) => { mock._implementation = impl; return mock; };
+      mock.mockName = (name) => { mock._name = name; return mock; };
+      return mock;
+    },
+    clearAllMocks: () => {},
+    resetAllMocks: () => {},
+    restoreAllMocks: () => {},
+    setTimeout: (timeout) => {}
+  };
+}
 
 // Add custom matchers
 if (typeof expect !== 'undefined' && expect.extend) {
@@ -66,6 +81,10 @@ if (typeof expect !== 'undefined' && expect.extend) {
       }
     }
   });
+  
+  console.log('Custom Jest matchers loaded successfully: toBeValidServiceResponse, toMeetPerformanceTarget');
+} else {
+  console.warn('expect.extend not available - custom matchers could not be loaded');
 }
 
 // Set up global test environment

@@ -35,6 +35,9 @@
 import express from 'express'; // ^5.1.0 - Express.js web framework for creating test application instances
 import supertest from 'supertest'; // ^6.3.3 - SuperAgent driven library for testing HTTP servers
 
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+
 // Internal route and controller imports for comprehensive testing
 import {
   helloRouter,

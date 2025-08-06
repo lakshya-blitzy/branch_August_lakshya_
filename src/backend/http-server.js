@@ -466,7 +466,7 @@ function createHealthCheck(options = {}) {
  * @param {Object} routes - Route configuration object with path to handler mappings
  * @returns {Function} Router function that processes requests and delegates to appropriate handlers
  */
-export function createRouter(routes) {
+function createRouter(routes) {
   if (!routes || typeof routes !== 'object') {
     throw new Error('Routes configuration object is required');
   }
@@ -557,7 +557,7 @@ export function createRouter(routes) {
  * @param {Object} context - Request context including correlation ID and metadata
  * @returns {void} No return value, sends HTTP response with 'Hello world' message
  */
-export async function handleHelloRequest(req, res, context) {
+async function handleHelloRequest(req, res, context) {
   try {
     const startTime = performance.now();
 
@@ -645,7 +645,7 @@ export async function handleHelloRequest(req, res, context) {
  * @param {Object} context - Request context including correlation ID and metadata
  * @returns {void} No return value, sends HTTP response with 'Good evening' message
  */
-export async function handleGoodEveningRequest(req, res, context) {
+async function handleGoodEveningRequest(req, res, context) {
   try {
     const startTime = performance.now();
 
@@ -735,7 +735,7 @@ export async function handleGoodEveningRequest(req, res, context) {
  * @param {Object} context - Request context including correlation ID and metadata
  * @returns {void} No return value, sends HTTP response with comprehensive health status information
  */
-export async function handleHealthRequest(req, res, context) {
+async function handleHealthRequest(req, res, context) {
   try {
     const startTime = performance.now();
 
@@ -846,7 +846,7 @@ export async function handleHealthRequest(req, res, context) {
  * @param {Object} [options={}] - Request handler configuration options
  * @returns {Function} Main request handler function that processes all incoming HTTP requests
  */
-export function createRequestHandler(options = {}) {
+function createRequestHandler(options = {}) {
   const config = {
     enablePerformanceTracking: options.enablePerformanceTracking !== false,
     enableCorrelationTracking: options.enableCorrelationTracking !== false,
@@ -984,7 +984,7 @@ export function createRequestHandler(options = {}) {
  * @param {Object} [securityConfig={}] - Security configuration options
  * @returns {void} No return value, modifies response object with security headers
  */
-export function setupSecurityHeaders(res, securityConfig = {}) {
+function setupSecurityHeaders(res, securityConfig = {}) {
   try {
     const config = {
       enableXSSProtection: securityConfig.enableXSSProtection !== false,
@@ -1077,7 +1077,7 @@ export function setupSecurityHeaders(res, securityConfig = {}) {
  * @param {Object} server - HTTP server instance
  * @returns {void} No return value, configures signal handlers for graceful shutdown
  */
-export function setupGracefulShutdown(server) {
+function setupGracefulShutdown(server) {
   if (!server) {
     logError('Server instance required for graceful shutdown setup');
     return;
@@ -1394,19 +1394,70 @@ function logServerStatistics() {
   }
 }
 
+// Server configuration validation
+function validateServerConfiguration(config = {}) {
+  const errors = [];
+  
+  // Validate port
+  if (config.port && (typeof config.port !== 'number' || config.port < 1 || config.port > 65535)) {
+    errors.push('Port must be a number between 1 and 65535');
+  }
+  
+  // Validate host
+  if (config.host && typeof config.host !== 'string') {
+    errors.push('Host must be a string');
+  }
+  
+  // Validate environment
+  if (config.environment && !['development', 'production', 'test'].includes(config.environment)) {
+    errors.push('Environment must be one of: development, production, test');
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+// Create health check endpoint
+function createHealthCheckEndpoint(options = {}) {
+  return {
+    path: '/health',
+    method: 'GET',
+    handler: handleHealthRequest,
+    middleware: [],
+    description: 'Health check endpoint for load balancer monitoring'
+  };
+}
+
 // Export main server startup function and utility functions for testing and management
 export {
   // Core server functions
   startHTTPServer as default,
   
+  // Request handling
+  createRequestHandler as createHTTPRequestHandler, // Alias for tests
+  
+  // Router functions
+  createRouter,
+  handleHelloRequest,
+  handleGoodEveningRequest,
+  handleHealthRequest,
+  
   // Utility functions
   logServerStatistics,
+  setupSecurityHeaders,
+  setupGracefulShutdown,
   
   // Helper functions (implemented locally since helpers.js doesn't exist)
   formatHTTPResponse,
   generateRequestCorrelationId as generateRequestId,
   measurePerformance,
-  createHealthCheck
+  createHealthCheck,
+  
+  // Configuration and endpoint creation
+  validateServerConfiguration,
+  createHealthCheckEndpoint
 };
 
 // Initialize logging for module loading

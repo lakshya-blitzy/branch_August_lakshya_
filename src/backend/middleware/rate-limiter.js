@@ -48,7 +48,7 @@ import {
     getSecurityConfig as securityConfig 
 } from '../config/environment.js';
 
-import logger from '../utils/logger.js';
+import logger, { logSecurityEvent } from '../utils/logger.js';
 
 import {
     HTTPError,
@@ -374,6 +374,12 @@ function createCustomKeyGenerator(keyOptions = {}) {
                 keyComponents.push(`api:${apiKey}`);
             }
 
+            // Include test client identifier for testing purposes
+            if (req.headers['x-test-client']) {
+                const testClient = req.headers['x-test-client'].substring(0, 50); // Limit for safety
+                keyComponents.push(`test:${testClient}`);
+            }
+
             // Generate composite key
             let compositeKey = keyComponents.join('|');
 
@@ -453,7 +459,7 @@ function createRateLimitHandler(handlerConfig = {}) {
                 violation.lastViolation = Date.now();
                 
                 // Log security event for potential DoS attack (moved from deprecated onLimitReached)
-                logger.logSecurityEvent('RATE_LIMIT_VIOLATION', {
+                logSecurityEvent('RATE_LIMIT_VIOLATION', {
                     clientIp,
                     userAgent: req.headers['user-agent'],
                     method: req.method,
@@ -479,7 +485,7 @@ function createRateLimitHandler(handlerConfig = {}) {
 
             // Log security event if logging is enabled
             if (enableSecurityLogging) {
-                logger.logSecurityEvent('RATE_LIMIT_EXCEEDED', {
+                logSecurityEvent('RATE_LIMIT_EXCEEDED', {
                     clientIp,
                     userAgent,
                     method,

@@ -1,20 +1,20 @@
 // SuperTest v7.0.0 - HTTP testing library for automated API endpoint testing
-const request = require('supertest');
+import request from 'supertest';
 // Node.js built-in performance hooks for high-resolution timing measurements
-const { performance, PerformanceObserver } = require('node:perf_hooks');
+import { performance, PerformanceObserver } from 'node:perf_hooks';
 // Node.js process utilities for CPU and memory monitoring
-const process = require('node:process');
+import process from 'node:process';
 // Node.js cluster module for PM2 cluster mode testing
-const cluster = require('node:cluster');
+import cluster from 'node:cluster';
 
 // Import application factory functions for different environments
-const { createApp, createDevelopmentApp, createProductionApp } = require('../../app.js');
+import { createExpressApp as createApp } from '../../app.js';
 
 // Import centralized constants for consistent configuration
-const { TESTING_CONSTANTS, API_CONSTANTS } = require('../../utils/constants.js');
+import { TESTING_CONSTANTS, API_CONSTANTS } from '../../utils/constants.js';
 
 // Import centralized test data including performance benchmarks
-const testData = require('../fixtures/test-data.js');
+import testData from '../fixtures/test-data.js';
 
 // Conditional imports for files that may not exist yet with fallback implementations
 let setupTestEnvironment, TestEnvironment, HTTPTestClient, createPerformanceTestHelper, PerformanceMonitor, measureResponseTime;
@@ -1194,7 +1194,7 @@ if (isJest || isMocha) {
       testEnv = await setupPerformanceTestEnvironment({
         testFramework: isJest ? 'jest' : 'mocha'
       });
-    }, TESTING_CONSTANTS.TIMEOUTS.SETUP);
+    }, TESTING_CONSTANTS.TEST_TIMEOUTS.SETUP);
 
     afterEach(async () => {
       if (testEnv && testEnv.cleanup) {

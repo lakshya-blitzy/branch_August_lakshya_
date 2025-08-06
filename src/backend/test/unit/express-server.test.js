@@ -41,6 +41,9 @@ import supertest from 'supertest'; // v6.3.3 - SuperAgent driven library for tes
 import { randomUUID } from 'node:crypto'; // crypto v20.11.0 - Node.js crypto module for secure test identifiers
 import process from 'node:process'; // process built-in - Node.js process utilities for monitoring
 
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+
 // Internal Express.js server imports for comprehensive testing coverage
 import {
   createExpressServer,

@@ -2,6 +2,9 @@
 // SuperTest v6.3.3 - HTTP testing framework with enhanced API endpoint validation
 // Node.js v22.x LTS - Modern ES Modules testing patterns with production readiness
 
+// Import Jest functions for ES module compatibility
+import { jest } from '@jest/globals';
+
 import supertest from 'supertest'; // v6.3.3
 import http from 'node:http'; // built-in
 import process from 'node:process'; // built-in
@@ -27,7 +30,7 @@ import {
   performanceBenchmarks,
   securityTestData,
   errorScenarios
-} from '../fixtures/test-data.js' assert { type: 'json' };
+} from '../fixtures/test-data.js' with { type: 'json' };
 
 // Global test environment variables for test isolation and management
 let testEnvironment = null;

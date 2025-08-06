@@ -1468,7 +1468,7 @@ describe('Load Testing Suite', () => {
 });
 
 // Export functions for external usage
-module.exports = {
+export {
   setupLoadTestEnvironment,
   cleanupLoadTestEnvironment,
   executeBasicLoadTest,

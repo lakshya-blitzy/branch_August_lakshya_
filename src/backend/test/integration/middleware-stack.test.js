@@ -76,7 +76,7 @@ import {
 
 import { 
   middlewareTestData 
-} from '../fixtures/test-data.js' assert { type: 'json' };
+} from '../fixtures/test-data.js' with { type: 'json' };
 
 import { 
   maliciousRequests 
@@ -120,7 +120,7 @@ const TEST_FRAMEWORK = (() => {
   if (typeof describe !== 'undefined' && typeof it !== 'undefined') {
     return {
       name: 'mocha',
-      timeout: function(timeout) { this.timeout(timeout); },
+      timeout: function(timeout) { /* Mocha timeout setting */ },
       beforeEach: global.beforeEach,
       afterEach: global.afterEach,
       before: global.before,

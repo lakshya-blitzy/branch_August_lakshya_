@@ -44,6 +44,9 @@ import process from 'node:process'; // Node.js built-in - Process utilities for 
 import crypto from 'node:crypto'; // Node.js built-in - Cryptographic functionality for test identifiers
 import net from 'node:net'; // Node.js built-in - Network utilities for port availability
 
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+
 // Internal imports for HTTP server functionality
 import {
   startHTTPServer,

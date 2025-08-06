@@ -1,18 +1,11 @@
 /**
- * Simple Jest Setup File for Test Environment
- * Provides Jest globals and custom matchers
+ * Simple test to verify custom Jest matchers are working
  */
 
-console.log('Loading jest-setup.js file with custom matchers...');
-
-// Jest globals are automatically provided by Jest test environment
-// No need to manually define jest globals - they should be available automatically
-
-// Add custom matchers
-if (typeof expect !== 'undefined' && expect.extend) {
+// Add custom matchers directly to verify they work
+beforeAll(() => {
   expect.extend({
     toBeValidServiceResponse(received) {
-      // Check if received is a valid service response with required properties
       const isObject = received && typeof received === 'object' && !Array.isArray(received);
       const hasSuccess = isObject && received.hasOwnProperty('success');
       const hasMetadata = isObject && received.hasOwnProperty('metadata');
@@ -66,8 +59,23 @@ if (typeof expect !== 'undefined' && expect.extend) {
       }
     }
   });
-}
+});
 
-// Set up global test environment
-global.TEST_ENVIRONMENT = 'jest';
-global.TEST_TIMEOUT = 30000;
+describe('Custom Jest Matchers Test', () => {
+  test('should have toBeValidServiceResponse matcher', () => {
+    const validResponse = {
+      success: true,
+      data: { message: 'test' },
+      metadata: {
+        timestamp: '2025-01-01T00:00:00.000Z'
+      }
+    };
+    
+    expect(validResponse).toBeValidServiceResponse();
+  });
+
+  test('should have toMeetPerformanceTarget matcher', () => {
+    expect(100).toMeetPerformanceTarget(200);
+    expect(50).toMeetPerformanceTarget(100);
+  });
+});

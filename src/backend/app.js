@@ -1268,6 +1268,9 @@ export {
   logApplicationStartup
 };
 
+// Default export for modules expecting a default
+export default createExpressApp;
+
 // Initialize controllers if the module is run directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   try {

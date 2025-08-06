@@ -1545,6 +1545,34 @@ export const crossPlatformResponses = {
   compatible: createHelloResponse() // Base response compatible with both platforms
 };
 
+// Malicious request patterns for security testing
+export const maliciousRequests = [
+  {
+    name: 'SQL Injection',
+    payload: "'; DROP TABLE users; --",
+    headers: { 'Content-Type': 'application/json' },
+    expectedBlocked: true
+  },
+  {
+    name: 'XSS Attack',
+    payload: '<script>alert("xss")</script>',
+    headers: { 'Content-Type': 'text/html' },
+    expectedBlocked: true
+  },
+  {
+    name: 'Path Traversal',
+    payload: '../../../etc/passwd',
+    headers: { 'Content-Type': 'text/plain' },
+    expectedBlocked: true
+  },
+  {
+    name: 'Command Injection',
+    payload: 'test; cat /etc/passwd',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    expectedBlocked: true
+  }
+];
+
 // Master mock responses collection
 export const mockResponses = {
   hello: helloResponses,

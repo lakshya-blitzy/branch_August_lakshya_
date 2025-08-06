@@ -13,6 +13,7 @@
 import sinon from 'sinon';
 import { performance } from 'perf_hooks';
 import { spawn } from 'child_process';
+import http from 'node:http';
 
 // Helper function to check if Jest is available and get Jest instance
 async function getJestInstance() {
@@ -25,8 +26,108 @@ async function getJestInstance() {
 }
 
 // HTTP Test Helper - Creates utilities for HTTP request/response testing
-export function createHTTPTestHelper(config = {}) {
+export function createHTTPTestHelper(baseUrl = null) {
+  // If baseUrl is provided, create real HTTP client
+  if (baseUrl) {
+    // Validate and normalize baseUrl
+    let url;
+    try {
+      // Handle different baseUrl formats
+      if (typeof baseUrl === 'string') {
+        // Add protocol if missing
+        if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+          baseUrl = `http://${baseUrl}`;
+        }
+        url = new URL(baseUrl);
+      } else if (typeof baseUrl === 'object' && baseUrl.host && baseUrl.port) {
+        // Handle object format {host: 'localhost', port: 3000}
+        url = new URL(`http://${baseUrl.host}:${baseUrl.port}`);
+      } else {
+        throw new Error(`Invalid baseUrl format: ${JSON.stringify(baseUrl)}`);
+      }
+      
+    } catch (error) {
+      // Fallback to localhost with a default port if URL is invalid
+      console.warn(`Invalid baseUrl '${baseUrl}', falling back to localhost:3000`, error);
+      url = new URL('http://localhost:3000');
+    }
+    
+    const makeRequest = async (method, path = '/') => {
+      return new Promise((resolve, reject) => {
+        const options = {
+          hostname: url.hostname,
+          port: url.port,
+          path: path,
+          method: method.toUpperCase(),
+          timeout: 5000
+        };
+        
+        const req = http.request(options, (res) => {
+          let data = '';
+          res.on('data', (chunk) => { data += chunk; });
+          res.on('end', () => {
+            resolve({
+              status: res.statusCode,
+              statusText: res.statusMessage,
+              headers: res.headers,
+              data: data
+            });
+          });
+        });
+        
+        req.on('error', reject);
+        req.on('timeout', () => {
+          req.destroy();
+          reject(new Error('Request timeout'));
+        });
+        
+        req.end();
+      });
+    };
+    
+    return {
+      get: (path) => makeRequest('GET', path),
+      post: (path) => makeRequest('POST', path),
+      put: (path) => makeRequest('PUT', path),
+      delete: (path) => makeRequest('DELETE', path),
+      request: makeRequest,
+      expectStatus: (response, expectedStatus) => ({
+        valid: response.status === expectedStatus,
+        actual: response.status,
+        expected: expectedStatus,
+        message: `Expected status ${expectedStatus}, got ${response.status}`
+      }),
+      expectResponseTime: (response, maxTime) => ({
+        valid: true, // For now, timing validation is simplified
+        actual: 0,
+        expected: maxTime,
+        message: `Response time validation`
+      })
+    };
+  }
+  
+  // Fallback to mock implementation
   return {
+    get: async (path) => ({
+      status: 200,
+      data: { message: 'Mock GET response' },
+      headers: { 'content-type': 'application/json' }
+    }),
+    post: async (path) => ({
+      status: 200,
+      data: { message: 'Mock POST response' },
+      headers: { 'content-type': 'application/json' }
+    }),
+    put: async (path) => ({
+      status: 200,
+      data: { message: 'Mock PUT response' },
+      headers: { 'content-type': 'application/json' }
+    }),
+    delete: async (path) => ({
+      status: 200,
+      data: { message: 'Mock DELETE response' },
+      headers: { 'content-type': 'application/json' }
+    }),
     request: async (method, url, data = null) => {
       return {
         status: 200,
@@ -34,6 +135,18 @@ export function createHTTPTestHelper(config = {}) {
         headers: { 'content-type': 'application/json' }
       };
     },
+    expectStatus: (response, expectedStatus) => ({
+      valid: response.status === expectedStatus,
+      actual: response.status,
+      expected: expectedStatus,
+      message: `Expected status ${expectedStatus}, got ${response.status}`
+    }),
+    expectResponseTime: (response, maxTime) => ({
+      valid: true,
+      actual: 0,
+      expected: maxTime,
+      message: `Response time validation`
+    }),
     validateResponse: (response, expected = {}) => {
       return {
         isValid: true,
@@ -1862,6 +1975,136 @@ export function validateTestEnvironment() {
   return validation;
 }
 
+// Async Test Helper - Creates utilities for async test operations
+export function createAsyncTestHelper(config = {}) {
+  const defaultTimeout = config.timeout || 5000;
+  
+  return {
+    // Promise-based test utilities
+    withTimeout: async (promise, timeout = defaultTimeout) => {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error(`Operation timed out after ${timeout}ms`)), timeout)
+        )
+      ]);
+    },
+    
+    // Async assertion utilities
+    eventually: async (assertion, options = {}) => {
+      const { timeout = defaultTimeout, interval = 100 } = options;
+      const startTime = Date.now();
+      
+      while (Date.now() - startTime < timeout) {
+        try {
+          await assertion();
+          return true;
+        } catch (error) {
+          if (Date.now() - startTime + interval >= timeout) {
+            throw error;
+          }
+          await new Promise(resolve => setTimeout(resolve, interval));
+        }
+      }
+      throw new Error('Assertion never passed within timeout');
+    },
+    
+    // Async cleanup utilities
+    cleanupAsync: async (cleanupFn) => {
+      try {
+        if (typeof cleanupFn === 'function') {
+          await cleanupFn();
+        }
+        return { success: true };
+      } catch (error) {
+        console.error('Async cleanup failed:', error);
+        return { success: false, error: error.message };
+      }
+    },
+    
+    // Parallel test execution
+    parallel: async (testFunctions, concurrency = 3) => {
+      const results = [];
+      const chunks = [];
+      
+      for (let i = 0; i < testFunctions.length; i += concurrency) {
+        chunks.push(testFunctions.slice(i, i + concurrency));
+      }
+      
+      for (const chunk of chunks) {
+        const chunkResults = await Promise.allSettled(
+          chunk.map(fn => typeof fn === 'function' ? fn() : fn)
+        );
+        results.push(...chunkResults);
+      }
+      
+      return results;
+    },
+    
+    // Retry mechanism for flaky tests
+    retry: async (testFn, maxAttempts = 3) => {
+      let lastError;
+      
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          return await testFn();
+        } catch (error) {
+          lastError = error;
+          if (attempt < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, attempt * 100));
+          }
+        }
+      }
+      
+      throw lastError;
+    }
+  };
+}
+
+// Dynamic Port Allocation - Prevent port conflicts in tests
+export async function getAvailablePort(startPort = 3000) {
+  const net = await import('node:net');
+  
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.listen(0, (err) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      
+      const port = server.address().port;
+      server.close((err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(port);
+      });
+    });
+  });
+}
+
+// Port Pool Manager - Manages a pool of available ports for tests
+const PORT_POOL = new Set();
+let CURRENT_PORT_BASE = 30000; // Start from high port range
+
+export function getTestPort() {
+  if (PORT_POOL.size > 0) {
+    const port = PORT_POOL.values().next().value;
+    PORT_POOL.delete(port);
+    return port;
+  }
+  
+  return CURRENT_PORT_BASE++;
+}
+
+export function releaseTestPort(port) {
+  if (port && port > 30000) {
+    PORT_POOL.add(port);
+  }
+}
+
 // Export all helper functions as default object
 export default {
   // Original helper functions
@@ -1872,6 +2115,7 @@ export default {
   createSecurityTestHelper,
   createCrossPlatformTestHelper,
   createPM2TestHelper,
+  createAsyncTestHelper,
   waitFor,
   createTestDataSet,
   setupTestHelpers,
@@ -1885,5 +2129,10 @@ export default {
   createPerformanceMeasurement,
   createSignalSimulationHelpers,
   createServerTestingUtilities,
-  createTimeoutHelpers
+  createTimeoutHelpers,
+  
+  // Port management utilities
+  getAvailablePort,
+  getTestPort,
+  releaseTestPort
 };

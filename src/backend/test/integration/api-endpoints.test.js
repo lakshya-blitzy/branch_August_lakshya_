@@ -36,6 +36,9 @@
 // External library imports with version tracking for dependency management
 import request from 'supertest'; // v7.0.0 - SuperTest library for HTTP testing with Express.js applications
 
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+
 // Internal application imports for test environment setup
 import { createExpressApp } from '../../app.js';
 

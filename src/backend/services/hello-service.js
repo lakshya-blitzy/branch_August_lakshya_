@@ -38,6 +38,9 @@
 import crypto from 'node:crypto'; // Node.js built-in - Cryptographic functionality for secure operations
 import util from 'node:util'; // Node.js built-in - Object inspection and formatting utilities
 
+// Node.js core modules for system information
+import os from 'os';
+
 // Internal imports with specific members for service functionality
 import {
   API_CONSTANTS,
@@ -105,6 +108,9 @@ function formatHTTPResponse(data, options = {}) {
       'Content-Type': HTTP_CONSTANTS.CONTENT_TYPES.JSON,
       'X-Request-ID': requestId,
       'X-Response-Time': options.responseTime ? `${options.responseTime}ms` : null,
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
       ...options.headers
     }
   };
@@ -284,6 +290,23 @@ function deepClone(obj) {
 export async function getHelloMessage(requestContext = {}, options = {}) {
   // Generate unique request correlation ID using generateRequestId for tracking
   const correlationId = generateRequestId({ prefix: 'hello' });
+  
+  // Validate input parameters - reject null or undefined requestContext
+  if (requestContext === null || requestContext === undefined) {
+    return {
+      success: false,
+      error: {
+        code: 'INVALID_REQUEST_CONTEXT',
+        message: 'Request context cannot be null or undefined',
+        correlationId
+      },
+      metadata: {
+        timestamp: new Date().toISOString(),
+        correlationId,
+        cached: false
+      }
+    };
+  }
   
   try {
     // Start performance measurement using measurePerformance for response time monitoring
@@ -1426,6 +1449,11 @@ export function getCachedServiceResponse(cacheKey, retrievalOptions = {}) {
     // Deep clone cached data to prevent reference modification
     const clonedData = deepClone(cacheEntry.data);
     
+    // Mark cloned data as cached to indicate it came from cache
+    if (clonedData && clonedData.metadata) {
+      clonedData.metadata.cached = true;
+    }
+    
     // Add cache metadata including hit status and retrieval timing
     const result = {
       hit: true,
@@ -1547,9 +1575,9 @@ export function generateServiceHealth(healthOptions = {}) {
         heapTotal: `${Math.round(dependencies.memory.heapTotal / 1024 / 1024)}MB`,
         external: `${Math.round(dependencies.memory.external / 1024 / 1024)}MB`
       },
-      loadAverage: require('os').loadavg(),
-      freeMemory: `${Math.round(require('os').freemem() / 1024 / 1024)}MB`,
-      totalMemory: `${Math.round(require('os').totalmem() / 1024 / 1024)}MB`
+      loadAverage: os.loadavg(),
+      freeMemory: `${Math.round(os.freemem() / 1024 / 1024)}MB`,
+      totalMemory: `${Math.round(os.totalmem() / 1024 / 1024)}MB`
     };
     
     // Update global HEALTH_STATUS with current service state

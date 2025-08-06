@@ -2420,9 +2420,9 @@ export class HealthService extends EventEmitter {
 
       // Update instance health status
       this.healthStatus = {
-        status: healthResult.result.status,
-        lastCheck: healthResult.result.timestamp,
-        metrics: healthResult.result.metrics,
+        status: healthResult.status,
+        lastCheck: healthResult.timestamp,
+        metrics: healthResult.metrics,
         monitoring: this.isMonitoring
       };
 
@@ -2546,7 +2546,7 @@ export class HealthService extends EventEmitter {
       this.emit('metrics-retrieved', {
         correlationId: options.correlationId,
         format: options.format,
-        dataPoints: metricsResult.data.totalDataPoints,
+        dataPoints: metricsResult.data?.totalDataPoints || 0,
         timestamp: new Date().toISOString()
       });
 

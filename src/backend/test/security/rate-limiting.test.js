@@ -43,6 +43,9 @@
 import supertest from 'supertest'; // v6.3.3 - SuperAgent driven library for testing HTTP servers
 import express from 'express'; // v5.1.0 - Express.js web framework with enhanced security features
 
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+
 // Internal Imports - Express Server Components
 import { 
   createExpressApp, 
@@ -64,7 +67,8 @@ import {
 import {
   createRateLimitConfig,
   createDevelopmentConfig,
-  createProductionConfig
+  createProductionConfig,
+  clearAllRateLimitIntervals
 } from '../../security/rate-limit.config.js';
 
 // Internal Imports - Test Helpers and Utilities
@@ -529,21 +533,21 @@ async function testEndpointSpecificRateLimiting(endpointConfig = {}) {
   const testApp = express();
   
   // Configure different rate limits for different endpoints
-  const strictLimiter = createEndpointSpecificLimiter({
+  const strictLimiter = createEndpointSpecificLimiter('/sensitive', {
     windowMs: config.window,
     max: 3, // Strict limit for sensitive endpoints
     message: 'Strict rate limit exceeded'
   });
   
-  const moderateLimiter = createEndpointSpecificLimiter({
+  const moderateLimiter = createEndpointSpecificLimiter('/standard', {
     windowMs: config.window,
     max: config.maxRequests, // Standard limit
     message: 'Moderate rate limit exceeded'
   });
   
-  const lenientLimiter = createEndpointSpecificLimiter({
+  const lenientLimiter = createEndpointSpecificLimiter('/lenient', {
     windowMs: config.window,
-    max: config.maxRequests * 2, // Higher limit for health checks
+    max: config.maxRequests * 2, // Higher limit for lenient endpoints
     message: 'Lenient rate limit exceeded'
   });
 
@@ -556,7 +560,7 @@ async function testEndpointSpecificRateLimiting(endpointConfig = {}) {
     res.json({ message: 'Standard endpoint', timestamp: new Date().toISOString() });
   });
   
-  testApp.get('/health', lenientLimiter, (req, res) => {
+  testApp.get('/lenient', lenientLimiter, (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
   });
 
@@ -570,75 +574,120 @@ async function testEndpointSpecificRateLimiting(endpointConfig = {}) {
 
   try {
     // Test strict endpoint (sensitive) - should hit limit quickly
+    console.log(`\n=== Testing /sensitive endpoint (expected limit: 3, making 3 requests) ===`);
     for (let i = 1; i <= 3; i++) {
-      const response = await request
-        .get('/sensitive')
-        .set('X-Test-Client', 'endpoint-test')
-        .expect(200);
-      
-      results.strictEndpointTests.push({
-        requestNumber: i,
-        status: response.status,
-        rateLimitUsed: response.headers['ratelimit-used'],
-        rateLimitRemaining: response.headers['ratelimit-remaining']
-      });
+      try {
+        const response = await request
+          .get('/sensitive')
+          .set('X-Test-Client', 'endpoint-test')
+          .expect(200);
+        
+        console.log(`Request ${i}/3: Status ${response.status}, Remaining: ${response.headers['ratelimit-remaining']}`);
+        
+        results.strictEndpointTests.push({
+          requestNumber: i,
+          status: response.status,
+          rateLimitUsed: response.headers['ratelimit-used'],
+          rateLimitRemaining: response.headers['ratelimit-remaining']
+        });
+      } catch (error) {
+        console.error(`Request ${i}/3 FAILED: ${error.message}`);
+        console.error(`Expected status 200, but got: ${error.status || 'unknown'}`);
+        throw error;
+      }
     }
     
     // Should exceed strict limit
-    const strictExceedResponse = await request
-      .get('/sensitive')
-      .set('X-Test-Client', 'endpoint-test')
-      .expect(429);
-    
-    results.strictEndpointTests.push({
-      requestNumber: 4,
-      status: strictExceedResponse.status,
-      rateLimitExceeded: true,
-      error: strictExceedResponse.body.error
-    });
+    console.log(`\n=== Testing /sensitive endpoint rate limit exceeded (expecting 429) ===`);
+    try {
+      const strictExceedResponse = await request
+        .get('/sensitive')
+        .set('X-Test-Client', 'endpoint-test')
+        .expect(429);
+      
+      console.log(`Request 4/4: Status ${strictExceedResponse.status} (expected 429) - SUCCESS`);
+      
+      results.strictEndpointTests.push({
+        requestNumber: 4,
+        status: strictExceedResponse.status,
+        rateLimitExceeded: true,
+        error: strictExceedResponse.body.error
+      });
+    } catch (error) {
+      console.error(`Request 4/4 FAILED: ${error.message}`);
+      console.error(`Expected status 429, but got: ${error.status || 'unknown'}`);
+      throw error;
+    }
 
     // Test moderate endpoint - should allow more requests
+    console.log(`\n=== Testing /standard endpoint (expected limit: ${config.maxRequests}, making ${config.maxRequests} requests) ===`);
     for (let i = 1; i <= config.maxRequests; i++) {
-      const response = await request
-        .get('/standard')
-        .set('X-Test-Client', 'endpoint-test-2')
-        .expect(200);
-      
-      results.moderateEndpointTests.push({
-        requestNumber: i,
-        status: response.status,
-        rateLimitUsed: response.headers['ratelimit-used'],
-        rateLimitRemaining: response.headers['ratelimit-remaining']
-      });
+      try {
+        const response = await request
+          .get('/standard')
+          .set('X-Test-Client', 'endpoint-test-2')
+          .expect(200);
+        
+        console.log(`Request ${i}/${config.maxRequests}: Status ${response.status}, Remaining: ${response.headers['ratelimit-remaining']}`);
+        
+        results.moderateEndpointTests.push({
+          requestNumber: i,
+          status: response.status,
+          rateLimitUsed: response.headers['ratelimit-used'],
+          rateLimitRemaining: response.headers['ratelimit-remaining']
+        });
+      } catch (error) {
+        console.error(`Request ${i}/${config.maxRequests} FAILED: ${error.message}`);
+        console.error(`Expected status 200, but got: ${error.status || 'unknown'}`);
+        throw error;
+      }
     }
 
     // Test lenient endpoint - should allow even more requests
+    console.log(`\n=== Testing /lenient endpoint (expected limit: ${config.maxRequests * 2}, making ${config.maxRequests + 5} requests) ===`);
     for (let i = 1; i <= config.maxRequests + 5; i++) {
-      const response = await request
-        .get('/health')
-        .set('X-Test-Client', 'endpoint-test-3')
-        .expect(200);
-      
-      results.lenientEndpointTests.push({
-        requestNumber: i,
-        status: response.status,
-        rateLimitUsed: response.headers['ratelimit-used'],
-        rateLimitRemaining: response.headers['ratelimit-remaining']
-      });
+      try {
+        const response = await request
+          .get('/lenient')
+          .set('X-Test-Client', 'endpoint-test-3')
+          .expect(200);
+        
+        console.log(`Request ${i}/${config.maxRequests + 5}: Status ${response.status}, Remaining: ${response.headers['ratelimit-remaining']}`);
+        
+        results.lenientEndpointTests.push({
+          requestNumber: i,
+          status: response.status,
+          rateLimitUsed: response.headers['ratelimit-used'],
+          rateLimitRemaining: response.headers['ratelimit-remaining']
+        });
+      } catch (error) {
+        console.error(`Request ${i}/${config.maxRequests + 5} FAILED: ${error.message}`);
+        console.error(`Expected status 200, but got: ${error.status || 'unknown'}`);
+        throw error;
+      }
     }
 
     // Test endpoint independence - limits on one shouldn't affect others
-    const independenceTest = await request
-      .get('/standard')
-      .set('X-Test-Client', 'independence-test')
-      .expect(200);
-    
-    results.independenceTests.push({
-      endpoint: '/standard',
-      status: independenceTest.status,
-      rateLimitUsed: independenceTest.headers['ratelimit-used'],
-      independenceVerified: independenceTest.headers['ratelimit-used'] === '1'
-    });
+    console.log(`\n=== Testing endpoint independence on /standard (expecting fresh limit) ===`);
+    try {
+      const independenceTest = await request
+        .get('/standard')
+        .set('X-Test-Client', 'independence-test')
+        .expect(200);
+      
+      console.log(`Independence test: Status ${independenceTest.status}, Used: ${independenceTest.headers['ratelimit-used']}, Remaining: ${independenceTest.headers['ratelimit-remaining']}`);
+      
+      results.independenceTests.push({
+        endpoint: '/standard',
+        status: independenceTest.status,
+        rateLimitUsed: independenceTest.headers['ratelimit-used'],
+        independenceVerified: independenceTest.headers['ratelimit-used'] === '1'
+      });
+    } catch (error) {
+      console.error(`Independence test FAILED: ${error.message}`);
+      console.error(`Expected status 200, but got: ${error.status || 'unknown'}`);
+      throw error;
+    }
 
     return {
       success: true,
@@ -2238,6 +2287,9 @@ async function cleanupRateLimitingTests() {
       });
       TEST_SERVER = null;
     }
+
+    // Clear all rate limiting intervals to prevent leaks
+    clearAllRateLimitIntervals();
 
     // Dispose of test helpers
     if (HTTP_TEST_HELPER || SECURITY_TEST_HELPER || PERFORMANCE_TEST_HELPER || ASYNC_TEST_HELPER) {

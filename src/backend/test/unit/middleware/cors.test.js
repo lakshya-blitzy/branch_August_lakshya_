@@ -6,13 +6,16 @@
 // @requires jest ^29.7.0 or mocha ^11.0.0
 
 // External Dependencies
-const supertest = require('supertest'); // ^6.3.3 - SuperAgent driven library for testing HTTP servers
-const express = require('express'); // ^5.1.0 - Express.js framework for test applications
-const cors = require('cors'); // ^2.8.5 - CORS middleware library for testing configurations
+import supertest from 'supertest'; // ^6.3.3 - SuperAgent driven library for testing HTTP servers
+
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+import express from 'express'; // ^5.1.0 - Express.js framework for test applications
+import cors from 'cors'; // ^2.8.5 - CORS middleware library for testing configurations
 
 // Internal Dependencies - CORS Middleware Functions
-const corsMiddleware = require('../../../middleware/cors.js');
-const {
+import corsMiddleware from '../../../middleware/cors.js';
+import {
   configureCorsForEnvironment,
   handleCorsError,
   createCorsOptions,
@@ -20,10 +23,10 @@ const {
   logCorsActivity,
   createDevelopmentCors,
   createProductionCors
-} = require('../../../middleware/cors.js');
+} from '../../../middleware/cors.js';
 
 // Internal Dependencies - Express Application Factory
-const { createExpressApp } = require('../../../express-server.js');
+import { createExpressApp } from '../../../app.js';
 
 // Internal Dependencies - Test Helpers (creating these since they don't exist)
 const {
@@ -1640,7 +1643,7 @@ describe('CORS Middleware Comprehensive Test Suite', () => {
 });
 
 // Export test functions for external use
-module.exports = {
+export {
   setupCorsTests,
   teardownCorsTests,
   createTestExpressAppWithCors,

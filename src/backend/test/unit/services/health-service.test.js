@@ -50,6 +50,9 @@
 
 // External library imports with version comments for comprehensive testing framework
 import jest from 'jest'; // Jest v29+ - Comprehensive testing framework with built-in assertions, mocking, and coverage
+
+// Jest globals for ES modules support
+import { jest, describe, test, it, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
 import request from 'supertest'; // SuperTest v6.3.3 - HTTP testing library for endpoint validation and response verification
 
 // Internal imports for health service testing - comprehensive import of all health service functionality
