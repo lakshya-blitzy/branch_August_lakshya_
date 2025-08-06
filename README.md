@@ -63,6 +63,85 @@ Manually :
 Fork / Clone repository from [here](https://github.com/BalamiRR/Testinium-QA/archive/main.zip) or download zip and set
 it up in your local workspace.
 
+## Node.js REST API Server
+
+### Overview
+
+This repository now includes a Node.js Express.js REST API server component that operates independently alongside the Java-based test automation framework. The Node.js server provides simple HTTP endpoints for demonstration and integration purposes.
+
+### Prerequisites
+
+Before running the Node.js server, ensure you have the following installed:
+
+- **Node.js**: Version 14.x or higher (LTS recommended)
+- **npm**: Node.js package manager (bundled with Node.js installation)
+
+You can verify your installation by running:
+```bash
+node --version
+npm --version
+```
+
+### Node.js Setup Instructions
+
+1. **Navigate to the node-server directory:**
+   ```bash
+   cd node-server
+   ```
+
+2. **Install Express.js dependencies:**
+   ```bash
+   npm install
+   ```
+   This command will install Express.js and create a `package-lock.json` file for dependency version locking.
+
+3. **Start the Node.js server:**
+   ```bash
+   node server.js
+   ```
+   The server will start and display a startup message in the console.
+
+### Available Endpoints
+
+The Node.js server provides the following REST API endpoints:
+
+- **GET /** - Returns "Hello world"
+  ```bash
+  curl http://localhost:3000/
+  # Response: Hello world
+  ```
+
+- **GET /evening** - Returns "Good evening"
+  ```bash
+  curl http://localhost:3000/evening
+  # Response: Good evening
+  ```
+
+### Port Configuration
+
+The server runs on **port 3000** by default. You can configure a different port by setting the `PORT` environment variable:
+
+```bash
+# Use a custom port
+PORT=8080 node server.js
+
+# Or set environment variable
+export PORT=8080
+node server.js
+```
+
+### Integration Notes
+
+**Independent Operation**: The Node.js server operates completely independently from the Java-based test automation framework. Both components can run simultaneously without conflicts:
+
+- **Java Framework**: Continues to handle Selenium WebDriver tests, Cucumber BDD scenarios, and JUnit test execution
+- **Node.js Server**: Provides REST API endpoints for external integration or additional functionality
+
+**Development Workflow**: Developers can work on either component independently:
+1. Use the existing Java/Maven workflow for test automation development
+2. Use the Node.js/npm workflow for REST API development
+3. Both components coexist in the same repository with separate build processes
+
 
 
 ### Using canned test in the project:
