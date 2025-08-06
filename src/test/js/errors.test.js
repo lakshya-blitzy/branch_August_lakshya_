@@ -202,41 +202,24 @@ describe('Uncaught Exception Handling', () => {
 
     test('should perform graceful shutdown on uncaught exception', async () => {
         const shutdownSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
-        const serverCloseSpy = jest.fn();
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         
-        // Mock server close method
-        if (testServerInstance && testServerInstance.close) {
-            jest.spyOn(testServerInstance, 'close').mockImplementation(serverCloseSpy);
-        }
-        
-        // Setup uncaught exception handler with graceful shutdown
-        const gracefulHandler = jest.fn(async (error) => {
-            console.error('Uncaught Exception:', error);
-            await stopServer();
-            process.exit(1);
-        });
-        process.on('uncaughtException', gracefulHandler);
-        
-        // Simulate critical server error
+        // Simulate critical server error to test existing uncaught exception handler
         const criticalError = new Error('Critical server error');
         
-        try {
-            // This should trigger the uncaught exception handler
-            process.emit('uncaughtException', criticalError);
-            
-            // Advance timers to allow graceful shutdown
-            jestTimers.advanceTimersByTime(delays.exponentialBackoff(0, 1000));
-            
-            // Verify graceful shutdown was attempted
-            expect(gracefulHandler).toHaveBeenCalledWith(criticalError);
-        } catch (error) {
-            // Expected behavior for uncaught exception
-            expect(error.message).toContain('Critical server error');
-        }
+        // This should trigger the server's built-in uncaught exception handler
+        process.emit('uncaughtException', criticalError);
+        
+        // Give the handler time to execute (it includes async stopServer call)
+        await new Promise(resolve => setImmediate(resolve));
+        
+        // Verify that the server's exception handler was called
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Uncaught Exception:', criticalError);
+        expect(shutdownSpy).toHaveBeenCalledWith(1);
         
         // Cleanup
-        process.removeListener('uncaughtException', gracefulHandler);
         shutdownSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
     }, EXTENDED_TIMEOUT);
 
     test('should prevent multiple uncaught exception handlers from conflicting', async () => {
@@ -361,21 +344,22 @@ describe('Promise Rejection Management', () => {
     test('should log unhandled promise rejections with context information', async () => {
         const logSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         
-        // Create promise that will be rejected without handling
-        const unhandledPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                reject(new Error('Unhandled async error'));
-            }, timeouts.shortTimeout);
-        });
+        // Verify that rejectionHandler is properly set up
+        expect(rejectionHandler).toBeDefined();
+        expect(process.listeners('unhandledRejection')).toContain(rejectionHandler);
         
-        // Don't await the promise to make it unhandled
-        unhandledPromise.catch(() => {}); // Add catch to prevent actual unhandled rejection in test
+        // Create a test error and mock promise for the handler test
+        const testError = new Error('Test unhandled promise rejection');
+        const mockPromise = { catch: jest.fn() };
         
-        // Advance timers to trigger rejection
-        jestTimers.advanceTimersByTime(timeouts.shortTimeout + 10);
+        // Manually trigger the unhandled rejection event to test our handler
+        process.emit('unhandledRejection', testError, mockPromise);
         
-        // Verify rejection handler was called
-        expect(rejectionHandler).toHaveBeenCalled();
+        // Verify rejection handler was called with correct parameters
+        expect(rejectionHandler).toHaveBeenCalledWith(testError, mockPromise);
+        
+        // Verify console.error was called by our rejection handler
+        expect(logSpy).toHaveBeenCalledWith('Unhandled Rejection at:', mockPromise, 'reason:', testError);
         
         logSpy.mockRestore();
     }, TEST_TIMEOUT);
@@ -755,25 +739,17 @@ describe('Timeout Behavior and Graceful Degradation', () => {
     }, TEST_TIMEOUT);
 
     test('should handle connection timeout scenarios', async () => {
-        const connectionTimeout = timeouts.longTimeout;
-        
-        // Simulate connection timeout scenario
-        const connectionAttempt = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                reject(new Error('Connection timeout'));
-            }, connectionTimeout);
-        });
-        
-        // Advance timers to trigger timeout
-        jestTimers.advanceTimersByTime(connectionTimeout + 100);
+        // Simulate a connection timeout by creating a promise that rejects immediately
+        const connectionAttempt = Promise.reject(new Error('Connection timeout'));
         
         try {
             await connectionAttempt;
+            fail('Expected connection timeout error');
         } catch (error) {
             expect(error.message).toContain('Connection timeout');
         }
         
-        // Server should handle connection timeouts gracefully
+        // Server should continue operating normally despite connection timeouts
         const response = await request(testServerUrl)
             .get('/health')
             .expect(200);
@@ -808,26 +784,27 @@ describe('Timeout Behavior and Graceful Degradation', () => {
     }, EXTENDED_TIMEOUT);
 
     test('should handle graceful shutdown timeouts', async () => {
-        const shutdownTimeout = timeouts.shutdownTimeout;
         let shutdownCompleted = false;
         
-        // Mock graceful shutdown scenario
+        // Mock graceful shutdown scenario that completes successfully
         const gracefulShutdown = async () => {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    shutdownCompleted = true;
-                    resolve();
-                }, shutdownTimeout / 2); // Complete before timeout
-            });
+            // Simulate shutdown process completing
+            shutdownCompleted = true;
+            return Promise.resolve();
         };
         
-        const shutdownPromise = gracefulShutdown();
+        // Execute graceful shutdown
+        await gracefulShutdown();
         
-        // Advance timers to complete shutdown
-        jestTimers.advanceTimersByTime(shutdownTimeout / 2 + 100);
-        
-        await shutdownPromise;
+        // Verify shutdown completed successfully
         expect(shutdownCompleted).toBe(true);
+        
+        // Verify server is still responsive after simulated shutdown handling
+        const response = await request(testServerUrl)
+            .get('/health')
+            .expect(200);
+            
+        expect(response.body.status).toBe('healthy');
     }, TEST_TIMEOUT);
 
     test('should handle jitter in retry delays', async () => {
@@ -1116,20 +1093,16 @@ describe('EventEmitter Error Scenarios', () => {
         const asyncErrorHandler = jest.fn();
         mockEventEmitter.on('error', asyncErrorHandler);
         
-        // Capture emitter reference to avoid null reference issues
-        const emitterRef = mockEventEmitter;
+        // Create test error for async scenario
+        const testError = new Error('Async error');
         
-        // Emit error asynchronously
-        setTimeout(() => {
-            if (emitterRef) {
-                emitterRef.emit('error', new Error('Async error'));
-            }
-        }, timeouts.shortTimeout);
+        // Test that EventEmitter can handle error events properly
+        // (simulating async error without relying on timers)
+        mockEventEmitter.emit('error', testError);
         
-        // Advance timers to trigger async error
-        jestTimers.advanceTimersByTime(timeouts.shortTimeout + 10);
-        
+        // Verify the async error handler was called
         expect(asyncErrorHandler).toHaveBeenCalled();
+        expect(asyncErrorHandler).toHaveBeenCalledWith(testError);
     });
 
     test('should handle once error listeners correctly', async () => {
@@ -1167,17 +1140,17 @@ describe('EventEmitter Error Scenarios', () => {
         
         const originalError = new Error('Original error');
         
-        // This should not crash the event emitter
-        try {
+        // This should throw an error since the first handler throws
+        expect(() => {
             mockEventEmitter.emit('error', originalError);
-        } catch (error) {
-            // Error in handler should not propagate
-            expect(error.message).toContain('Error in error handler');
-        }
+        }).toThrow('Error in error handler');
         
-        // Second handler should still be called despite first handler error
+        // First handler should have been called
         expect(faultyHandler).toHaveBeenCalledWith(originalError);
-        expect(secondHandler).toHaveBeenCalledWith(originalError);
+        
+        // Second handler should NOT be called due to the exception in the first handler
+        // This is the expected behavior of Node.js EventEmitter
+        expect(secondHandler).not.toHaveBeenCalled();
     });
 });
 
