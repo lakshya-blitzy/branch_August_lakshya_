@@ -16,10 +16,10 @@
  * Usage:
  * ```javascript
  * // Import all fixtures from single entry point
- * import * as fixtures from './fixtures';
+ * const fixtures = require('./fixtures');
  * 
  * // Or import specific fixtures
- * import { mockRequests, mockResponses, TestDataGenerator } from './fixtures';
+ * const { mockRequests, mockResponses, TestDataGenerator } = require('./fixtures');
  * 
  * // Use in tests
  * const testData = fixtures.TestDataGenerator.generateScenario();
@@ -33,7 +33,7 @@
  */
 
 // Import all mock request fixtures with required members access
-import mockRequestsModule from './mockRequests.js';
+const mockRequestsModule = require('./mockRequests.js');
 const mockRequests = {
     valid: mockRequestsModule.valid,
     invalid: mockRequestsModule.invalid,
@@ -43,7 +43,7 @@ const mockRequests = {
 };
 
 // Import all mock response fixtures with required members access
-import mockResponsesModule from './mockResponses.js';
+const mockResponsesModule = require('./mockResponses.js');
 const mockResponses = {
     success: mockResponsesModule.success,
     error: mockResponsesModule.error,
@@ -52,7 +52,7 @@ const mockResponses = {
 };
 
 // Import all mock server configuration fixtures with required members access
-import mockServerConfigsModule from './mockServerConfigs.js';
+const mockServerConfigsModule = require('./mockServerConfigs.js');
 const mockServerConfigs = {
     default: mockServerConfigsModule.default,
     custom: mockServerConfigsModule.custom,
@@ -63,7 +63,7 @@ const mockServerConfigs = {
 };
 
 // Import all mock environment fixtures with required members access
-import mockEnvironmentModule from './mockEnvironment.js';
+const mockEnvironmentModule = require('./mockEnvironment.js');
 const mockEnvironment = {
     development: mockEnvironmentModule.development,
     testing: mockEnvironmentModule.testing,
@@ -74,7 +74,8 @@ const mockEnvironment = {
 };
 
 // Import file system mocking utilities and custom scenario creator
-import { 
+const mockFileSystemModule = require('./mockFileSystem.js');
+const { 
     fs, 
     mockFiles, 
     permissions, 
@@ -82,7 +83,7 @@ import {
     createMockFileSystem,
     resetFileSystemMocks,
     createCustomMockScenario 
-} from './mockFileSystem.js';
+} = mockFileSystemModule;
 
 // Create mockFileSystem object with required members exposed
 const mockFileSystem = {
@@ -95,12 +96,13 @@ const mockFileSystem = {
 };
 
 // Import timer mocking utilities with required members access
-import { 
+const mockTimersModule = require('./mockTimers.js');
+const { 
     jestTimers,
     timeouts,
     intervals,
     delays
-} from './mockTimers.js';
+} = mockTimersModule;
 
 // Extract specific delay members for re-export
 const delaysExport = {
@@ -111,7 +113,9 @@ const delaysExport = {
 };
 
 // Import test data generation utilities and class
-import TestDataGeneratorClass, {
+const testDataGeneratorModule = require('./testDataGenerator.js');
+const TestDataGeneratorClass = testDataGeneratorModule.default || testDataGeneratorModule.TestDataGenerator;
+const {
     generateTestScenario,
     generateRandomPort,
     generateUniqueTestId,
@@ -119,62 +123,63 @@ import TestDataGeneratorClass, {
     createCoordinatedMockData,
     createIsolatedTestData,
     testDataPatterns
-} from './testDataGenerator.js';
+} = testDataGeneratorModule;
 
-// Export all mock request fixtures as named export
-export { mockRequests };
-
-// Export all mock response fixtures as named export
-export { mockResponses };
-
-// Export all mock server configuration fixtures as named export
-export { mockServerConfigs };
-
-// Export all mock environment fixtures as named export
-export { mockEnvironment };
-
-// Export file system mock object with required members
-export { mockFileSystem };
-
-// Export mock files object with all file types
-export { mockFiles };
-
-// Export file system permissions object
-export { permissions };
-
-// Export file system errors object (renamed for clarity)
-export { errors as fileSystemErrors };
-
-// Export file system utility functions
-export { createMockFileSystem };
-export { resetFileSystemMocks };
-export { createCustomMockScenario };
-
-// Export Jest timer utilities with required members
-export { jestTimers };
-
-// Export timeout configurations
-export { timeouts };
-
-// Export interval configurations  
-export { intervals };
-
-// Export delay configurations with required members
-export { delaysExport as delays };
-
-// Export test data generation utility functions
-export { generateTestScenario };
-export { generateRandomPort };
-export { generateUniqueTestId };
-export { generateCompleteTestCase };
-export { createCoordinatedMockData };
-export { createIsolatedTestData };
-
-// Export comprehensive test data patterns
-export { testDataPatterns };
-
-// Export the main TestDataGenerator class as default export
-export default TestDataGeneratorClass;
-
-// Also export TestDataGenerator as named export for convenience
-export { TestDataGeneratorClass as TestDataGenerator };
+// Export all fixtures and utilities using CommonJS module.exports
+module.exports = {
+    // Mock request fixtures
+    mockRequests,
+    
+    // Mock response fixtures 
+    mockResponses,
+    
+    // Mock server configuration fixtures
+    mockServerConfigs,
+    
+    // Mock environment fixtures
+    mockEnvironment,
+    
+    // File system mock object with required members
+    mockFileSystem,
+    
+    // Mock files object with all file types
+    mockFiles,
+    
+    // File system permissions object
+    permissions,
+    
+    // File system errors object (renamed for clarity)
+    fileSystemErrors: errors,
+    
+    // File system utility functions
+    createMockFileSystem,
+    resetFileSystemMocks,
+    createCustomMockScenario,
+    
+    // Jest timer utilities with required members
+    jestTimers,
+    
+    // Timeout configurations
+    timeouts,
+    
+    // Interval configurations
+    intervals,
+    
+    // Delay configurations with required members
+    delays: delaysExport,
+    
+    // Test data generation utility functions
+    generateTestScenario,
+    generateRandomPort,
+    generateUniqueTestId,
+    generateCompleteTestCase,
+    createCoordinatedMockData,
+    createIsolatedTestData,
+    
+    // Comprehensive test data patterns
+    testDataPatterns,
+    
+    // Main TestDataGenerator class (both as default and named export)
+    TestDataGenerator: TestDataGeneratorClass,
+    default: TestDataGeneratorClass
+};
