@@ -167,5 +167,281 @@ To generate a Txt report Use `mvn test -Dcucumber.options="–plugin rerun:targe
 
   
 
+## JavaScript/Node.js Testing
+
+This repository now supports dual-language testing capabilities, combining the existing Java-based Selenium/Cucumber tests with comprehensive JavaScript/Node.js unit testing for server-side components.
+
+### Node.js Testing Stack
+
+<p align="left">
+<a href="https://nodejs.org" target="_blank" rel="noreferrer">
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg" alt="nodejs" width="60" height="60"/>
+</a>
+<a href="https://jestjs.io" target="_blank" rel="noreferrer">
+  <img src="https://jestjs.io/img/jest.png" alt="jest" width="60" height="60"/>
+</a>
+<a href="https://www.npmjs.com" target="_blank" rel="noreferrer">
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/npm/npm-original-wordmark.svg" alt="npm" width="60" height="60"/>
+</a>
+</p>
+
+* **Node.js** ^18.18.0 || ^20.9.0 || >=21.1.0
+* **Jest** 29.x (Testing Framework)
+* **Supertest** 6.x (HTTP Assertion Library)
+* **NPM** (Package Management)
+
+### JavaScript Testing Prerequisites
+
+Before running JavaScript tests, ensure you have the following installed:
+
+1. **Node.js Runtime**: Version 18.18.0 or higher
+   ```bash
+   # Check Node.js version
+   node --version
+   
+   # Install Node.js if needed
+   # Download from: https://nodejs.org/
+   ```
+
+2. **NPM Package Manager**: Comes with Node.js installation
+   ```bash
+   # Check NPM version
+   npm --version
+   ```
+
+### JavaScript Testing Setup
+
+#### 1. Install Node.js Dependencies
+
+```bash
+# Install all JavaScript testing dependencies
+npm install
+
+# Or install specific testing packages
+npm install --save-dev jest supertest @types/jest
+```
+
+#### 2. Verify JavaScript Test Configuration
+
+The repository includes the following JavaScript test configuration files:
+- `package.json` - NPM dependencies and test scripts
+- `jest.config.js` - Jest testing framework configuration
+- `src/test/js/` - JavaScript test files directory
+
+### Running JavaScript Tests
+
+#### Basic Test Execution
+
+```bash
+# Run all JavaScript tests
+npm test
+
+# Run tests with verbose output
+npm test -- --verbose
+
+# Run specific test file
+npm test -- server.test.js
+
+# Run tests in watch mode (auto-rerun on file changes)
+npm run test:watch
+```
+
+#### Advanced Test Execution
+
+```bash
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests and generate detailed coverage HTML report
+npm run coverage:report
+
+# Run tests with specific pattern matching
+npm test -- --testNamePattern="server startup"
+
+# Run tests for specific files
+npm test -- src/test/js/server.test.js
+```
+
+### Coverage Reports
+
+JavaScript test coverage is generated using Jest's built-in coverage tools:
+
+#### Generate Coverage Reports
+
+```bash
+# Generate coverage summary in terminal
+npm run test:coverage
+
+# Generate detailed HTML coverage report
+npm run coverage:html
+
+# Generate coverage in multiple formats (HTML, JSON, LCOV)
+npm run coverage:all
+```
+
+#### Coverage Output Locations
+
+- **Terminal Summary**: Displayed after running `npm run test:coverage`
+- **HTML Report**: `coverage/lcov-report/index.html`
+- **JSON Report**: `coverage/coverage-final.json`
+- **LCOV Report**: `coverage/lcov.info`
+
+#### Coverage Targets
+
+| Metric | Target | Current |
+|--------|--------|---------|
+| Line Coverage | ≥85% | Varies by component |
+| Branch Coverage | ≥80% | Varies by component |
+| Function Coverage | ≥90% | Varies by component |
+| Statement Coverage | ≥85% | Varies by component |
+
+### Integration with Maven/Jenkins CI/CD
+
+#### Maven Integration
+
+The JavaScript tests are integrated with the existing Maven build pipeline using the frontend-maven-plugin:
+
+```bash
+# Run both Java and JavaScript tests via Maven
+mvn clean test
+
+# Run only JavaScript tests via Maven
+mvn frontend:npm@test
+
+# Run JavaScript tests with coverage via Maven
+mvn frontend:npm@test-coverage
+```
+
+#### Jenkins Pipeline Integration
+
+JavaScript tests are automatically executed in the Jenkins CI/CD pipeline:
+
+1. **Install Phase**: `npm install` - Install JavaScript dependencies
+2. **Test Phase**: `npm test` - Execute JavaScript unit tests
+3. **Coverage Phase**: `npm run test:coverage` - Generate coverage reports
+4. **Report Phase**: Publish coverage reports alongside Java test results
+
+#### CI/CD Test Commands
+
+```bash
+# Complete test suite (Java + JavaScript)
+mvn clean test && npm test
+
+# Generate all reports (Java + JavaScript coverage)
+mvn clean test && npm run test:coverage
+
+# Parallel execution for faster CI builds
+mvn test -DforkCount=4 & npm test --maxWorkers=4
+```
+
+### JavaScript Test Structure
+
+#### Test File Organization
+
+```
+src/test/js/
+├── server.test.js              # Main server unit tests
+├── server.integration.test.js  # Server integration tests
+├── fixtures/                   # Test data and mocks
+│   ├── mockRequests.js         # HTTP request mocks
+│   └── serverConfigs.js        # Server configuration mocks
+└── utils/                      # Test utility functions
+    └── testHelpers.js          # Common test helper functions
+```
+
+#### Test Categories
+
+1. **Unit Tests**: Isolated component testing
+   - Individual middleware functions
+   - Route handlers in isolation
+   - Utility function validation
+
+2. **Integration Tests**: Component interaction testing
+   - Full HTTP request/response cycles
+   - Middleware chain execution
+   - Server initialization sequence
+
+3. **Edge Case Tests**: Boundary condition testing
+   - Malformed HTTP requests
+   - Invalid headers and payloads
+   - Resource exhaustion scenarios
+
+### JavaScript Testing Best Practices
+
+#### Test Writing Guidelines
+
+```javascript
+// Example Jest test structure
+describe('Server HTTP Handling', () => {
+  beforeEach(() => {
+    // Setup code before each test
+  });
+  
+  afterEach(() => {
+    // Cleanup code after each test
+  });
+  
+  it('should respond with 200 OK for valid GET requests', async () => {
+    // Test implementation with proper assertions
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toContain('application/json');
+  });
+});
+```
+
+#### Quality Standards
+
+- **Test Isolation**: Each test runs independently
+- **Descriptive Naming**: Use BDD-style test descriptions
+- **Comprehensive Assertions**: Minimum 2-3 assertions per test
+- **Performance**: Unit tests should complete in <100ms
+- **Mocking**: Use minimal, type-safe mocks for external dependencies
+
+### Troubleshooting JavaScript Tests
+
+#### Common Issues and Solutions
+
+1. **Node.js Version Compatibility**
+   ```bash
+   # Check if Node.js version meets requirements
+   node --version
+   # Should be ≥18.18.0
+   ```
+
+2. **Missing Dependencies**
+   ```bash
+   # Clear npm cache and reinstall
+   npm cache clean --force
+   npm install
+   ```
+
+3. **Test Execution Failures**
+   ```bash
+   # Run tests with debug output
+   npm test -- --verbose --no-cache
+   ```
+
+4. **Coverage Report Issues**
+   ```bash
+   # Clear coverage cache
+   rm -rf coverage/
+   npm run test:coverage
+   ```
+
+### Dual Testing Environment
+
+This repository maintains both Java and JavaScript testing environments:
+
+| Feature | Java Tests | JavaScript Tests |
+|---------|------------|------------------|
+| **Framework** | JUnit + Cucumber | Jest |
+| **Test Type** | Browser Automation + BDD | Unit + Integration |
+| **Coverage Tool** | JaCoCo | Jest Built-in |
+| **Execution** | `mvn test` | `npm test` |
+| **Reports** | Cucumber HTML/JSON | Jest HTML/JSON |
+| **CI Integration** | Maven + Jenkins | NPM + Jenkins |
+
+Both testing environments can be executed independently or together as part of the complete test suite.
+
 ### THE END
 
