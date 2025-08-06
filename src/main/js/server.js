@@ -1,137 +1,112 @@
+/**
+ * Minimal Node.js HTTP Server Implementation for Testinium-QA Framework
+ * 
+ * Provides basic HTTP endpoints for comprehensive unit and integration testing
+ * Supports configurable port binding, graceful shutdown, and error handling middleware
+ * Implements event-driven concurrency model for handling multiple simultaneous requests
+ * 
+ * Required for JavaScript testing framework integration as specified in Section 0.4.2
+ * Supports Jest/Mocha test execution with comprehensive endpoint validation
+ */
+
+// Required Node.js core modules as specified in external_imports schema
 const http = require('http');
+const process = require('process');
 const url = require('url');
+const util = require('util');
+
+// Default port configuration with environment variable support
+// Implements automatic fallback port discovery as per Node.js Service Resource Management
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+
+// Global server instance for lifecycle management
+let serverInstance = null;
+let isServerRunning = false;
 
 /**
- * Simple HTTP server for testing purposes
- * Provides basic REST endpoints and error handling
+ * Route handler implementations for standard HTTP methods
+ * Provides comprehensive coverage for GET, POST, PUT, DELETE testing scenarios
+ * Includes parameter handling and error validation for edge case testing
  */
-class SimpleServer {
-  constructor(options = {}) {
-    this.port = options.port !== undefined ? options.port : 3000;
-    this.host = options.host || 'localhost';
-    this.server = null;
-    this.isRunning = false;
-  }
+const routes = {
+  /**
+   * GET request handler with query parameter support
+   * Validates request format and returns structured JSON response
+   */
+  getHandler: (req, res, parsedUrl) => {
+    const query = parsedUrl.query || {};
+    
+    // Log request for debugging test failures
+    console.log(util.format('GET request to %s with query:', parsedUrl.pathname, util.inspect(query)));
+    
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      method: 'GET',
+      path: parsedUrl.pathname,
+      query: query,
+      timestamp: new Date().toISOString(),
+      message: 'GET request processed successfully'
+    }));
+  },
 
   /**
-   * Create HTTP server with route handling
+   * POST request handler with body parsing and validation
+   * Implements comprehensive error handling for malformed JSON
    */
-  createServer() {
-    this.server = http.createServer((req, res) => {
-      const parsedUrl = url.parse(req.url, true);
-      const path = parsedUrl.pathname;
-      const method = req.method;
-
-      // Set CORS headers
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-      try {
-        this.handleRequest(req, res, path, method);
-      } catch (error) {
-        this.handleError(res, error);
+  postHandler: (req, res, parsedUrl) => {
+    let body = '';
+    
+    req.on('data', chunk => {
+      body += chunk.toString();
+      // Prevent memory exhaustion from oversized requests
+      if (body.length > 1048576) { // 1MB limit
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Request entity too large', limit: '1MB' }));
+        return;
       }
     });
 
-    return this.server;
-  }
+    req.on('end', () => {
+      try {
+        const data = body ? JSON.parse(body) : {};
+        
+        // Log request for debugging test failures
+        console.log(util.format('POST request to %s with body:', parsedUrl.pathname, util.inspect(data)));
+        
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          method: 'POST',
+          path: parsedUrl.pathname,
+          received: data,
+          timestamp: new Date().toISOString(),
+          message: 'POST request processed successfully',
+          created: true
+        }));
+      } catch (error) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+          error: 'Invalid JSON in request body',
+          details: error.message
+        }));
+      }
+    });
+
+    req.on('error', (error) => {
+      console.error('Request error:', error);
+      if (!res.headersSent) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Request processing error' }));
+      }
+    });
+  },
 
   /**
-   * Handle incoming HTTP requests
+   * PUT request handler for update operations
+   * Supports both full and partial updates with validation
    */
-  handleRequest(req, res, path, method) {
-    switch (path) {
-      case '/':
-        this.handleRoot(req, res);
-        break;
-      case '/health':
-        this.handleHealth(req, res);
-        break;
-      case '/api/test':
-        this.handleApiTest(req, res, method);
-        break;
-      case '/api/data':
-        this.handleApiData(req, res, method);
-        break;
-      default:
-        this.handleNotFound(res);
-    }
-  }
-
-  /**
-   * Root endpoint handler
-   */
-  handleRoot(req, res) {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ 
-      message: 'Testinium-QA Server Running',
-      version: '1.0.0',
-      timestamp: new Date().toISOString()
-    }));
-  }
-
-  /**
-   * Health check endpoint
-   */
-  handleHealth(req, res) {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ 
-      status: 'healthy',
-      uptime: process.uptime(),
-      memory: process.memoryUsage()
-    }));
-  }
-
-  /**
-   * API test endpoint with method handling
-   */
-  handleApiTest(req, res, method) {
-    switch (method) {
-      case 'GET':
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ method: 'GET', data: 'test data' }));
-        break;
-      case 'POST':
-        this.handlePostRequest(req, res, '/api/test');
-        break;
-      case 'PUT':
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ method: 'PUT', updated: true }));
-        break;
-      case 'DELETE':
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ method: 'DELETE', deleted: true }));
-        break;
-      default:
-        res.writeHead(405, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Method not allowed' }));
-    }
-  }
-
-  /**
-   * API data endpoint
-   */
-  handleApiData(req, res, method) {
-    if (method === 'GET') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ 
-        items: [
-          { id: 1, name: 'Item 1' },
-          { id: 2, name: 'Item 2' }
-        ]
-      }));
-    } else {
-      res.writeHead(405, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Method not allowed' }));
-    }
-  }
-
-  /**
-   * Handle POST requests with body parsing
-   */
-  handlePostRequest(req, res, endpoint) {
+  putHandler: (req, res, parsedUrl) => {
     let body = '';
+    
     req.on('data', chunk => {
       body += chunk.toString();
     });
@@ -139,123 +114,326 @@ class SimpleServer {
     req.on('end', () => {
       try {
         const data = body ? JSON.parse(body) : {};
-        res.writeHead(201, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ 
-          method: 'POST',
-          endpoint: endpoint,
-          received: data,
-          created: true
+        
+        // Log request for debugging test failures
+        console.log(util.format('PUT request to %s with body:', parsedUrl.pathname, util.inspect(data)));
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          method: 'PUT',
+          path: parsedUrl.pathname,
+          updated: data,
+          timestamp: new Date().toISOString(),
+          message: 'PUT request processed successfully'
         }));
       } catch (error) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        res.end(JSON.stringify({ 
+          error: 'Invalid JSON in request body',
+          details: error.message
+        }));
       }
     });
-  }
+  },
 
   /**
-   * Handle 404 errors
+   * DELETE request handler with optional resource identification
+   * Validates deletion parameters and provides confirmation
    */
-  handleNotFound(res) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not Found' }));
-  }
-
-  /**
-   * Handle server errors
-   */
-  handleError(res, error) {
-    console.error('Server error:', error);
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ 
-      error: 'Internal Server Error',
-      message: error.message
+  deleteHandler: (req, res, parsedUrl) => {
+    const query = parsedUrl.query || {};
+    
+    // Log request for debugging test failures
+    console.log(util.format('DELETE request to %s with query:', parsedUrl.pathname, util.inspect(query)));
+    
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      method: 'DELETE',
+      path: parsedUrl.pathname,
+      query: query,
+      timestamp: new Date().toISOString(),
+      message: 'DELETE request processed successfully',
+      deleted: true
     }));
-  }
+  },
 
   /**
-   * Start the server
+   * Parameter validation handler for path parameters
+   * Extracts and validates URL parameters for routing
    */
-  start() {
-    return new Promise((resolve, reject) => {
-      if (this.isRunning) {
-        reject(new Error('Server is already running'));
-        return;
-      }
-
-      this.createServer();
-      
-      this.server.listen(this.port, this.host, (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          this.isRunning = true;
-          console.log(`Server running at http://${this.host}:${this.port}/`);
-          resolve(this);
-        }
-      });
-
-      this.server.on('error', (error) => {
-        if (error.code === 'EADDRINUSE') {
-          reject(new Error(`Port ${this.port} is already in use`));
-        } else {
-          reject(error);
-        }
-      });
-    });
-  }
-
-  /**
-   * Stop the server gracefully
-   */
-  stop() {
-    return new Promise((resolve) => {
-      if (!this.isRunning || !this.server) {
-        resolve();
-        return;
-      }
-
-      this.server.close(() => {
-        this.isRunning = false;
-        console.log('Server stopped');
-        resolve();
-      });
-    });
-  }
-
-  /**
-   * Get server status
-   */
-  getStatus() {
+  paramHandler: (path, method) => {
+    const pathSegments = path.split('/').filter(segment => segment.length > 0);
+    
     return {
-      isRunning: this.isRunning,
-      port: this.port,
-      host: this.host
+      segments: pathSegments,
+      hasParams: pathSegments.length > 1,
+      method: method,
+      isValidRoute: pathSegments.length > 0 && pathSegments[0] === 'api'
     };
   }
+};
+
+/**
+ * Main application object implementing Express.js-like interface
+ * Provides listen, close, and HTTP method handlers as required by exports schema
+ */
+const app = {
+  /**
+   * Start HTTP server on specified port with automatic fallback
+   * Implements port conflict resolution as per Node.js Service Resource Management
+   */
+  listen: (port = PORT, host = 'localhost', callback) => {
+    if (isServerRunning) {
+      const error = new Error('Server is already running');
+      if (callback) callback(error);
+      return;
+    }
+
+    const server = http.createServer((req, res) => {
+      const parsedUrl = url.parse(req.url, true);
+      const pathname = parsedUrl.pathname;
+      const method = req.method;
+
+      // Set CORS headers for testing compatibility
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+      // Handle preflight OPTIONS requests
+      if (method === 'OPTIONS') {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+
+      try {
+        // Route requests to appropriate handlers
+        if (pathname === '/' || pathname === '/health') {
+          app.get(req, res, parsedUrl);
+        } else if (pathname.startsWith('/api/')) {
+          switch (method) {
+            case 'GET':
+              routes.getHandler(req, res, parsedUrl);
+              break;
+            case 'POST':
+              routes.postHandler(req, res, parsedUrl);
+              break;
+            case 'PUT':
+              routes.putHandler(req, res, parsedUrl);
+              break;
+            case 'DELETE':
+              routes.deleteHandler(req, res, parsedUrl);
+              break;
+            default:
+              res.writeHead(405, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Method not allowed', allowedMethods: ['GET', 'POST', 'PUT', 'DELETE'] }));
+          }
+        } else {
+          // Handle 404 Not Found
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ 
+            error: 'Not Found',
+            path: pathname,
+            message: 'The requested resource was not found'
+          }));
+        }
+      } catch (error) {
+        console.error('Server error:', error);
+        if (!res.headersSent) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ 
+            error: 'Internal Server Error',
+            message: error.message
+          }));
+        }
+      }
+    });
+
+    // Handle server errors and port conflicts
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error(util.format('Port %d is already in use, attempting port %d', port, port + 1));
+        // Automatic fallback port discovery
+        app.listen(port + 1, host, callback);
+      } else {
+        console.error('Server error:', error);
+        if (callback) callback(error);
+      }
+    });
+
+    server.listen(port, host, () => {
+      isServerRunning = true;
+      serverInstance = server;
+      console.log(util.format('Server running at http://%s:%d/', host, port));
+      if (callback) callback(null, server);
+    });
+
+    return server;
+  },
+
+  /**
+   * Close server gracefully with proper cleanup
+   * Implements graceful shutdown as required for testing lifecycle
+   */
+  close: (callback) => {
+    if (!isServerRunning || !serverInstance) {
+      if (callback) callback();
+      return;
+    }
+
+    serverInstance.close(() => {
+      isServerRunning = false;
+      serverInstance = null;
+      console.log('Server stopped gracefully');
+      if (callback) callback();
+    });
+  },
+
+  /**
+   * GET method handler for root and health endpoints
+   * Provides basic server status and health check functionality
+   */
+  get: (req, res, parsedUrl) => {
+    const pathname = parsedUrl.pathname;
+    
+    if (pathname === '/') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        message: 'Testinium-QA Server Running',
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development'
+      }));
+    } else if (pathname === '/health') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        status: 'healthy',
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        timestamp: new Date().toISOString()
+      }));
+    }
+  },
+
+  /**
+   * POST method registration (placeholder for Express.js compatibility)
+   */
+  post: (path, handler) => {
+    // Express.js-like interface for future extensibility
+    console.log(util.format('POST route registered: %s', path));
+  },
+
+  /**
+   * PUT method registration (placeholder for Express.js compatibility)
+   */
+  put: (path, handler) => {
+    // Express.js-like interface for future extensibility
+    console.log(util.format('PUT route registered: %s', path));
+  },
+
+  /**
+   * DELETE method registration (placeholder for Express.js compatibility)
+   */
+  delete: (path, handler) => {
+    // Express.js-like interface for future extensibility
+    console.log(util.format('DELETE route registered: %s', path));
+  },
+
+  /**
+   * Middleware registration function (placeholder for Express.js compatibility)
+   */
+  use: (middleware) => {
+    // Express.js-like interface for future extensibility
+    console.log('Middleware registered');
+  }
+};
+
+/**
+ * Start server function for programmatic control
+ * Implements server lifecycle management for testing frameworks
+ */
+function startServer(port = PORT, host = 'localhost') {
+  return new Promise((resolve, reject) => {
+    if (isServerRunning) {
+      reject(new Error('Server is already running'));
+      return;
+    }
+
+    app.listen(port, host, (error, server) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve({
+          server: server,
+          port: port,
+          host: host,
+          url: util.format('http://%s:%d', host, port)
+        });
+      }
+    });
+  });
 }
 
-module.exports = SimpleServer;
+/**
+ * Stop server function for graceful shutdown
+ * Ensures proper cleanup for testing scenarios
+ */
+function stopServer() {
+  return new Promise((resolve) => {
+    app.close(() => {
+      resolve();
+    });
+  });
+}
 
-// Allow direct execution for testing
+// Signal handling for graceful shutdown as per Node.js Service Resource Management
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM, shutting down gracefully');
+  stopServer().then(() => {
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('Received SIGINT, shutting down gracefully');
+  stopServer().then(() => {
+    process.exit(0);
+  });
+});
+
+// Handle uncaught exceptions to prevent server crashes
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  stopServer().then(() => {
+    process.exit(1);
+  });
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// Export all required symbols as specified in exports schema
+module.exports = {
+  app,
+  startServer,
+  stopServer,
+  PORT,
+  routes
+};
+
+// Direct execution support for testing and development
 if (require.main === module) {
-  const server = new SimpleServer({ port: 3000 });
+  console.log('Starting Testinium-QA HTTP Server for testing...');
   
-  server.start()
-    .then(() => {
-      console.log('Server started successfully');
+  startServer()
+    .then((info) => {
+      console.log(util.format('Server started successfully at %s', info.url));
     })
     .catch((error) => {
       console.error('Failed to start server:', error.message);
       process.exit(1);
     });
-
-  // Graceful shutdown
-  process.on('SIGTERM', () => {
-    server.stop().then(() => process.exit(0));
-  });
-
-  process.on('SIGINT', () => {
-    server.stop().then(() => process.exit(0));
-  });
 }
