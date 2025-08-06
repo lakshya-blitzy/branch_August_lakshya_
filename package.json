@@ -1,0 +1,23 @@
+{
+  "name": "testinium-qa-javascript",
+  "version": "1.0.0",
+  "description": "JavaScript testing infrastructure for Testinium-QA framework",
+  "main": "src/main/js/server.js",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
+    "coverage:report": "jest --coverage --coverageReporters=html,json,text"
+  },
+  "keywords": ["testing", "jest", "javascript", "testinium"],
+  "author": "Testinium-QA Team",
+  "license": "MIT",
+  "engines": {
+    "node": "^18.18.0 || ^20.9.0 || >=21.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4",
+    "@types/jest": "^29.5.12"
+  }
+}
