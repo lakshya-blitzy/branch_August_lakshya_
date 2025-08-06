@@ -100,9 +100,9 @@ module.exports = {
   transform: {},
   
   // Mock management for test isolation
-  clearMocks: true,           // Clear all mocks between tests
-  restoreMocks: true,         // Restore original implementations
-  resetMocks: true,           // Reset mock state between tests
+  clearMocks: true,           // Clear all mocks between tests  
+  restoreMocks: false,        // Keep mock implementations between tests
+  resetMocks: false,          // Keep mock state and implementations
   
   // Test execution behavior
   verbose: true,              // Detailed test output
