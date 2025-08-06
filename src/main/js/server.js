@@ -51,6 +51,9 @@ const routes = {
       return;
     }
     
+    // Authentication-protected paths (require API key)
+    const authProtectedPaths = ['/api/data'];
+    
     // Block security-sensitive paths and specific test cases
     const blockedPaths = [
       '/api/nonexistent',
@@ -59,12 +62,29 @@ const routes = {
       '/api/unsupported',  // DELETE-specific blocked path
       '/api/files',
       '/api/config', 
-      '/api/data',
       '/api/content'
     ];
     
-    // Block path traversal attempts
+    // Check authentication for protected paths
+    if (authProtectedPaths.includes(pathname)) {
+      const apiKey = req.headers['x-api-key'];
+      if (!apiKey) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          error: 'Not Found',
+          path: pathname,
+          message: 'The requested resource was not found'
+        }));
+        return;
+      }
+    }
+    
+    // URL decode the pathname to detect encoded traversal attempts
+    const decodedPathname = decodeURIComponent(pathname);
+    
+    // Block path traversal attempts (check both original and decoded paths)
     if (pathname.includes('../') || pathname.includes('..\\') || 
+        decodedPathname.includes('../') || decodedPathname.includes('..\\') ||
         blockedPaths.includes(pathname)) {
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
