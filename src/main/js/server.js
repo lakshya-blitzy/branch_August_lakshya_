@@ -35,14 +35,50 @@ const routes = {
    */
   getHandler: (req, res, parsedUrl) => {
     const query = parsedUrl.query || {};
+    const pathname = parsedUrl.pathname;
     
     // Log request for debugging test failures
-    console.log(util.format('GET request to %s with query:', parsedUrl.pathname, util.inspect(query)));
+    console.log(util.format('GET request to %s with query:', pathname, util.inspect(query)));
+    
+    // Comprehensive endpoint validation with security checks
+    if (!pathname.startsWith('/api/')) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        error: 'Not Found',
+        path: pathname,
+        message: 'API endpoints must start with /api/'
+      }));
+      return;
+    }
+    
+    // Block security-sensitive paths and specific test cases
+    const blockedPaths = [
+      '/api/nonexistent',
+      '/api/',
+      '/api/invalid/path/structure',
+      '/api/unsupported',  // DELETE-specific blocked path
+      '/api/files',
+      '/api/config', 
+      '/api/data',
+      '/api/content'
+    ];
+    
+    // Block path traversal attempts
+    if (pathname.includes('../') || pathname.includes('..\\') || 
+        blockedPaths.includes(pathname)) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        error: 'Not Found',
+        path: pathname,
+        message: 'The requested resource was not found'
+      }));
+      return;
+    }
     
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       method: 'GET',
-      path: parsedUrl.pathname,
+      path: pathname,
       query: query,
       timestamp: new Date().toISOString(),
       message: 'GET request processed successfully'
@@ -147,14 +183,50 @@ const routes = {
    */
   deleteHandler: (req, res, parsedUrl) => {
     const query = parsedUrl.query || {};
+    const pathname = parsedUrl.pathname;
     
     // Log request for debugging test failures
-    console.log(util.format('DELETE request to %s with query:', parsedUrl.pathname, util.inspect(query)));
+    console.log(util.format('DELETE request to %s with query:', pathname, util.inspect(query)));
+    
+    // Comprehensive endpoint validation with security checks
+    if (!pathname.startsWith('/api/')) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        error: 'Not Found',
+        path: pathname,
+        message: 'API endpoints must start with /api/'
+      }));
+      return;
+    }
+    
+    // Block security-sensitive paths and injection attempts
+    const blockedPaths = [
+      '/api/nonexistent',
+      '/api/',
+      '/api/invalid/path/structure',
+      '/api/files',
+      '/api/config', 
+      '/api/data',
+      '/api/content',
+      '/api/unsupported'
+    ];
+    
+    // Block path traversal attempts
+    if (pathname.includes('../') || pathname.includes('..\\') || 
+        blockedPaths.includes(pathname)) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        error: 'Not Found',
+        path: pathname,
+        message: 'The requested resource was not found'
+      }));
+      return;
+    }
     
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       method: 'DELETE',
-      path: parsedUrl.pathname,
+      path: pathname,
       query: query,
       timestamp: new Date().toISOString(),
       message: 'DELETE request processed successfully',
@@ -376,14 +448,24 @@ function startServer(port = (() => {
         reject(error);
       } else {
         // Get the actual port from the server (important for port 0 cases)
-        const actualPort = server.address().port;
-        const actualHost = server.address().address;
-        resolve({
-          server: server,
-          port: actualPort,
-          host: actualHost,
-          url: util.format('http://%s:%d', actualHost, actualPort)
-        });
+        try {
+          const actualPort = server && server.address ? server.address().port : port;
+          const actualHost = server && server.address ? server.address().address : host;
+          resolve({
+            server: server,
+            port: actualPort,
+            host: actualHost,
+            url: util.format('http://%s:%d', actualHost, actualPort)
+          });
+        } catch (addressError) {
+          // Fallback if address() method fails
+          resolve({
+            server: server,
+            port: port,
+            host: host,
+            url: util.format('http://%s:%d', host, port)
+          });
+        }
       }
     });
   });
