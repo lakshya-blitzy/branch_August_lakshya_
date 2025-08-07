@@ -112,6 +112,7 @@ const PORT = process.env.PORT || 3000;
  * 
  * Only starts the server if this file is run directly (not imported for testing)
  */
+/* istanbul ignore if */
 if (require.main === module) {
     app.listen(PORT, () => {
         const timestamp = new Date().toISOString();
