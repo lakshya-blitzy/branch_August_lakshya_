@@ -109,14 +109,19 @@ const PORT = process.env.PORT || 3000;
  * Binds the server to the configured port and begins listening
  * for incoming HTTP requests. Logs startup information for
  * operational visibility.
+ * 
+ * Only starts the server if this file is run directly (not imported for testing)
  */
-app.listen(PORT, () => {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] Server running on port ${PORT}`);
-    console.log(`[${timestamp}] Available endpoints:`);
-    console.log(`[${timestamp}]   GET http://localhost:${PORT}/ - Returns "Hello world"`);
-    console.log(`[${timestamp}]   GET http://localhost:${PORT}/evening - Returns "Good evening"`);
-});
+/* istanbul ignore if */
+if (require.main === module) {
+    app.listen(PORT, () => {
+        const timestamp = new Date().toISOString();
+        console.log(`[${timestamp}] Server running on port ${PORT}`);
+        console.log(`[${timestamp}] Available endpoints:`);
+        console.log(`[${timestamp}]   GET http://localhost:${PORT}/ - Returns "Hello world"`);
+        console.log(`[${timestamp}]   GET http://localhost:${PORT}/evening - Returns "Good evening"`);
+    });
+}
 
 // Export the Express app object for testing or external module usage
 module.exports = app;
