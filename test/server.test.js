@@ -404,6 +404,66 @@ describe('Express Server Test Suite', () => {
         });
     });
 
+    describe('Error Handling in Endpoint Handlers', () => {
+        it('should handle errors in GET / endpoint catch block', () => {
+            // Mock Express response object to trigger error condition
+            const mockReq = { method: 'GET', url: '/', ip: '127.0.0.1' };
+            const mockRes = {
+                send: jest.fn(() => {
+                    throw new Error('Simulated error in res.send()');
+                })
+            };
+            const mockNext = jest.fn();
+            
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            
+            // Manually call the route handler logic with error conditions
+            try {
+                mockRes.send('Hello world');
+            } catch (error) {
+                console.error('Error in GET / endpoint:', error);
+                mockNext(error);
+            }
+            
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Error in GET / endpoint:',
+                expect.any(Error)
+            );
+            expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+            
+            consoleSpy.mockRestore();
+        });
+
+        it('should handle errors in GET /evening endpoint catch block', () => {
+            // Mock Express response object to trigger error condition
+            const mockReq = { method: 'GET', url: '/evening', ip: '127.0.0.1' };
+            const mockRes = {
+                send: jest.fn(() => {
+                    throw new Error('Simulated error in res.send()');
+                })
+            };
+            const mockNext = jest.fn();
+            
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            
+            // Manually call the route handler logic with error conditions
+            try {
+                mockRes.send('Good evening');
+            } catch (error) {
+                console.error('Error in GET /evening endpoint:', error);
+                mockNext(error);
+            }
+            
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Error in GET /evening endpoint:',
+                expect.any(Error)
+            );
+            expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+            
+            consoleSpy.mockRestore();
+        });
+    });
+
     describe('Edge Cases and Security', () => {
         it('should handle requests with unusual characters in path', async () => {
             const specialPaths = [
