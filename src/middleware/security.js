@@ -107,7 +107,7 @@ function createSecurityPolicy(environment = config.nodeEnv) {
             action: SECURITY_DEFAULTS.FRAME_OPTIONS.toLowerCase()
         },
         noSniff: true,
-        xssFilter: true,
+        xssFilter: false, // Disable helmet's default and manually set header
         referrerPolicy: {
             policy: SECURITY_DEFAULTS.REFERRER_POLICY
         },
@@ -403,7 +403,21 @@ function securityConfig(options = {}) {
             xssFilterEnabled: !!finalConfig.xssFilter
         });
 
-        return helmetMiddleware;
+        // Custom middleware that applies helmet and manually sets additional headers
+        return (req, res, next) => {
+            // Apply helmet middleware first
+            helmetMiddleware(req, res, (err) => {
+                if (err) return next(err);
+                
+                // Manually set X-XSS-Protection header to override helmet's default
+                res.setHeader('X-XSS-Protection', '1; mode=block');
+                
+                // Set Permissions-Policy header for modern browsers
+                res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+                
+                next();
+            });
+        };
 
     } catch (error) {
         logger.error('Security middleware initialization failed', {
