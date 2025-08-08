@@ -1,0 +1,40 @@
+{
+  "watch": [
+    "server.js",
+    "src/"
+  ],
+  "ignore": [
+    "node_modules/",
+    "coverage/",
+    "test/",
+    ".git/",
+    "*.log",
+    "*.tmp",
+    "dist/",
+    "build/"
+  ],
+  "ext": "js,json,mjs",
+  "exec": "node server.js",
+  "env": {
+    "NODE_ENV": "development",
+    "PORT": "3000",
+    "DEBUG": "*"
+  },
+  "delay": 1000,
+  "verbose": true,
+  "legacyWatch": false,
+  "restartable": "rs",
+  "signals": {
+    "SIGUSR2": "SIGKILL"
+  },
+  "events": {
+    "restart": "echo 'Blitzy agent: Nodemon restarted the server due to file changes'",
+    "crash": "echo 'Blitzy agent: Server crashed - investigating...'",
+    "start": "echo 'Blitzy agent: Development server started successfully'"
+  },
+  "nodeArgs": [
+    "--inspect=9229"
+  ],
+  "colours": true,
+  "stdout": true
+}
