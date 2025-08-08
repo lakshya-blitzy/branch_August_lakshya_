@@ -76,28 +76,46 @@ function generateTimestamp() {
 
 /**
  * Sanitizes data by removing null and undefined values
- * Handles nested objects and arrays gracefully
+ * Handles nested objects and arrays gracefully, with circular reference protection
  * @param {any} data - Data to sanitize
+ * @param {WeakSet} [visited] - Set to track visited objects for circular reference detection
  * @returns {any} Sanitized data
  */
-function sanitizeData(data) {
+function sanitizeData(data, visited = new WeakSet()) {
   if (data === null || data === undefined) {
     return null;
   }
   
   if (util.isArray(data)) {
-    return data
+    // Check for circular reference in arrays
+    if (visited.has(data)) {
+      return '[Circular]';
+    }
+    visited.add(data);
+    
+    const sanitizedArray = data
       .filter(item => item !== null && item !== undefined)
-      .map(item => sanitizeData(item));
+      .map(item => sanitizeData(item, visited));
+    
+    visited.delete(data);
+    return sanitizedArray;
   }
   
   if (util.isObject(data) && !Buffer.isBuffer(data) && !(data instanceof Date)) {
+    // Check for circular reference in objects
+    if (visited.has(data)) {
+      return '[Circular]';
+    }
+    visited.add(data);
+    
     const sanitized = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== null && value !== undefined) {
-        sanitized[key] = sanitizeData(value);
+        sanitized[key] = sanitizeData(value, visited);
       }
     }
+    
+    visited.delete(data);
     return sanitized;
   }
   
