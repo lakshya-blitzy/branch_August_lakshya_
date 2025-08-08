@@ -1,0 +1,132 @@
+{
+  "name": "testinium-qa-server",
+  "version": "1.0.0",
+  "description": "Node.js HTTP server component for the Testinium-QA test automation framework providing RESTful API endpoints, comprehensive middleware stack, and production-ready server capabilities with extensive unit test coverage",
+  "main": "server.js",
+  "scripts": {
+    "start": "NODE_ENV=production node server.js",
+    "dev": "NODE_ENV=development nodemon server.js",
+    "test": "NODE_ENV=test jest",
+    "test:watch": "NODE_ENV=test jest --watch",
+    "test:coverage": "NODE_ENV=test jest --coverage",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write .",
+    "prestart": "npm run lint",
+    "postinstall": "echo 'Testinium-QA Server dependencies installed successfully'"
+  },
+  "keywords": [
+    "testinium",
+    "qa",
+    "test-automation",
+    "http-server",
+    "rest-api",
+    "express",
+    "node",
+    "testing",
+    "jest",
+    "supertest",
+    "middleware",
+    "server"
+  ],
+  "author": "Testinium-QA Development Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/testinium/testinium-qa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/testinium/testinium-qa/issues"
+  },
+  "homepage": "https://github.com/testinium/testinium-qa#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "compression": "^1.7.4",
+    "body-parser": "^1.20.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.3.1",
+    "express-async-errors": "^3.1.1",
+    "http-status-codes": "^2.3.0",
+    "uuid": "^9.0.0",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "validator": "^13.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "joi": "^17.11.0",
+    "lodash": "^4.17.21",
+    "fast-safe-stringify": "^2.1.1",
+    "express-rate-limit": "^7.1.0",
+    "redis": "^4.6.10"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "supertest": "^6.3.0",
+    "nodemon": "^3.0.0",
+    "@types/jest": "^29.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "nock": "^13.3.3",
+    "axios": "^1.5.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "**/*.js",
+      "!node_modules/**",
+      "!coverage/**",
+      "!jest.config.js",
+      "!*.config.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html",
+      "json"
+    ],
+    "testMatch": [
+      "**/test/**/*.test.js",
+      "**/__tests__/**/*.js"
+    ],
+    "verbose": true,
+    "forceExit": true,
+    "clearMocks": true,
+    "resetMocks": true,
+    "restoreMocks": true
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false
+  },
+  "eslintConfig": {
+    "env": {
+      "node": true,
+      "es2021": true,
+      "jest": true
+    },
+    "extends": [
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-console": "warn",
+      "no-unused-vars": "error",
+      "no-undef": "error",
+      "prefer-const": "error",
+      "no-var": "error"
+    }
+  }
+}
