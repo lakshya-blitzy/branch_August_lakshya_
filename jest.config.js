@@ -306,11 +306,12 @@ module.exports = {
    * 
    * Enables enhanced watch mode functionality for improved development
    * experience with interactive test filtering and execution control.
+   * Disabled temporarily as watch plugins are not installed.
    */
-  watchPlugins: [
-    'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname'
-  ],
+  // watchPlugins: [
+  //   'jest-watch-typeahead/filename',
+  //   'jest-watch-typeahead/testname'
+  // ],
 
   // =============================================================================
   // TRANSFORM AND COMPILATION CONFIGURATION
@@ -321,11 +322,9 @@ module.exports = {
    * 
    * Configures file transformation for different file types, ensuring
    * proper handling of modern JavaScript features and module formats.
+   * Using default Jest transformation for Node.js compatibility.
    */
-  transform: {
-    '^.+\\.js$': 'babel-jest',
-    '^.+\\.mjs$': 'babel-jest'
-  },
+  transform: {},
 
   /**
    * Transform Ignore Patterns
@@ -334,6 +333,6 @@ module.exports = {
    * handling ES modules in dependencies while optimizing build performance.
    */
   transformIgnorePatterns: [
-    'node_modules/(?!(supertest|express)/)'
+    'node_modules/'
   ]
 };
