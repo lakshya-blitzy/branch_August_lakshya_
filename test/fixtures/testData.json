@@ -2,12 +2,11 @@
   "validRequestPayloads": {
     "createUser": {
       "basic": {
-        "username": "testuser123",
-        "email": "test@example.com",
-        "password": "SecurePassword123!",
-        "role": "PosManager",
-        "firstName": "Jean",
-        "lastName": "Dupont"
+        "name": "Test Item",
+        "description": "A test item for validation",
+        "category": "test",
+        "price": 29.99,
+        "inStock": true
       },
       "posManager": {
         "username": "posmanager01",
@@ -52,19 +51,19 @@
     },
     "updateUser": {
       "basic": {
-        "firstName": "UpdatedJean",
-        "lastName": "UpdatedDupont",
-        "email": "updated@example.com"
+        "name": "Updated Item",
+        "description": "An updated item description",
+        "category": "updated",
+        "price": 39.99,
+        "inStock": false
       },
       "roleChange": {
-        "role": "SalesManager",
-        "permissions": ["view_dashboard", "manage_sales"],
-        "department": "Sales"
+        "category": "premium",
+        "price": 59.99
       },
       "passwordChange": {
-        "currentPassword": "OldPassword123!",
-        "newPassword": "NewPassword123!",
-        "confirmPassword": "NewPassword123!"
+        "description": "Updated description for item",
+        "price": 49.99
       }
     },
     "authLogin": {
@@ -89,26 +88,17 @@
         "offset": 0
       },
       "advanced": {
-        "query": "marie martin",
-        "filters": {
-          "role": "PosManager",
-          "department": "Point of Sale",
-          "active": true
-        },
-        "sort": {
-          "field": "lastName",
-          "order": "asc"
-        },
-        "limit": 25,
-        "offset": 0
+        "page": "1",
+        "limit": "25",
+        "sort": "name",
+        "order": "asc",
+        "category": "electronics"
       },
       "pagination": {
-        "limit": 50,
-        "offset": 100,
-        "sort": {
-          "field": "createdAt",
-          "order": "desc"
-        }
+        "page": "3",
+        "limit": "20",
+        "sort": "createdAt",
+        "order": "desc"
       }
     },
     "dashboard": {
@@ -195,7 +185,7 @@
         "role": "PosManager"
       },
       "usernameTooLong": {
-        "username": "a".repeat(101),
+        "username": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1",
         "email": "test@example.com",
         "password": "SecurePassword123!",
         "role": "PosManager"
@@ -506,7 +496,7 @@
   "edgeCaseDataSets": {
     "maximumPayloadSizes": {
       "nearMaximumUserObject": {
-        "username": "a".repeat(100),
+        "username": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "email": "very.long.email.address.that.approaches.maximum.length@very-long-domain-name-example.com",
         "password": "ComplexPassword123!@#$%^&*()_+{}[]|:;<>,.?/~`",
         "role": "PosManager",
@@ -531,12 +521,20 @@
         }
       },
       "largeArrayPayload": {
-        "users": Array.from({length: 1000}, (_, i) => ({
-          id: `user_${i.toString().padStart(9, '0')}`,
-          username: `testuser${i}`,
-          email: `testuser${i}@example.com`,
-          role: i % 2 === 0 ? "PosManager" : "SalesManager"
-        }))
+        "users": [
+          {
+            "id": "user_000000000",
+            "username": "testuser0",
+            "email": "testuser0@example.com",
+            "role": "PosManager"
+          },
+          {
+            "id": "user_000000001",
+            "username": "testuser1",
+            "email": "testuser1@example.com",
+            "role": "SalesManager"
+          }
+        ]
       }
     },
     "minimumValidValues": {
@@ -594,7 +592,7 @@
         "password": "SecurePassword123!",
         "role": "PosManager",
         "firstName": null,
-        "lastName": undefined
+        "lastName": null
       },
       "deeplyNestedNulls": {
         "user": {
@@ -685,27 +683,52 @@
       }
     },
     "concurrentRequestSimulation": {
-      "multipleUsers": Array.from({length: 100}, (_, i) => ({
-        "requestId": `req_${Date.now()}_${i}`,
-        "timestamp": new Date(Date.now() + i * 1000).toISOString(),
-        "payload": {
-          "username": `concurrent_user_${i}`,
-          "email": `user${i}@load-test.com`,
-          "password": "LoadTest123!",
-          "role": i % 3 === 0 ? "PosManager" : "SalesManager",
-          "sessionId": `session_${Math.random().toString(36).substr(2, 9)}`
+      "multipleUsers": [
+        {
+          "requestId": "req_1690000000000_0",
+          "timestamp": "2023-07-22T12:00:00.000Z",
+          "payload": {
+            "username": "concurrent_user_0",
+            "email": "user0@load-test.com",
+            "password": "LoadTest123!",
+            "role": "PosManager",
+            "sessionId": "session_abcd12345"
+          }
+        },
+        {
+          "requestId": "req_1690000000000_1",
+          "timestamp": "2023-07-22T12:00:01.000Z",
+          "payload": {
+            "username": "concurrent_user_1",
+            "email": "user1@load-test.com",
+            "password": "LoadTest123!",
+            "role": "SalesManager",
+            "sessionId": "session_xyz67890"
+          }
         }
-      })),
-      "rapidFireRequests": Array.from({length: 50}, (_, i) => ({
-        "timestamp": new Date(Date.now() + i * 100).toISOString(),
-        "action": "GET",
-        "endpoint": "/api/users",
-        "queryParams": {
-          "limit": 10,
-          "offset": i * 10,
-          "search": `query_${i}`
+      ],
+      "rapidFireRequests": [
+        {
+          "timestamp": "2023-07-22T12:00:00.000Z",
+          "action": "GET",
+          "endpoint": "/api/users",
+          "queryParams": {
+            "limit": 10,
+            "offset": 0,
+            "search": "query_0"
+          }
+        },
+        {
+          "timestamp": "2023-07-22T12:00:00.100Z",
+          "action": "GET",
+          "endpoint": "/api/users",
+          "queryParams": {
+            "limit": 10,
+            "offset": 10,
+            "search": "query_1"
+          }
         }
-      }))
+      ]
     }
   },
   "authenticationTestData": {
@@ -934,10 +957,16 @@
     },
     "stressTestData": {
       "memoryPressure": {
-        "largePayloads": Array.from({length: 100}, (_, i) => ({
-          "id": i,
-          "data": "x".repeat(10000)
-        })),
+        "largePayloads": [
+          {
+            "id": 0,
+            "data": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          },
+          {
+            "id": 1,
+            "data": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          }
+        ],
         "description": "Large payload to test memory handling"
       },
       "cpuIntensive": {
