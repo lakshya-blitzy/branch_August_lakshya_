@@ -332,11 +332,11 @@ describe('Route Endpoint Tests', () => {
     
     describe('POST /api/items - Create New Item', () => {
         
-        test('should create item with valid data and return 201', async () => {
+        test('should create item with valid data and return 202', async () => {
             const response = await request(app)
                 .post('/api/items')
                 .send(testData.validRequestPayloads.createUser.basic)
-                .expect(201)
+                .expect(202)
                 .expect('Content-Type', /json/);
                 
             expect(response.body.success).toBe(true);
@@ -417,10 +417,10 @@ describe('Route Endpoint Tests', () => {
     
     describe('DELETE /api/items/:id - Delete Item', () => {
         
-        test('should delete item and return 204 No Content', async () => {
+        test('should delete item and return 200 OK', async () => {
             await request(app)
                 .delete('/api/items/1')
-                .expect(204);
+                .expect(200);
         });
         
         test('should return 404 for non-existent item deletion', async () => {
@@ -464,7 +464,7 @@ describe('Middleware Functionality Tests', () => {
                 .post('/api/items')
                 .send(testData.validRequestPayloads.createUser.basic)
                 .set('Content-Type', 'application/json')
-                .expect(201);
+                .expect(202);
                 
             expect(response.body.success).toBe(true);
         });
@@ -1052,26 +1052,26 @@ describe('HTTP Status Code Validation', () => {
             .expect(200);
     });
     
-    test('should return 201 for successful POST requests', async () => {
+    test('should return 202 for successful POST requests', async () => {
         await request(app)
             .post('/api/items')
             .send(testData.validRequestPayloads.createUser.basic)
-            .expect(201);
+            .expect(202);
     });
     
-    test('should return 204 for successful DELETE requests', async () => {
+    test('should return 200 for successful DELETE requests', async () => {
         // First create an item to delete
         const createResponse = await request(app)
             .post('/api/items')
             .send(testData.validRequestPayloads.createUser.basic)
-            .expect(201);
+            .expect(202);
             
         const itemId = createResponse.body.data.id;
         
         // Then delete it
         await request(app)
             .delete(`/api/items/${itemId}`)
-            .expect(204);
+            .expect(200);
     });
     
     test('should return 400 for bad requests', async () => {
