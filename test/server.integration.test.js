@@ -28,7 +28,7 @@
  */
 
 // External imports - Jest testing framework with comprehensive capabilities
-const { describe, test, beforeAll, afterAll, beforeEach, afterEach, expect, jest } = require('jest');
+const { describe, test, beforeAll, afterAll, beforeEach, afterEach, expect } = require('@jest/globals');
 
 // External imports - HTTP testing and request mocking libraries
 const request = require('supertest');
@@ -246,6 +246,24 @@ describe('Node.js Server Integration Tests', () => {
         // Clear any existing nock interceptors for test isolation
         nock.cleanAll();
         
+        // Clear rate limiter cache for test isolation
+        const rateLimitMiddleware = require('../src/middleware/rateLimit.js');
+        if (rateLimitMiddleware.clearRateLimiterCache) {
+            rateLimitMiddleware.clearRateLimiterCache();
+        }
+        
+        // Mock external service health checks to prevent fallback mode unless specifically testing it
+        // These health checks are called by API routes and need to succeed for normal operation
+        nock('http://database.example.com')
+            .get('/health')
+            .reply(200, { status: 'healthy', service: 'database' })
+            .persist();
+            
+        nock('http://cache.example.com')
+            .get('/health')
+            .reply(200, { status: 'healthy', service: 'cache' })
+            .persist();
+        
         // Capture initial memory usage
         const initialMemory = process.memoryUsage();
         performanceMetrics.memorySnapshots.push({
@@ -279,8 +297,16 @@ describe('Node.js Server Integration Tests', () => {
             });
         }
 
-        // Ensure no outstanding nock interceptors
-        expect(nock.pendingMocks()).toEqual([]);
+        // Clean up persistent health check mocks and check for unexpected pending mocks
+        const pendingMocks = nock.pendingMocks();
+        const expectedHealthMocks = [
+            'GET http://database.example.com:80/health',
+            'GET http://cache.example.com:80/health'
+        ];
+        
+        // Filter out expected health check mocks - only fail if there are unexpected mocks
+        const unexpectedMocks = pendingMocks.filter(mock => !expectedHealthMocks.includes(mock));
+        expect(unexpectedMocks).toEqual([]);
     });
 
     /**
@@ -1033,13 +1059,16 @@ describe('Node.js Server Integration Tests', () => {
                 // Mock all external services as unavailable
                 logger.debug('Testing graceful degradation with service unavailability');
                 
+                // First clear persistent health check mocks for this test
+                nock.cleanAll();
+                
                 // Mock database service failure
-                const mockDatabaseFailure = nock('https://database-api.example.com')
+                const mockDatabaseFailure = nock('http://database.example.com')
                     .get('/health')
                     .reply(503, { error: 'Database service unavailable' });
 
                 // Mock cache service failure
-                const mockCacheFailure = nock('https://cache-api.example.com')
+                const mockCacheFailure = nock('http://cache.example.com')
                     .get('/health')
                     .reply(503, { error: 'Cache service unavailable' });
 
@@ -1178,15 +1207,17 @@ describe('Node.js Server Integration Tests', () => {
                     .expect(201);
 
                 const itemId = createResponse.body.data.id;
+                const currentVersion = createResponse.body.data.version || 1; // Get the version from creation
                 const concurrentUpdates = 10;
 
-                // Create concurrent update requests with different data
+                // Create concurrent update requests with same version (this should cause conflicts)
                 const updateRequests = Array.from({ length: concurrentUpdates }, (_, index) => {
                     return request(testServer)
                         .put(`/api/items/${itemId}`)
                         .set('Authorization', `Bearer ${authTokens.posManager}`)
                         .send({
                             ...testData.validRequestPayloads.updateUser.basic,
+                            version: currentVersion, // Send the same version for all requests
                             name: `Concurrent Update ${index}`,
                             description: `Update attempt ${index} at ${Date.now()}`
                         });
@@ -1514,6 +1545,7 @@ describe('Node.js Server Integration Tests', () => {
                     .post('/api/external/jira/issue')
                     .set('Authorization', `Bearer ${authTokens.admin}`)
                     .send({
+                        issueType: 'Bug',
                         summary: 'Test Issue',
                         description: 'Test Description'
                     })
@@ -2180,7 +2212,8 @@ describe('Node.js Server Integration Tests', () => {
                     .send({
                         name: 'Safe Content &amp; Valid HTML Entities',
                         description: 'This is safe content with properly encoded entities',
-                        category: 'security_test'
+                        category: 'security_test',
+                        price: 99.99  // Added missing price field
                     })
                     .expect(201);
 
@@ -2551,7 +2584,9 @@ describe('Node.js Server Integration Tests', () => {
                     }
 
                     // Validate no sensitive information in headers
-                    expect(response.headers['server']).not.toContain('Express');
+                    if (response.headers['server']) {
+                        expect(response.headers['server']).not.toContain('Express');
+                    }
                     expect(response.headers['x-powered-by']).toBeUndefined();
                 }
 
