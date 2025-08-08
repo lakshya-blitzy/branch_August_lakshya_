@@ -52,11 +52,11 @@ const validator = new Validator({
  * In-memory data store for demonstration purposes
  * In production, this would be replaced with database integration
  */
-let itemsStore = new Map();
+const itemsStore = new Map();
 let nextItemId = 1;
 
 // Also maintain an array for compatibility with existing code
-let items = [];
+const items = [];
 
 // In-memory token blacklist for logout functionality  
 const invalidatedTokens = new Set();

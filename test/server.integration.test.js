@@ -89,9 +89,9 @@ const { Validator } = require('../src/utils/validator.js');
  * Manages test server instances, performance metrics, and cleanup procedures
  */
 let testServer = null;
-let testPort = config.port; // Uses port 3001 for test environment
-let baseURL = `http://localhost:${testPort}`;
-let performanceMetrics = {
+const testPort = config.port; // Uses port 3001 for test environment
+const baseURL = `http://localhost:${testPort}`;
+const performanceMetrics = {
     requests: [],
     memorySnapshots: [],
     responseTimeViolations: 0,
@@ -99,7 +99,7 @@ let performanceMetrics = {
 };
 
 // Authentication tokens for multi-role testing scenarios
-let authTokens = {
+const authTokens = {
     posManager: null,
     salesManager: null,
     admin: null,

@@ -384,7 +384,7 @@ function validateString(value, rules = {}) {
         }
 
         // Trim if enabled
-        let processedValue = trim ? value.trim() : value;
+        const processedValue = trim ? value.trim() : value;
 
         // Empty check
         if (!allowEmpty && processedValue.length === 0) {
