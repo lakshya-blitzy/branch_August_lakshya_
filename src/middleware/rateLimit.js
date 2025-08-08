@@ -54,6 +54,9 @@ const { createError } = require('../middleware/errorHandler.js');
 // Internal imports - User role constants
 const { USER_ROLES } = require('../middleware/auth.js');
 
+// Internal imports - Response formatting utility
+const responseFormatter = require('../utils/responseFormatter.js');
+
 /**
  * Default rate limiting configuration constants
  * Provides baseline settings for rate limiting behavior across environments
@@ -265,14 +268,21 @@ function rateLimitHandler(req, res, next) {
     // Set rate limiting headers
     res.set(RATE_LIMIT_DEFAULTS.HEADERS.RETRY_AFTER, retryAfter);
     
-    // Send 429 response directly instead of delegating to error middleware
-    res.status(StatusCodes.TOO_MANY_REQUESTS).json({
-        error: true,
-        message: 'Too many requests, please try again later',
-        type: 'RATE_LIMIT_EXCEEDED',
-        retryAfter: retryAfter,
-        windowMs: config.rateLimit.windowMs
+    // Create rate limit error using responseFormatter
+    const rateLimitError = responseFormatter.error('Too many requests, please try again later', {
+        statusCode: StatusCodes.TOO_MANY_REQUESTS,
+        code: 'RATE_LIMIT_EXCEEDED',
+        details: {
+            retryAfter: retryAfter,
+            windowMs: config.rateLimit.windowMs
+        }
     });
+    
+    // Update error type to match test expectations
+    rateLimitError.error.type = 'RateLimitError';
+    
+    // Send 429 response with consistent format
+    res.status(StatusCodes.TOO_MANY_REQUESTS).json(rateLimitError);
 }
 
 /**
