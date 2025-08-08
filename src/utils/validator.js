@@ -262,6 +262,20 @@ function validateRequest(data, schema, options = {}) {
             stack: error.stack
         }, error);
 
+        // Check if this is a security validation error
+        if (error.message === 'malicious content detected' || error.message === 'invalid input detected') {
+            return {
+                valid: false,
+                data: null,
+                errors: [error.message],
+                metadata: {
+                    responseTime: Date.now() - startTime,
+                    error: true,
+                    securityViolation: true
+                }
+            };
+        }
+
         return {
             valid: false,
             data: null,
@@ -888,9 +902,52 @@ function sanitizeInput(data, options = {}) {
                 return undefined;
             }
             
-            // HTML escape
+            // XSS Detection - Check for malicious content patterns
+            const xssPatterns = [
+                /<script.*?>.*?<\/script>/gi,
+                /javascript:/gi,
+                /on\w+\s*=/gi,
+                /<iframe.*?>/gi,
+                /<object.*?>/gi,
+                /<embed.*?>/gi,
+                /<link.*?>/gi,
+                /<meta.*?>/gi,
+                /expression\s*\(/gi,
+                /vbscript:/gi,
+                /data:text\/html/gi
+            ];
+            
+            const hasXSS = xssPatterns.some(pattern => pattern.test(sanitized));
+            
+            if (hasXSS) {
+                throw new Error('malicious content detected');
+            }
+            
+            // SQL Injection Detection - Check for SQL injection patterns
+            const sqlInjectionPatterns = [
+                // Single quotes, escaped quotes, or semicolon followed by SQL keywords (not just any semicolon)
+                /('|(\\')|(;\s*(select|insert|update|delete|drop|create|alter|exec|execute)\s+))/gi,
+                /(\s*(union|or|and)\s+\d+\s*=\s*\d+)/gi,
+                /(\s*(union|or|and)\s+(select|insert|update|delete))/gi,
+                /((%27)|('|"))\s*((%6F)|o|(%4F))((%72)|r|(%52))/gi,
+                /((%27)|('|"))\s*union/gi,
+                /exec(\s|\+)+(s|x)p\w+/gi,
+                /(\s|^)(select|insert|update|delete|drop|create|alter|exec)\s+.+\s+(from|into|set|where|values)/gi
+            ];
+            
+            const hasSQLInjection = sqlInjectionPatterns.some(pattern => pattern.test(sanitized));
+            
+            if (hasSQLInjection) {
+                throw new Error('invalid input detected');
+            }
+            
+            // HTML escape - avoid double-encoding already encoded entities
             if (htmlEscape) {
-                sanitized = validator.escape(sanitized);
+                // Check if content is already HTML encoded
+                const alreadyEncoded = /&(amp|lt|gt|quot|#x?\d+);/.test(sanitized);
+                if (!alreadyEncoded) {
+                    sanitized = validator.escape(sanitized);
+                }
             }
             
             return sanitized;
@@ -917,7 +974,14 @@ function sanitizeInput(data, options = {}) {
 
     } catch (error) {
         logger.error('Input sanitization error', { error: error.message }, error);
-        return data; // Return original data if sanitization fails
+        
+        // Re-throw security-related errors instead of silently returning original data
+        if (error.message.includes('malicious content detected') || 
+            error.message.includes('invalid input detected')) {
+            throw error;
+        }
+        
+        return data; // Return original data only for non-security sanitization failures
     }
 }
 
@@ -1344,6 +1408,50 @@ class Validator {
             ...options 
         };
         return formatValidationErrors(errors, mergedOptions);
+    }
+
+    /**
+     * Checks if the input contains SQL injection patterns
+     * 
+     * @param {string} input - Input string to check for SQL injection
+     * @returns {boolean} True if SQL injection patterns are detected
+     */
+    hasSqlInjection(input) {
+        try {
+            if (typeof input !== 'string') {
+                return false;
+            }
+            
+            // SQL Injection Detection - Check for SQL injection patterns
+            const sqlInjectionPatterns = [
+                // Single quotes, escaped quotes, or semicolon followed by SQL keywords (not just any semicolon)
+                /('|(\\')|(;\s*(select|insert|update|delete|drop|create|alter|exec|execute)\s+))/gi,
+                /(\s*(union|or|and)\s+\d+\s*=\s*\d+)/gi,
+                /(\s*(union|or|and)\s+(select|insert|update|delete))/gi,
+                /((%27)|('|"))\s*((%6F)|o|(%4F))((%72)|r|(%52))/gi,
+                /((%27)|('|"))\s*union/gi,
+                /exec(\s|\+)+(s|x)p\w+/gi,
+                /(\s|^)(select|insert|update|delete|drop|create|alter|exec)\s+.+\s+(from|into|set|where|values)/gi
+            ];
+            
+            const hasSQLInjection = sqlInjectionPatterns.some(pattern => pattern.test(input));
+            
+            if (hasSQLInjection) {
+                logger.warn('SQL injection patterns detected', {
+                    input: input.substring(0, 100) + (input.length > 100 ? '...' : ''),
+                    patterns: sqlInjectionPatterns.filter(pattern => pattern.test(input)).length
+                });
+            }
+            
+            return hasSQLInjection;
+            
+        } catch (error) {
+            logger.error('SQL injection detection error', { 
+                error: error.message,
+                input: typeof input 
+            }, error);
+            return false; // Fail safely - don't block valid requests due to detection errors
+        }
     }
 
     /**
