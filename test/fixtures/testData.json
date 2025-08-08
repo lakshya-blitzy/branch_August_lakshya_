@@ -1,0 +1,969 @@
+{
+  "validRequestPayloads": {
+    "createUser": {
+      "basic": {
+        "username": "testuser123",
+        "email": "test@example.com",
+        "password": "SecurePassword123!",
+        "role": "PosManager",
+        "firstName": "Jean",
+        "lastName": "Dupont"
+      },
+      "posManager": {
+        "username": "posmanager01",
+        "email": "pos.manager@company.fr",
+        "password": "PosManager2024!",
+        "role": "PosManager",
+        "firstName": "Marie",
+        "lastName": "Martin",
+        "permissions": ["view_dashboard", "manage_pos", "view_reports"],
+        "department": "Point of Sale"
+      },
+      "salesManager": {
+        "username": "salesmanager01", 
+        "email": "sales.manager@company.fr",
+        "password": "SalesManager2024!",
+        "role": "SalesManager",
+        "firstName": "Pierre",
+        "lastName": "Bernard",
+        "permissions": ["view_dashboard", "manage_sales", "view_analytics"],
+        "department": "Sales"
+      },
+      "withOptionalFields": {
+        "username": "complete_user",
+        "email": "complete@example.com",
+        "password": "CompleteUser123!",
+        "role": "PosManager",
+        "firstName": "Alice",
+        "lastName": "Johnson",
+        "phone": "+33 1 23 45 67 89",
+        "address": {
+          "street": "123 Rue de la Paix",
+          "city": "Paris",
+          "postalCode": "75001",
+          "country": "France"
+        },
+        "preferences": {
+          "language": "fr",
+          "timezone": "Europe/Paris",
+          "notifications": true
+        }
+      }
+    },
+    "updateUser": {
+      "basic": {
+        "firstName": "UpdatedJean",
+        "lastName": "UpdatedDupont",
+        "email": "updated@example.com"
+      },
+      "roleChange": {
+        "role": "SalesManager",
+        "permissions": ["view_dashboard", "manage_sales"],
+        "department": "Sales"
+      },
+      "passwordChange": {
+        "currentPassword": "OldPassword123!",
+        "newPassword": "NewPassword123!",
+        "confirmPassword": "NewPassword123!"
+      }
+    },
+    "authLogin": {
+      "posManager": {
+        "username": "posmanager01",
+        "password": "PosManager2024!"
+      },
+      "salesManager": {
+        "username": "salesmanager01",
+        "password": "SalesManager2024!"
+      },
+      "withRememberMe": {
+        "username": "testuser123",
+        "password": "SecurePassword123!",
+        "rememberMe": true
+      }
+    },
+    "searchQuery": {
+      "basic": {
+        "query": "jean",
+        "limit": 10,
+        "offset": 0
+      },
+      "advanced": {
+        "query": "marie martin",
+        "filters": {
+          "role": "PosManager",
+          "department": "Point of Sale",
+          "active": true
+        },
+        "sort": {
+          "field": "lastName",
+          "order": "asc"
+        },
+        "limit": 25,
+        "offset": 0
+      },
+      "pagination": {
+        "limit": 50,
+        "offset": 100,
+        "sort": {
+          "field": "createdAt",
+          "order": "desc"
+        }
+      }
+    },
+    "dashboard": {
+      "filters": {
+        "dateRange": {
+          "start": "2024-01-01T00:00:00.000Z",
+          "end": "2024-12-31T23:59:59.999Z"
+        },
+        "metrics": ["sales", "transactions", "users"],
+        "granularity": "daily"
+      }
+    }
+  },
+  "invalidRequestPayloads": {
+    "malformedJson": [
+      "{\"username\": \"test\", \"email\": }", 
+      "{username: 'test', email: 'test@example.com'}",
+      "{'username': 'test', 'email': 'test@example.com'",
+      "{\"username\": \"test\" \"email\": \"test@example.com\"}"
+    ],
+    "missingRequiredFields": {
+      "createUserMissingUsername": {
+        "email": "test@example.com",
+        "password": "SecurePassword123!",
+        "role": "PosManager"
+      },
+      "createUserMissingEmail": {
+        "username": "testuser123",
+        "password": "SecurePassword123!",
+        "role": "PosManager"
+      },
+      "createUserMissingPassword": {
+        "username": "testuser123",
+        "email": "test@example.com",
+        "role": "PosManager"
+      },
+      "createUserMissingRole": {
+        "username": "testuser123",
+        "email": "test@example.com",
+        "password": "SecurePassword123!"
+      },
+      "loginMissingUsername": {
+        "password": "SecurePassword123!"
+      },
+      "loginMissingPassword": {
+        "username": "testuser123"
+      }
+    },
+    "invalidDataTypes": {
+      "usernameAsNumber": {
+        "username": 12345,
+        "email": "test@example.com",
+        "password": "SecurePassword123!",
+        "role": "PosManager"
+      },
+      "emailAsBoolean": {
+        "username": "testuser123",
+        "email": true,
+        "password": "SecurePassword123!",
+        "role": "PosManager"
+      },
+      "roleAsArray": {
+        "username": "testuser123",
+        "email": "test@example.com", 
+        "password": "SecurePassword123!",
+        "role": ["PosManager", "SalesManager"]
+      },
+      "limitAsString": {
+        "query": "search",
+        "limit": "ten",
+        "offset": 0
+      },
+      "offsetAsFloat": {
+        "query": "search",
+        "limit": 10,
+        "offset": 5.5
+      }
+    },
+    "boundaryViolations": {
+      "usernameTooShort": {
+        "username": "ab",
+        "email": "test@example.com",
+        "password": "SecurePassword123!",
+        "role": "PosManager"
+      },
+      "usernameTooLong": {
+        "username": "a".repeat(101),
+        "email": "test@example.com",
+        "password": "SecurePassword123!",
+        "role": "PosManager"
+      },
+      "passwordTooShort": {
+        "username": "testuser123",
+        "email": "test@example.com",
+        "password": "123",
+        "role": "PosManager"
+      },
+      "invalidEmail": {
+        "username": "testuser123",
+        "email": "invalid-email",
+        "password": "SecurePassword123!",
+        "role": "PosManager"
+      },
+      "invalidRole": {
+        "username": "testuser123",
+        "email": "test@example.com",
+        "password": "SecurePassword123!",
+        "role": "InvalidRole"
+      },
+      "negativeLimit": {
+        "query": "search",
+        "limit": -5,
+        "offset": 0
+      },
+      "negativeOffset": {
+        "query": "search",
+        "limit": 10,
+        "offset": -1
+      },
+      "excessiveLimit": {
+        "query": "search",
+        "limit": 10000,
+        "offset": 0
+      }
+    },
+    "emptyValues": {
+      "emptyStrings": {
+        "username": "",
+        "email": "",
+        "password": "",
+        "role": ""
+      },
+      "nullValues": {
+        "username": null,
+        "email": null,
+        "password": null,
+        "role": null
+      },
+      "undefinedValues": {},
+      "emptyObject": {},
+      "emptyArray": []
+    }
+  },
+  "expectedResponseStructures": {
+    "successResponses": {
+      "createUserSuccess": {
+        "status": "success",
+        "statusCode": 201,
+        "message": "User created successfully",
+        "data": {
+          "id": "user_123456789",
+          "username": "testuser123",
+          "email": "test@example.com",
+          "role": "PosManager",
+          "firstName": "Jean",
+          "lastName": "Dupont",
+          "createdAt": "2024-01-15T10:30:00.000Z",
+          "updatedAt": "2024-01-15T10:30:00.000Z",
+          "active": true
+        }
+      },
+      "getUserSuccess": {
+        "status": "success",
+        "statusCode": 200,
+        "message": "User retrieved successfully",
+        "data": {
+          "id": "user_123456789",
+          "username": "testuser123",
+          "email": "test@example.com",
+          "role": "PosManager",
+          "firstName": "Jean",
+          "lastName": "Dupont",
+          "permissions": ["view_dashboard", "manage_pos"],
+          "department": "Point of Sale",
+          "lastLogin": "2024-01-15T09:15:00.000Z",
+          "createdAt": "2024-01-15T10:30:00.000Z",
+          "updatedAt": "2024-01-15T10:30:00.000Z",
+          "active": true
+        }
+      },
+      "updateUserSuccess": {
+        "status": "success",
+        "statusCode": 200,
+        "message": "User updated successfully",
+        "data": {
+          "id": "user_123456789",
+          "username": "testuser123",
+          "email": "updated@example.com",
+          "role": "PosManager",
+          "firstName": "UpdatedJean",
+          "lastName": "UpdatedDupont",
+          "updatedAt": "2024-01-15T11:45:00.000Z"
+        }
+      },
+      "deleteUserSuccess": {
+        "status": "success",
+        "statusCode": 200,
+        "message": "User deleted successfully",
+        "data": {
+          "id": "user_123456789",
+          "deletedAt": "2024-01-15T12:00:00.000Z"
+        }
+      },
+      "loginSuccess": {
+        "status": "success",
+        "statusCode": 200,
+        "message": "Login successful",
+        "data": {
+          "user": {
+            "id": "user_123456789",
+            "username": "testuser123",
+            "email": "test@example.com",
+            "role": "PosManager",
+            "firstName": "Jean",
+            "lastName": "Dupont",
+            "permissions": ["view_dashboard", "manage_pos"]
+          },
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "refreshToken": "refresh_token_example",
+          "expiresIn": 3600,
+          "tokenType": "Bearer"
+        }
+      },
+      "searchUsersSuccess": {
+        "status": "success",
+        "statusCode": 200,
+        "message": "Users retrieved successfully",
+        "data": {
+          "users": [
+            {
+              "id": "user_123456789",
+              "username": "testuser123",
+              "email": "test@example.com",
+              "role": "PosManager",
+              "firstName": "Jean",
+              "lastName": "Dupont"
+            }
+          ],
+          "pagination": {
+            "total": 150,
+            "count": 1,
+            "limit": 10,
+            "offset": 0,
+            "hasMore": true
+          }
+        }
+      },
+      "healthCheckSuccess": {
+        "status": "healthy",
+        "statusCode": 200,
+        "timestamp": "2024-01-15T10:30:00.000Z",
+        "uptime": 3600,
+        "version": "1.0.0",
+        "environment": "test",
+        "services": {
+          "database": "connected",
+          "cache": "connected",
+          "external_api": "connected"
+        }
+      }
+    },
+    "errorResponses": {
+      "badRequest": {
+        "status": "error",
+        "statusCode": 400,
+        "message": "Bad Request",
+        "error": {
+          "type": "ValidationError",
+          "details": [
+            {
+              "field": "email",
+              "message": "Invalid email format",
+              "code": "INVALID_FORMAT"
+            }
+          ]
+        },
+        "timestamp": "2024-01-15T10:30:00.000Z"
+      },
+      "unauthorized": {
+        "status": "error",
+        "statusCode": 401,
+        "message": "Unauthorized",
+        "error": {
+          "type": "AuthenticationError",
+          "details": "Invalid credentials provided",
+          "code": "INVALID_CREDENTIALS"
+        },
+        "timestamp": "2024-01-15T10:30:00.000Z"
+      },
+      "forbidden": {
+        "status": "error",
+        "statusCode": 403,
+        "message": "Forbidden",
+        "error": {
+          "type": "AuthorizationError", 
+          "details": "Insufficient permissions to access this resource",
+          "code": "INSUFFICIENT_PERMISSIONS"
+        },
+        "timestamp": "2024-01-15T10:30:00.000Z"
+      },
+      "notFound": {
+        "status": "error",
+        "statusCode": 404,
+        "message": "Not Found",
+        "error": {
+          "type": "ResourceNotFoundError",
+          "details": "User with id 'user_999999999' not found",
+          "code": "RESOURCE_NOT_FOUND"
+        },
+        "timestamp": "2024-01-15T10:30:00.000Z"
+      },
+      "conflict": {
+        "status": "error",
+        "statusCode": 409,
+        "message": "Conflict",
+        "error": {
+          "type": "ConflictError",
+          "details": "User with email 'test@example.com' already exists",
+          "code": "RESOURCE_CONFLICT"
+        },
+        "timestamp": "2024-01-15T10:30:00.000Z"
+      },
+      "internalServerError": {
+        "status": "error",
+        "statusCode": 500,
+        "message": "Internal Server Error",
+        "error": {
+          "type": "InternalServerError",
+          "details": "An unexpected error occurred while processing the request",
+          "code": "INTERNAL_ERROR",
+          "requestId": "req_123456789"
+        },
+        "timestamp": "2024-01-15T10:30:00.000Z"
+      },
+      "serviceUnavailable": {
+        "status": "error",
+        "statusCode": 503,
+        "message": "Service Unavailable",
+        "error": {
+          "type": "ServiceUnavailableError",
+          "details": "Database service is temporarily unavailable",
+          "code": "SERVICE_UNAVAILABLE",
+          "retryAfter": 60
+        },
+        "timestamp": "2024-01-15T10:30:00.000Z"
+      }
+    },
+    "paginationResponses": {
+      "firstPage": {
+        "pagination": {
+          "total": 150,
+          "count": 10,
+          "limit": 10,
+          "offset": 0,
+          "hasMore": true,
+          "nextOffset": 10,
+          "prevOffset": null
+        }
+      },
+      "middlePage": {
+        "pagination": {
+          "total": 150,
+          "count": 10,
+          "limit": 10,
+          "offset": 50,
+          "hasMore": true,
+          "nextOffset": 60,
+          "prevOffset": 40
+        }
+      },
+      "lastPage": {
+        "pagination": {
+          "total": 150,
+          "count": 5,
+          "limit": 10,
+          "offset": 145,
+          "hasMore": false,
+          "nextOffset": null,
+          "prevOffset": 135
+        }
+      },
+      "emptyResult": {
+        "pagination": {
+          "total": 0,
+          "count": 0,
+          "limit": 10,
+          "offset": 0,
+          "hasMore": false,
+          "nextOffset": null,
+          "prevOffset": null
+        }
+      }
+    }
+  },
+  "edgeCaseDataSets": {
+    "maximumPayloadSizes": {
+      "nearMaximumUserObject": {
+        "username": "a".repeat(100),
+        "email": "very.long.email.address.that.approaches.maximum.length@very-long-domain-name-example.com",
+        "password": "ComplexPassword123!@#$%^&*()_+{}[]|:;<>,.?/~`",
+        "role": "PosManager",
+        "firstName": "VeryLongFirstNameThatTestsBoundaryConditions",
+        "lastName": "VeryLongLastNameThatTestsBoundaryConditions",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
+        "preferences": {
+          "theme": "dark",
+          "language": "fr",
+          "timezone": "Europe/Paris",
+          "notifications": {
+            "email": true,
+            "sms": true,
+            "push": true,
+            "frequency": "daily"
+          },
+          "dashboard": {
+            "widgets": ["sales", "inventory", "customers", "analytics", "reports"],
+            "layout": "grid",
+            "refreshInterval": 30000
+          }
+        }
+      },
+      "largeArrayPayload": {
+        "users": Array.from({length: 1000}, (_, i) => ({
+          id: `user_${i.toString().padStart(9, '0')}`,
+          username: `testuser${i}`,
+          email: `testuser${i}@example.com`,
+          role: i % 2 === 0 ? "PosManager" : "SalesManager"
+        }))
+      }
+    },
+    "minimumValidValues": {
+      "minimalUser": {
+        "username": "abc",
+        "email": "a@b.co",
+        "password": "Abc123!",
+        "role": "PosManager"
+      },
+      "emptyOptionalFields": {
+        "username": "testuser123",
+        "email": "test@example.com",
+        "password": "SecurePassword123!",
+        "role": "PosManager",
+        "firstName": "",
+        "lastName": "",
+        "phone": "",
+        "preferences": {}
+      },
+      "zeroValues": {
+        "limit": 0,
+        "offset": 0,
+        "timeout": 0
+      }
+    },
+    "specialCharactersHandling": {
+      "unicodeCharacters": {
+        "username": "用户名123",
+        "email": "тест@пример.рф",
+        "firstName": "José",
+        "lastName": "García-Martínez",
+        "description": "Testing unicode: ñáéíóú ÑÁÉÍÓÚ çÇ äöüß αβγδε النص العربي 中文测试 🚀💻📊"
+      },
+      "sqlInjectionAttempts": {
+        "username": "'; DROP TABLE users; --",
+        "email": "test@example.com",
+        "password": "' OR '1'='1",
+        "description": "1' UNION SELECT * FROM sensitive_table --"
+      },
+      "xssAttempts": {
+        "username": "<script>alert('xss')</script>",
+        "firstName": "<img src=x onerror=alert('xss')>",
+        "description": "javascript:alert('xss')",
+        "comment": "<svg onload=alert('xss')>"
+      },
+      "specialSymbols": {
+        "username": "test!@#$%^&*()",
+        "password": "P@ssw0rd!#$%^&*()_+{}|:<>?[]\\;'\",./"
+      }
+    },
+    "nullAndUndefinedScenarios": {
+      "mixedNullValues": {
+        "username": "testuser123",
+        "email": null,
+        "password": "SecurePassword123!",
+        "role": "PosManager",
+        "firstName": null,
+        "lastName": undefined
+      },
+      "deeplyNestedNulls": {
+        "user": {
+          "basic": {
+            "username": "testuser123",
+            "email": null
+          },
+          "profile": null,
+          "preferences": {
+            "theme": null,
+            "settings": {
+              "notifications": null
+            }
+          }
+        }
+      }
+    },
+    "deeplyNestedStructures": {
+      "maximumNesting": {
+        "level1": {
+          "level2": {
+            "level3": {
+              "level4": {
+                "level5": {
+                  "level6": {
+                    "level7": {
+                      "level8": {
+                        "level9": {
+                          "level10": {
+                            "data": "deeply nested value"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "complexNestedObject": {
+        "organization": {
+          "departments": [
+            {
+              "name": "Sales",
+              "manager": {
+                "user": {
+                  "username": "salesmanager01",
+                  "profile": {
+                    "personal": {
+                      "contact": {
+                        "primary": {
+                          "email": "sales.manager@company.fr",
+                          "phone": {
+                            "country": "+33",
+                            "number": "123456789"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "employees": [
+                {
+                  "user": {
+                    "username": "employee01",
+                    "metadata": {
+                      "performance": {
+                        "metrics": {
+                          "monthly": {
+                            "sales": [100, 150, 200],
+                            "targets": {
+                              "q1": 450,
+                              "q2": 500
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "concurrentRequestSimulation": {
+      "multipleUsers": Array.from({length: 100}, (_, i) => ({
+        "requestId": `req_${Date.now()}_${i}`,
+        "timestamp": new Date(Date.now() + i * 1000).toISOString(),
+        "payload": {
+          "username": `concurrent_user_${i}`,
+          "email": `user${i}@load-test.com`,
+          "password": "LoadTest123!",
+          "role": i % 3 === 0 ? "PosManager" : "SalesManager",
+          "sessionId": `session_${Math.random().toString(36).substr(2, 9)}`
+        }
+      })),
+      "rapidFireRequests": Array.from({length: 50}, (_, i) => ({
+        "timestamp": new Date(Date.now() + i * 100).toISOString(),
+        "action": "GET",
+        "endpoint": "/api/users",
+        "queryParams": {
+          "limit": 10,
+          "offset": i * 10,
+          "search": `query_${i}`
+        }
+      }))
+    }
+  },
+  "authenticationTestData": {
+    "validCredentials": {
+      "posManager": {
+        "username": "posmanager01",
+        "password": "PosManager2024!",
+        "role": "PosManager",
+        "permissions": ["view_dashboard", "manage_pos", "view_reports", "manage_inventory"],
+        "expectedToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyXzEyMzQ1Njc4OSIsInVzZXJuYW1lIjoicG9zbWFuYWdlcjAxIiwicm9sZSI6IlBvc01hbmFnZXIiLCJpYXQiOjE3MDUzMTQ2MDAsImV4cCI6MTcwNTMxODIwMH0.example",
+        "refreshToken": "refresh_posmanager_token_example"
+      },
+      "salesManager": {
+        "username": "salesmanager01", 
+        "password": "SalesManager2024!",
+        "role": "SalesManager",
+        "permissions": ["view_dashboard", "manage_sales", "view_analytics", "generate_reports"],
+        "expectedToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyXzk4NzY1NDMyMSIsInVzZXJuYW1lIjoic2FsZXNtYW5hZ2VyMDEiLCJyb2xlIjoiU2FsZXNNYW5hZ2VyIiwiaWF0IjoxNzA1MzE0NjAwLCJleHAiOjE3MDUzMTgyMDB9.example",
+        "refreshToken": "refresh_salesmanager_token_example"
+      },
+      "adminUser": {
+        "username": "admin",
+        "password": "Admin2024!",
+        "role": "Administrator",
+        "permissions": ["*"],
+        "expectedToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhZG1pbl8wMDEiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6IkFkbWluaXN0cmF0b3IiLCJpYXQiOjE3MDUzMTQ2MDAsImV4cCI6MTcwNTMxODIwMH0.example",
+        "refreshToken": "refresh_admin_token_example"
+      }
+    },
+    "invalidCredentials": {
+      "wrongPassword": {
+        "username": "posmanager01",
+        "password": "WrongPassword123!",
+        "expectedError": "Invalid credentials"
+      },
+      "wrongUsername": {
+        "username": "nonexistentuser",
+        "password": "SomePassword123!",
+        "expectedError": "User not found"
+      },
+      "emptyCredentials": {
+        "username": "",
+        "password": "",
+        "expectedError": "Username and password are required"
+      },
+      "sqlInjection": {
+        "username": "admin'; DROP TABLE users; --",
+        "password": "password",
+        "expectedError": "Invalid credentials"
+      }
+    },
+    "expiredTokens": {
+      "expiredAccessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyXzEyMzQ1Njc4OSIsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJyb2xlIjoiUG9zTWFuYWdlciIsImlhdCI6MTcwNTMxMTAwMCwiZXhwIjoxNzA1MzE0NjAwfQ.expired_token_example",
+      "invalidFormatToken": "invalid.token.format",
+      "malformedToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.malformed",
+      "emptyToken": "",
+      "nullToken": null
+    },
+    "authHeaders": {
+      "validBearerToken": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.validTokenPayload.signature"
+      },
+      "invalidBearerFormat": {
+        "Authorization": "InvalidFormat eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.validTokenPayload.signature"
+      },
+      "missingBearer": {
+        "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.validTokenPayload.signature"
+      },
+      "emptyAuthHeader": {
+        "Authorization": ""
+      },
+      "missingAuthHeader": {},
+      "multipleAuthHeaders": {
+        "Authorization": ["Bearer token1", "Bearer token2"]
+      }
+    },
+    "sessionData": {
+      "validSession": {
+        "sessionId": "sess_123456789abcdef",
+        "userId": "user_123456789",
+        "username": "testuser123",
+        "role": "PosManager",
+        "loginTime": "2024-01-15T10:30:00.000Z",
+        "lastActivity": "2024-01-15T11:45:00.000Z",
+        "ipAddress": "192.168.1.100",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+      },
+      "expiredSession": {
+        "sessionId": "sess_expired_session",
+        "userId": "user_123456789",
+        "username": "testuser123",
+        "role": "PosManager",
+        "loginTime": "2024-01-14T10:30:00.000Z",
+        "lastActivity": "2024-01-14T11:45:00.000Z",
+        "expired": true
+      }
+    }
+  },
+  "httpStatusCodeScenarios": {
+    "200": {
+      "description": "OK - Successful GET request",
+      "method": "GET",
+      "endpoint": "/api/users/123",
+      "expectedResponse": "User data retrieved successfully"
+    },
+    "201": {
+      "description": "Created - Successful POST request",
+      "method": "POST",
+      "endpoint": "/api/users",
+      "payload": {
+        "username": "newuser",
+        "email": "newuser@example.com",
+        "password": "Password123!",
+        "role": "PosManager"
+      },
+      "expectedResponse": "User created successfully"
+    },
+    "204": {
+      "description": "No Content - Successful DELETE request",
+      "method": "DELETE",
+      "endpoint": "/api/users/123",
+      "expectedResponse": null
+    },
+    "400": {
+      "description": "Bad Request - Invalid input",
+      "method": "POST",
+      "endpoint": "/api/users",
+      "payload": {
+        "username": "",
+        "email": "invalid-email",
+        "password": "123"
+      },
+      "expectedError": "Validation failed"
+    },
+    "401": {
+      "description": "Unauthorized - Invalid credentials",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "payload": {
+        "username": "testuser",
+        "password": "wrongpassword"
+      },
+      "expectedError": "Invalid credentials"
+    },
+    "403": {
+      "description": "Forbidden - Insufficient permissions",
+      "method": "DELETE",
+      "endpoint": "/api/users/123",
+      "headers": {
+        "Authorization": "Bearer limited_user_token"
+      },
+      "expectedError": "Insufficient permissions"
+    },
+    "404": {
+      "description": "Not Found - Resource doesn't exist",
+      "method": "GET",
+      "endpoint": "/api/users/999999",
+      "expectedError": "User not found"
+    },
+    "409": {
+      "description": "Conflict - Resource already exists",
+      "method": "POST",
+      "endpoint": "/api/users",
+      "payload": {
+        "username": "existinguser",
+        "email": "existing@example.com",
+        "password": "Password123!",
+        "role": "PosManager"
+      },
+      "expectedError": "User already exists"
+    },
+    "422": {
+      "description": "Unprocessable Entity - Validation errors",
+      "method": "POST",
+      "endpoint": "/api/users",
+      "payload": {
+        "username": "a",
+        "email": "test@example.com",
+        "password": "weak",
+        "role": "InvalidRole"
+      },
+      "expectedError": "Validation errors"
+    },
+    "429": {
+      "description": "Too Many Requests - Rate limit exceeded",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "scenario": "multiple_rapid_requests",
+      "expectedError": "Rate limit exceeded"
+    },
+    "500": {
+      "description": "Internal Server Error - Server error",
+      "method": "GET",
+      "endpoint": "/api/users",
+      "scenario": "database_connection_failure",
+      "expectedError": "Internal server error"
+    },
+    "503": {
+      "description": "Service Unavailable - Service temporarily down",
+      "method": "GET",
+      "endpoint": "/api/health",
+      "scenario": "service_maintenance",
+      "expectedError": "Service temporarily unavailable"
+    }
+  },
+  "performanceTestData": {
+    "loadTestScenarios": {
+      "lightLoad": {
+        "concurrentUsers": 10,
+        "requestsPerSecond": 50,
+        "duration": "30s",
+        "endpoints": ["/api/health", "/api/users"]
+      },
+      "moderateLoad": {
+        "concurrentUsers": 50,
+        "requestsPerSecond": 200,
+        "duration": "2m",
+        "endpoints": ["/api/users", "/api/auth/login", "/api/dashboard"]
+      },
+      "heavyLoad": {
+        "concurrentUsers": 200,
+        "requestsPerSecond": 1000,
+        "duration": "5m",
+        "endpoints": ["/api/users", "/api/search", "/api/reports"]
+      }
+    },
+    "stressTestData": {
+      "memoryPressure": {
+        "largePayloads": Array.from({length: 100}, (_, i) => ({
+          "id": i,
+          "data": "x".repeat(10000)
+        })),
+        "description": "Large payload to test memory handling"
+      },
+      "cpuIntensive": {
+        "complexQueries": [
+          {
+            "filters": {
+              "role": ["PosManager", "SalesManager"],
+              "active": true,
+              "createdAfter": "2023-01-01",
+              "permissions": {
+                "$in": ["view_dashboard", "manage_sales"]
+              }
+            },
+            "sort": [
+              {"field": "lastName", "order": "asc"},
+              {"field": "firstName", "order": "asc"},
+              {"field": "createdAt", "order": "desc"}
+            ],
+            "aggregations": {
+              "byRole": true,
+              "byDepartment": true,
+              "activeCount": true
+            }
+          }
+        ]
+      }
+    }
+  }
+}
