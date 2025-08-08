@@ -249,7 +249,10 @@ function getRateLimitConfig() {
             baseConfig.endpointLimits = {
                 '/api/health': 200,
                 '/api/test': 50,
-                '/api/report': 25
+                '/api/report': 25,
+                '/api/auth/login': 5,
+                '/api/items': 100,
+                '/api/admin/users': 20
             };
             break;
         case 'production':
