@@ -189,12 +189,23 @@ function createApp() {
             });
             
             res.status(404).json({
-                error: true,
-                status: 404,
-                message: 'Route not found',
-                path: req.originalUrl,
-                method: req.method,
-                timestamp: new Date().toISOString()
+                success: false,
+                error: {
+                    message: 'Route not found',
+                    code: 'ROUTE_NOT_FOUND',
+                    details: {
+                        path: req.originalUrl,
+                        method: req.method
+                    }
+                },
+                statusCode: 404,
+                type: 'ERROR',
+                metadata: {
+                    requestId: `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    timestamp: new Date().toISOString(),
+                    path: req.originalUrl || req.url || 'unknown',
+                    method: req.method || 'unknown'
+                }
             });
         });
         
