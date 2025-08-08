@@ -201,6 +201,55 @@ function success(data = null, options = {}) {
 }
 
 /**
+ * Determines the error type based on the error object and code
+ * 
+ * @param {string|Error} error - Error message or Error object
+ * @param {string} code - Error code
+ * @returns {string} Error type for client handling
+ */
+function determineErrorType(error, code) {
+  // If error is an Error object, check for specific error types first
+  if (error instanceof Error) {
+    // Map specific error constructor names to expected types
+    const errorTypeMap = {
+      'NotFoundError': 'ResourceNotFoundError',
+      'ValidationError': 'ValidationError',
+      'AuthenticationError': 'AuthenticationError',
+      'AuthorizationError': 'AuthorizationError',
+      'ConflictError': 'ConflictError',
+      'TimeoutError': 'TimeoutError',
+      'ServiceUnavailableError': 'ServiceUnavailableError',
+      'InternalServerError': 'InternalServerError',
+      'Error': 'InternalServerError'  // Map generic Error to InternalServerError for tests
+    };
+    
+    const mappedType = errorTypeMap[error.constructor.name];
+    if (mappedType) {
+      return mappedType;
+    }
+    
+    // Fallback to constructor name if no mapping exists
+    return error.constructor.name;
+  }
+  
+  // Map common error codes to types
+  const codeToTypeMap = {
+    'VALIDATION_ERROR': 'ValidationError',
+    'NOT_FOUND': 'ResourceNotFoundError',
+    'ITEM_NOT_FOUND': 'ResourceNotFoundError',
+    'UNAUTHORIZED': 'AuthenticationError',
+    'FORBIDDEN': 'AuthorizationError',
+    'CONFLICT': 'ConflictError',
+    'TIMEOUT': 'TimeoutError',
+    'SERVICE_UNAVAILABLE': 'ServiceUnavailableError',
+    'CORS_ERROR': 'CORSError',
+    'RATE_LIMIT_EXCEEDED': 'RateLimitError'
+  };
+  
+  return codeToTypeMap[code] || 'Error';
+}
+
+/**
  * Formats error API responses with consistent structure
  * 
  * @param {string|Error} error - Error message or Error object
@@ -261,10 +310,10 @@ function error(error, options = {}) {
     error: {
       message: errorMessage,
       code: code || 'INTERNAL_ERROR',
+      type: determineErrorType(error, code),
       details: sanitizeData(details)
     },
     statusCode,
-    type: RESPONSE_TYPES.ERROR,
     metadata
   };
   
@@ -347,13 +396,13 @@ function validationError(validationErrors, options = {}) {
     error: {
       message,
       code: 'VALIDATION_ERROR',
+      type: 'ValidationError',
       details: {
         fields: formattedErrors,
         count: errorCount
       }
     },
     statusCode: HTTP_STATUS.UNPROCESSABLE_ENTITY,
-    type: RESPONSE_TYPES.VALIDATION_ERROR,
     metadata
   };
 }
