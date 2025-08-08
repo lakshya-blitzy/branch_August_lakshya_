@@ -296,15 +296,19 @@ function handleCorsError(error, req, res, next) {
             return next(error);
         }
         
-        // Set appropriate CORS error response
+        // Set appropriate CORS error response in expected format
         res.status(403).json({
-            error: 'CORS Policy Violation',
-            message: 'Cross-origin request blocked by CORS policy',
-            details: config.isDevelopment ? {
-                origin: errorContext.origin,
-                allowedOrigins: config.corsOrigins,
-                hint: 'Check your CORS configuration or request origin'
-            } : undefined,
+            success: false,
+            data: null,
+            error: {
+                type: 'CORSError',
+                message: 'Cross-origin request blocked by CORS policy',
+                details: config.isDevelopment ? {
+                    origin: errorContext.origin,
+                    allowedOrigins: config.corsOrigins,
+                    hint: 'Check your CORS configuration or request origin'
+                } : undefined
+            },
             timestamp: errorContext.timestamp,
             requestId: errorContext.requestId
         });
