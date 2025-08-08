@@ -107,9 +107,7 @@ function createSecurityPolicy(environment = config.nodeEnv) {
             action: SECURITY_DEFAULTS.FRAME_OPTIONS.toLowerCase()
         },
         noSniff: true,
-        xssFilter: {
-            mode: 'block'
-        },
+        xssFilter: true,
         referrerPolicy: {
             policy: SECURITY_DEFAULTS.REFERRER_POLICY
         },
