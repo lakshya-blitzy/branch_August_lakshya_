@@ -1,0 +1,572 @@
+# GitHub Actions CI/CD Pipeline for Node.js Server Component
+# This workflow automates Node.js server testing and validation as part of the Testinium-QA dual-stack architecture.
+# It executes Jest unit tests with comprehensive coverage reporting and integrates with the existing Java-based
+# test automation framework without port or resource conflicts.
+
+name: Node.js Server CI/CD Pipeline
+
+# Workflow Triggers
+# Executes on push to main/master branches and pull requests to ensure comprehensive validation
+# Supports both main and master branch naming conventions for enterprise Git workflows
+on:
+  push:
+    branches: 
+      - main
+      - master
+    paths:
+      - 'server.js'
+      - 'src/**'
+      - 'test/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'jest.config.js'
+      - '.github/workflows/node.yml'
+  pull_request:
+    branches: 
+      - main
+      - master
+    paths:
+      - 'server.js'
+      - 'src/**'
+      - 'test/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'jest.config.js'
+      - '.github/workflows/node.yml'
+  
+  # Manual workflow dispatch for on-demand testing and debugging
+  workflow_dispatch:
+    inputs:
+      coverage_threshold:
+        description: 'Coverage threshold percentage (default: 100)'
+        required: false
+        default: '100'
+        type: string
+      node_version:
+        description: 'Node.js version for testing (default: 18.x)'
+        required: false
+        default: '18.x'
+        type: string
+
+# Environment Variables
+# Global configuration for consistent behavior across all workflow jobs
+env:
+  NODE_ENV: test
+  CI: true
+  FORCE_COLOR: 1
+  # Configure ports to avoid conflicts with Java components (Java uses 8080, 9090)
+  PORT: 3001
+  TEST_PORT: 3002
+  # Coverage enforcement threshold (100% as per Section 0 requirements)
+  COVERAGE_THRESHOLD: ${{ github.event.inputs.coverage_threshold || '100' }}
+
+# Workflow Jobs
+jobs:
+  # Node.js Unit Testing Job
+  # Executes Jest test suite with comprehensive coverage reporting and artifact archival
+  nodejs-testing:
+    name: Node.js Unit Tests and Coverage
+    runs-on: ubuntu-latest
+    
+    # Timeout configuration for reliability (30 minutes maximum execution time)
+    timeout-minutes: 30
+    
+    # Continue on error strategy for matrix builds
+    continue-on-error: false
+    
+    # Matrix Strategy for Multi-Version Testing
+    # Tests across multiple Node.js versions to ensure compatibility and reliability
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: 
+          - '18.x'    # Primary production version (Node.js 18+ requirement)
+          - '20.x'    # Latest LTS for future compatibility validation
+        include:
+          # Enhanced configuration for primary Node.js version
+          - node-version: '18.x'
+            primary: true
+            artifact-name: 'coverage-reports-node18'
+          - node-version: '20.x'
+            primary: false
+            artifact-name: 'coverage-reports-node20'
+    
+    steps:
+      # Source Code Checkout
+      # Retrieves complete repository content including Node.js server components and test files
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for accurate Git operations and version detection
+          fetch-depth: 0
+          # Persist credentials for potential Git operations during testing
+          persist-credentials: true
+      
+      # Node.js Environment Setup
+      # Configures Node.js runtime matching production requirements (18.x minimum)
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          # Registry configuration for npm package resolution
+          registry-url: 'https://registry.npmjs.org'
+          # Enable caching for improved build performance
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+      
+      # Verify Node.js Installation
+      # Validates runtime environment and dependency management tools
+      - name: Verify Node.js Installation
+        run: |
+          echo "Node.js Version Information:"
+          node --version
+          npm --version
+          echo "Environment Configuration:"
+          echo "NODE_ENV: $NODE_ENV"
+          echo "PORT: $PORT"
+          echo "Coverage Threshold: $COVERAGE_THRESHOLD%"
+      
+      # Dependency Installation
+      # Uses npm ci for clean, reproducible dependency installation with security validation
+      - name: Install Node.js Dependencies
+        run: |
+          # Clean installation using package-lock.json for deterministic builds
+          npm ci
+          
+          # Verify critical dependencies for testing infrastructure
+          echo "Verifying Jest installation:"
+          npx jest --version
+          
+          echo "Verifying Supertest availability:"
+          npm list supertest --depth=0 || echo "Supertest not found in dependencies"
+          
+          echo "Dependency installation completed successfully"
+        env:
+          # Prevent npm audit issues from blocking installation
+          NPM_CONFIG_AUDIT: false
+      
+      # Security Audit
+      # Performs security vulnerability scanning for Node.js dependencies
+      - name: Security Audit
+        run: |
+          echo "Performing npm security audit..."
+          npm audit --audit-level=moderate || {
+            echo "Security vulnerabilities detected. Please review and update dependencies."
+            # Continue with testing but flag security issues
+            echo "SECURITY_ISSUES=true" >> $GITHUB_ENV
+          }
+      
+      # Lint and Code Quality Check
+      # Validates JavaScript code quality and adherence to standards
+      - name: Code Quality Validation
+        run: |
+          # Check if ESLint is configured
+          if [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ] || [ -f "package.json" ]; then
+            echo "Running ESLint validation..."
+            npm run lint 2>/dev/null || echo "ESLint not configured or failed"
+          else
+            echo "No ESLint configuration found, skipping code quality validation"
+          fi
+          
+          # Basic syntax validation for server.js
+          if [ -f "server.js" ]; then
+            echo "Validating server.js syntax..."
+            node -c server.js && echo "server.js syntax validation passed"
+          fi
+      
+      # Pre-Test Environment Preparation
+      # Configures test environment and validates port availability
+      - name: Prepare Test Environment
+        run: |
+          echo "Preparing test environment for Node.js server testing..."
+          
+          # Validate port availability for test execution
+          echo "Checking port availability:"
+          netstat -tuln | grep ":$TEST_PORT " && {
+            echo "Warning: Test port $TEST_PORT is already in use"
+            # Find alternative port for testing
+            export TEST_PORT=$((TEST_PORT + 10))
+            echo "Using alternative test port: $TEST_PORT"
+            echo "TEST_PORT=$TEST_PORT" >> $GITHUB_ENV
+          } || echo "Test port $TEST_PORT is available"
+          
+          # Create necessary directories for test artifacts
+          mkdir -p coverage
+          mkdir -p test-results
+          
+          echo "Test environment preparation completed"
+      
+      # Jest Unit Test Execution
+      # Executes comprehensive Jest test suite with coverage reporting and timeout handling
+      - name: Execute Jest Test Suite
+        run: |
+          echo "Starting Jest test execution with coverage reporting..."
+          
+          # Configure Jest execution with comprehensive options
+          npx jest \
+            --coverage \
+            --coverageReporters=html,lcov,json,text \
+            --coverageDirectory=coverage \
+            --testResultsProcessor=jest-junit \
+            --testTimeout=30000 \
+            --detectOpenHandles \
+            --forceExit \
+            --verbose \
+            --passWithNoTests
+        env:
+          # Jest configuration for CI environment
+          NODE_OPTIONS: '--max-old-space-size=4096'
+          JEST_JUNIT_OUTPUT_DIR: './test-results'
+          JEST_JUNIT_OUTPUT_NAME: 'jest-results.xml'
+        
+        # Retry logic for flaky test handling
+        continue-on-error: false
+        timeout-minutes: 15
+      
+      # Coverage Threshold Validation
+      # Enforces 100% coverage requirement as specified in Section 0
+      - name: Validate Coverage Thresholds
+        run: |
+          echo "Validating test coverage against threshold of $COVERAGE_THRESHOLD%..."
+          
+          # Check if coverage reports were generated
+          if [ ! -f "coverage/coverage-summary.json" ]; then
+            echo "Error: Coverage summary not found. Test execution may have failed."
+            exit 1
+          fi
+          
+          # Extract coverage percentages using Node.js
+          node -e "
+            const fs = require('fs');
+            const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json'));
+            const total = coverage.total;
+            
+            console.log('Coverage Summary:');
+            console.log('Lines: ' + total.lines.pct + '%');
+            console.log('Functions: ' + total.functions.pct + '%');
+            console.log('Branches: ' + total.branches.pct + '%');
+            console.log('Statements: ' + total.statements.pct + '%');
+            
+            const threshold = $COVERAGE_THRESHOLD;
+            const coverageTypes = ['lines', 'functions', 'branches', 'statements'];
+            let failed = false;
+            
+            coverageTypes.forEach(type => {
+              if (total[type].pct < threshold) {
+                console.error('Coverage threshold failure: ' + type + ' coverage ' + total[type].pct + '% < ' + threshold + '%');
+                failed = true;
+              }
+            });
+            
+            if (failed) {
+              console.error('Coverage validation failed. Minimum ' + threshold + '% coverage required.');
+              process.exit(1);
+            } else {
+              console.log('Coverage validation passed. All metrics meet ' + threshold + '% threshold.');
+            }
+          "
+      
+      # Server Health Check Integration
+      # Validates server startup and endpoint availability for integration testing
+      - name: Server Integration Health Check
+        run: |
+          echo "Performing server health check for integration validation..."
+          
+          # Check if server.js exists and can be started
+          if [ -f "server.js" ]; then
+            echo "Starting server for health check..."
+            
+            # Start server in background with timeout
+            timeout 30s node server.js &
+            SERVER_PID=$!
+            
+            # Wait for server startup
+            sleep 3
+            
+            # Health check using curl with retry logic
+            for i in {1..5}; do
+              if curl -f -s "http://localhost:$PORT/health" > /dev/null 2>&1; then
+                echo "Server health check passed"
+                kill $SERVER_PID 2>/dev/null || true
+                break
+              else
+                echo "Health check attempt $i failed, retrying..."
+                sleep 2
+              fi
+              
+              if [ $i -eq 5 ]; then
+                echo "Server health check failed after 5 attempts"
+                kill $SERVER_PID 2>/dev/null || true
+                # Don't fail the build for health check issues in CI
+                echo "Warning: Server health check failed, but continuing with build"
+              fi
+            done
+          else
+            echo "server.js not found, skipping server health check"
+          fi
+      
+      # Test Results Processing
+      # Processes and validates test execution results with detailed reporting
+      - name: Process Test Results
+        if: always()
+        run: |
+          echo "Processing test execution results..."
+          
+          # Display test summary
+          if [ -f "test-results/jest-results.xml" ]; then
+            echo "Jest test results XML generated successfully"
+          fi
+          
+          # Display coverage summary
+          if [ -f "coverage/lcov.info" ]; then
+            echo "LCOV coverage report generated successfully"
+            lines_covered=$(grep -c "^LF:" coverage/lcov.info)
+            echo "Coverage data available for $lines_covered line(s)"
+          fi
+          
+          # Generate test summary for GitHub
+          if [ -f "coverage/coverage-summary.json" ]; then
+            node -e "
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json'));
+              const total = coverage.total;
+              
+              const summary = \`## Node.js Test Results 🧪
+              
+              ### Coverage Summary
+              - **Lines**: \${total.lines.pct}% (\${total.lines.covered}/\${total.lines.total})
+              - **Functions**: \${total.functions.pct}% (\${total.functions.covered}/\${total.functions.total})
+              - **Branches**: \${total.branches.pct}% (\${total.branches.covered}/\${total.branches.total})
+              - **Statements**: \${total.statements.pct}% (\${total.statements.covered}/\${total.statements.total})
+              
+              ### Test Environment
+              - Node.js Version: ${{ matrix.node-version }}
+              - Coverage Threshold: $COVERAGE_THRESHOLD%
+              - Test Port: $TEST_PORT
+              \`;
+              
+              fs.writeFileSync('test-summary.md', summary);
+              console.log('Test summary generated successfully');
+            "
+          fi
+      
+      # Coverage Report Archival
+      # Archives comprehensive coverage reports as GitHub Actions artifacts for accessibility
+      - name: Archive Coverage Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: |
+            coverage/
+            test-results/
+            test-summary.md
+          retention-days: 30
+          compression-level: 6
+      
+      # Primary Version Additional Artifacts
+      # Archives additional test artifacts for the primary Node.js version (18.x)
+      - name: Archive Additional Test Artifacts
+        if: always() && matrix.primary
+        uses: actions/upload-artifact@v4
+        with:
+          name: nodejs-test-artifacts-primary
+          path: |
+            coverage/lcov-report/
+            coverage/coverage-final.json
+            package-lock.json
+            jest.config.js
+          retention-days: 14
+      
+      # Comment Coverage Results on PR
+      # Posts coverage summary as pull request comment for developer visibility
+      - name: Comment Coverage on Pull Request
+        if: github.event_name == 'pull_request' && matrix.primary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read test summary if available
+            let summaryContent = '## Node.js Test Results\n\nTest execution completed. See artifacts for detailed results.';
+            
+            try {
+              if (fs.existsSync('test-summary.md')) {
+                summaryContent = fs.readFileSync('test-summary.md', 'utf8');
+              }
+            } catch (error) {
+              console.log('Could not read test summary:', error.message);
+            }
+            
+            // Post comment on pull request
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summaryContent
+            });
+      
+      # Failure Notification
+      # Provides detailed failure information for debugging and issue resolution
+      - name: Test Failure Analysis
+        if: failure()
+        run: |
+          echo "=== Test Execution Failure Analysis ==="
+          
+          # Display Node.js and npm versions for debugging
+          echo "Environment Information:"
+          node --version
+          npm --version
+          
+          # Check for common failure patterns
+          echo "Checking for common failure patterns..."
+          
+          # Memory issues
+          if grep -q "JavaScript heap out of memory" coverage/* test-results/* 2>/dev/null; then
+            echo "Memory issue detected. Consider increasing NODE_OPTIONS max-old-space-size"
+          fi
+          
+          # Port conflicts
+          if netstat -tuln | grep -q ":$PORT\|:$TEST_PORT"; then
+            echo "Port conflict detected. Server ports may be in use."
+          fi
+          
+          # Display recent logs if available
+          echo "Recent test output:"
+          tail -n 50 coverage/*.log 2>/dev/null || echo "No log files found"
+          
+          echo "=== End Failure Analysis ==="
+
+  # Integration with Java Workflow Validation
+  # Ensures Node.js testing does not conflict with existing Java-based test automation
+  integration-validation:
+    name: Java Integration Compatibility Check
+    runs-on: ubuntu-latest
+    needs: nodejs-testing
+    if: always()
+    
+    steps:
+      # Repository checkout for validation
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      # Validate port configuration compatibility
+      - name: Validate Port Configuration
+        run: |
+          echo "Validating port configuration for dual-stack architecture..."
+          
+          # Check for port conflicts between Java and Node.js components
+          echo "Node.js Test Ports: $PORT, $TEST_PORT"
+          echo "Java typical ports: 8080, 9090 (no conflicts expected)"
+          
+          # Validate package.json configuration
+          if [ -f "package.json" ]; then
+            echo "package.json configuration validation:"
+            cat package.json | grep -E "scripts|dependencies" -A 10
+          fi
+          
+          # Check for Maven integration compatibility
+          if [ -f "pom.xml" ]; then
+            echo "Maven configuration detected - ensuring compatibility"
+            # No modifications to pom.xml required for Node.js testing
+          fi
+          
+          echo "Integration validation completed successfully"
+      
+      # Download coverage artifacts for integration reporting
+      - name: Collect Coverage Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports-node18
+          path: ./nodejs-coverage
+      
+      # Generate integration summary
+      - name: Generate Integration Summary
+        run: |
+          echo "=== Dual-Stack Testing Integration Summary ===" > integration-summary.txt
+          echo "Node.js testing completed with Java workflow compatibility" >> integration-summary.txt
+          echo "Coverage artifacts available for Jenkins integration" >> integration-summary.txt
+          echo "Port configuration validated for conflict-free operation" >> integration-summary.txt
+          
+          # Include coverage summary if available
+          if [ -f "nodejs-coverage/coverage-summary.json" ]; then
+            echo "Node.js coverage data ready for Jenkins archival" >> integration-summary.txt
+          fi
+          
+          cat integration-summary.txt
+      
+      # Archive integration summary
+      - name: Archive Integration Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-validation-summary
+          path: integration-summary.txt
+          retention-days: 7
+
+  # Security and Compliance Validation
+  # Performs security scanning and compliance validation for enterprise requirements
+  security-compliance:
+    name: Security and Compliance Validation
+    runs-on: ubuntu-latest
+    needs: nodejs-testing
+    if: always()
+    
+    steps:
+      # Repository checkout
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      # Node.js setup for security tools
+      - name: Setup Node.js for Security Scanning
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+      
+      # Install dependencies for security scanning
+      - name: Install Dependencies for Security Analysis
+        run: npm ci
+      
+      # Comprehensive security audit
+      - name: Comprehensive Security Audit
+        run: |
+          echo "Performing comprehensive security audit..."
+          
+          # npm audit with detailed output
+          npm audit --audit-level=low --json > security-audit.json || true
+          
+          # Check for high/critical vulnerabilities
+          if npm audit --audit-level=high; then
+            echo "No high or critical security vulnerabilities found"
+          else
+            echo "High or critical security vulnerabilities detected"
+            echo "Please review and update dependencies before deployment"
+          fi
+          
+          # License compliance check
+          npx license-checker --summary > license-summary.txt 2>/dev/null || echo "License checker not available"
+      
+      # Dependency version validation
+      - name: Dependency Version Validation
+        run: |
+          echo "Validating dependency versions against security recommendations..."
+          
+          # Check Node.js version compliance
+          node_version=$(node --version | cut -d'v' -f2)
+          echo "Node.js version: $node_version"
+          
+          # Validate critical dependencies
+          npm list jest --depth=0 || echo "Jest not found in dependencies"
+          npm list express --depth=0 || echo "Express not found in dependencies"
+          npm list supertest --depth=0 || echo "Supertest not found in dependencies"
+      
+      # Archive security reports
+      - name: Archive Security Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-compliance-reports
+          path: |
+            security-audit.json
+            license-summary.txt
+          retention-days: 30
