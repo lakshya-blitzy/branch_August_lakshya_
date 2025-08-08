@@ -904,6 +904,22 @@ router.delete('/items/:id', async (req, res) => {
 });
 
 /**
+ * Test routes for error handling validation
+ * These routes are used by tests to validate error handling behavior
+ */
+router.get('/error-test', (req, res) => {
+    const error = new Error('Test error for error handling validation');
+    error.statusCode = 500;
+    throw error;
+});
+
+router.get('/error-500', (req, res) => {
+    const error = new Error('Internal server error test');
+    error.statusCode = 500;
+    throw error;
+});
+
+/**
  * OPTIONS handler for CORS preflight requests
  * Handles preflight requests for all endpoints to support CORS
  */
