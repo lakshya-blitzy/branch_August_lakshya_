@@ -998,22 +998,57 @@ graph TD
 - **Output**: PrettyReports format generation
 - **Integration**: Automated report generation post-execution
 
-### 3.2.4 Node.js Web Server Framework – Express.js (updated)
+### 3.2.5 Node.js Express Server Implementation (Operational)
 
-<span style="background-color: rgba(91, 57, 243, 0.2)">**Express.js 4.21.2**</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">**Version**: ^4.18.0 (recommended: 4.21.2 with latest security fixes)</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">**Purpose**: HTTP routing and middleware management for RESTful API endpoints</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">**Core Functionality**:</span>
-  - <span style="background-color: rgba(91, 57, 243, 0.2)">Superior routing capabilities compared to native Node.js HTTP module</span>
-  - <span style="background-color: rgba(91, 57, 243, 0.2)">Middleware ecosystem for request/response processing</span>
-  - <span style="background-color: rgba(91, 57, 243, 0.2)">Simplified HTTP server implementation and endpoint management</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">**Architecture Integration**: Isolated in `node-server/` directory with independent npm package management</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">**Migration Rationale**: Native Node.js HTTP module implementation has been superseded by Express.js to provide enhanced developer experience and maintainability</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">**Current Implementation**: Hosts two demonstration REST endpoints:</span>
-  - <span style="background-color: rgba(91, 57, 243, 0.2)">`GET /` → Returns "Hello world" response</span>
-  - <span style="background-color: rgba(91, 57, 243, 0.2)">`GET /evening` → Returns "Good evening" response</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">**Production Readiness**: Framework provides production-grade features including error handling, request parsing, and security middleware support</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">**Compatibility**: Requires Node.js 14.x LTS or higher for optimal performance and security compliance</span>
+**Express.js REST Server - Current Implementation Status**
+The Testinium-QA framework includes a fully operational Node.js Express server component that demonstrates RESTful API capabilities alongside the Java-based test automation framework. This component is complete and functional with both endpoints operational.
+
+**Server Implementation Details (Source: `/node-server/server.js`):**
+- **Framework**: Express.js 4.18.0+ (Source: `/node-server/package.json:24`)
+- **Runtime**: Node.js 14.0.0+ as specified in engines (Source: `/node-server/package.json:20-22`)
+- **Architecture**: Independent server process isolated from Java components
+- **Port Configuration**: Environment variable PORT with fallback to 3000 (Source: `/node-server/server.js:10`)
+
+**Operational REST Endpoints:**
+1. **GET /** (Source: `/node-server/server.js:13-15`)
+   - **Response**: "Hello world" (plain text)
+   - **Status**: Fully operational
+   - **Purpose**: Primary health check and demonstration endpoint
+
+2. **GET /evening** (Source: `/node-server/server.js:18-20`)
+   - **Response**: "Good evening" (plain text)  
+   - **Status**: Fully operational
+   - **Purpose**: Secondary demonstration endpoint
+
+**Server Features (Source: `/node-server/server.js:23-28`):**
+- **Startup Logging**: Console confirmation with port and endpoint details
+- **Error Handling**: Express.js built-in error handling capabilities
+- **Request Processing**: Standard Express.js routing and middleware support
+- **Development Support**: npm start script for easy server launching (Source: `/node-server/package.json:6-8`)
+
+**Integration Context:**
+- **Independent Operation**: Server operates independently from Java test framework
+- **No Cross-Communication**: No direct integration between Node.js and Java components  
+- **Repository Cohesion**: Both components coexist in unified repository structure
+- **CI/CD Support**: Both technology stacks supported in build pipeline configurations
+
+### 3.2.4 Node.js Web Server Framework – Express.js (Implemented)
+
+**Express.js 4.18.0+ (Fully Operational)**
+- **Current Version**: ^4.18.0 as specified in `node-server/package.json` (Source: `/node-server/package.json:24`)
+- **Implementation Status**: Complete and operational with all endpoints fully functional
+- **Purpose**: HTTP routing and middleware management for RESTful API endpoints
+- **Core Functionality**:
+  - Superior routing capabilities compared to native Node.js HTTP module
+  - Middleware ecosystem for request/response processing  
+  - Simplified HTTP server implementation and endpoint management
+- **Architecture Integration**: Isolated in `node-server/` directory with independent npm package management
+- **Current Implementation**: Fully operational server hosting two REST endpoints (Source: `/node-server/server.js:13-20`):
+  - `GET /` → Returns "Hello world" response (Source: `/node-server/server.js:13-15`)
+  - `GET /evening` → Returns "Good evening" response (Source: `/node-server/server.js:18-20`)
+- **Production Readiness**: Framework provides production-grade features including error handling, request parsing, and security middleware support
+- **Compatibility**: Requires Node.js 14.x LTS or higher for optimal performance and security compliance
+- **Startup Configuration**: Server configured with environment-based port binding (Source: `/node-server/server.js:10`) with default port 3000
 
 **Supporting Node.js Dependencies**
 - <span style="background-color: rgba(91, 57, 243, 0.2)">**Runtime Environment**: Node.js v14.x LTS+ with npm package manager</span>
@@ -3254,14 +3289,18 @@ The framework's API architecture consists of two distinct layers:
 - **Core Java Framework**: Functions as an API consumer for browser automation, dependency resolution, and CI/CD integration
 - **Node.js Express Service**: Provides sample REST endpoints demonstrating basic web service capabilities
 
-**Tutorial REST Endpoints**
+**Operational REST Endpoints (Fully Implemented)**
 
-| Endpoint | Method | Response (plain text) | Component |
-|----------|--------|-----------------------|-----------|
-| `/` | GET | "Hello world" | Node.js Express service |
-| `/evening` | GET | "Good evening" | Node.js Express service |
+| Endpoint | Method | Response (plain text) | Source Implementation | Status |
+|----------|--------|-----------------------|----------------------|---------|
+| `/` | GET | "Hello world" | `/node-server/server.js:13-15` | Operational |
+| `/evening` | GET | "Good evening" | `/node-server/server.js:18-20` | Operational |
 
-<span style="background-color: rgba(91, 57, 243, 0.2)">No direct invocation path exists between the Node.js API and the Java runtime; integration remains at repository and CI/CD levels only.</span>
+**Implementation Details (Source: `/node-server/server.js`):**
+- **Server Framework**: Express.js 4.18.0+ (Source: `/node-server/package.json:24`)
+- **Port Configuration**: Environment variable `PORT` with fallback to 3000 (Source: `/node-server/server.js:10`)
+- **Console Logging**: Startup confirmation with endpoint details (Source: `/node-server/server.js:24-28`)
+- **Integration Isolation**: No direct invocation path between Node.js API and Java runtime; integration remains at repository and CI/CD levels only
 
 #### 6.3.2.2 External API Consumption Patterns
 
@@ -5622,14 +5661,14 @@ The `.gitignore` file includes comprehensive exclusion patterns for:
 
 #### 9.1.1.3 Node.js Dependency Management (updated)
 
-<span style="background-color: rgba(91, 57, 243, 0.2)">**JavaScript Dependency Integration**
-The project now incorporates Node.js dependency management alongside the existing Maven lifecycle:</span>
+**JavaScript Dependency Integration (Current Implementation)**
+The project includes fully implemented Node.js dependency management alongside the existing Maven lifecycle:
 
-- <span style="background-color: rgba(91, 57, 243, 0.2)">`package.json` now governs JavaScript dependencies (Express ^4.x)</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">No impact on Maven lifecycle; dual build paths coexist independently</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">Developers must run `npm install` once inside node-server/ before executing `node server.js`</span>
+- `package.json` manages JavaScript dependencies including Express ^4.18.0 (Source: `/node-server/package.json:23-25`)
+- No impact on Maven lifecycle; dual build paths coexist independently
+- Developers can run `npm install` inside node-server/ before executing `node server.js` for local development
 
-<span style="background-color: rgba(91, 57, 243, 0.2)">This dual dependency management approach maintains clear separation between Java/Maven test framework components and the new JavaScript server component, allowing independent development and deployment workflows.</span>
+This dual dependency management approach maintains clear separation between Java/Maven test framework components and the operational JavaScript server component, allowing independent development and deployment workflows.
 
 ### 9.1.2 Test Scenario Organization
 
@@ -5693,16 +5732,16 @@ This architecture pattern provides:
 
 #### 9.1.4.2 Node.js Integration Architecture (updated)
 
-<span style="background-color: rgba(91, 57, 243, 0.2)">**Hybrid Project Structure**
-The repository now incorporates a dedicated Node.js component within the existing Java-based test framework architecture:</span>
+**Hybrid Project Structure (Current Implementation)**
+The repository includes a fully operational Node.js component within the existing Java-based test framework architecture:
 
-<span style="background-color: rgba(91, 57, 243, 0.2)">**Node.js Directory Hierarchy:**</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">`node-server/` – Isolated Node.js application root directory</span>
-  - <span style="background-color: rgba(91, 57, 243, 0.2)">`package.json` – Dependency manifest with Express.js included</span>
-  - <span style="background-color: rgba(91, 57, 243, 0.2)">`package-lock.json` – Deterministic dependency versions for reproducible builds</span>
-  - <span style="background-color: rgba(91, 57, 243, 0.2)">`server.js` – Express HTTP server implementation with two GET endpoints ("/" and "/evening")</span>
+**Node.js Directory Hierarchy (Implemented):**
+- `node-server/` – Isolated Node.js application root directory
+  - `package.json` – Dependency manifest with Express.js 4.18.0+ included (Source: `/node-server/package.json`)
+  - `package-lock.json` – Deterministic dependency versions for reproducible builds
+  - `server.js` – Operational Express HTTP server with two GET endpoints: "/" and "/evening" (Source: `/node-server/server.js`)
 
-<span style="background-color: rgba(91, 57, 243, 0.2)">This structure preserves a clear separation between the Java/Maven test framework and the new JavaScript component, enabling independent development, testing, and deployment workflows. The isolated directory approach prevents cross-contamination of dependencies and build processes while maintaining project coherence.</span>
+This structure maintains clear separation between the Java/Maven test framework and the operational JavaScript server component, enabling independent development, testing, and deployment workflows. The isolated directory approach prevents cross-contamination of dependencies and build processes while maintaining project coherence.
 
 ## 9.2 GLOSSARY
 
@@ -5723,8 +5762,8 @@ The repository now incorporates a dedicated Node.js component within the existin
 | **Page Object Model** | Design pattern that creates object repositories for web UI elements, promoting test code reusability and maintainability |
 | **Parallel Execution** | Capability to run multiple test methods simultaneously across different threads to reduce overall execution time |
 | **Pretty Reports** | Enhanced HTML report format providing visual test execution results with embedded screenshots and detailed step information |
-| **Node.js** | **JavaScript runtime built on Chrome's V8 engine, enabling server-side JavaScript execution. Introduced to host lightweight API endpoints within the existing repository.** |
-| **Express.js** | **Minimalist Node.js web framework that provides routing, middleware support, and HTTP utility methods; replaces the native Node `http` module for this implementation.** |
+| **Node.js** | **JavaScript runtime built on Chrome's V8 engine, enabling server-side JavaScript execution. Currently implemented to host lightweight API endpoints within the repository.** |
+| **Express.js** | **Minimalist Node.js web framework providing routing, middleware support, and HTTP utility methods. Fully implemented in `/node-server/server.js` with operational REST endpoints.** |
 
 ### 9.2.3 Integration and Deployment Terms
 
@@ -5799,9 +5838,9 @@ The repository now incorporates a dedicated Node.js component within the existin
 - `.gitignore` - Version control exclusion patterns including security configurations and IDE support<span style="background-color: rgba(91, 57, 243, 0.2)">, amended to exclude `node_modules/` and `npm-debug.log*` for Node.js development</span>
 - `README.md` - Comprehensive project documentation with setup instructions and integration guidelines  
 - `pom.xml` - Maven project configuration including dependencies, plugins, and build settings
-- <span style="background-color: rgba(91, 57, 243, 0.2)">`node-server/package.json` – Node.js project manifest defining Express dependency</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">`node-server/server.js` – Express server implementation exposing "Hello world" and "Good evening" endpoints</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">`node-server/package-lock.json` – Auto-generated lock file ensuring deterministic Node dependency versions</span>
+- `node-server/package.json` – Node.js project manifest with operational Express 4.18.0+ dependency
+- `node-server/server.js` – Fully operational Express server implementation with functional "Hello world" and "Good evening" endpoints
+- `node-server/package-lock.json` – Auto-generated lock file ensuring deterministic Node dependency versions
 
 ### 9.4.2 Technical Specification Sections Referenced
 
