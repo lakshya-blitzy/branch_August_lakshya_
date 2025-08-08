@@ -206,11 +206,17 @@ function determineStatusCode(error) {
  * @returns {string} Unique request identifier
  */
 function generateRequestId(req) {
-    // Use existing request ID if available
-    if (req.headers['x-request-id']) {
+    // Safety check for malformed request objects
+    if (!req) {
+        return uuidv4();
+    }
+    
+    // Use existing request ID if available in headers
+    if (req.headers && req.headers['x-request-id']) {
         return req.headers['x-request-id'];
     }
     
+    // Use existing request ID if already generated
     if (req.requestId) {
         return req.requestId;
     }
@@ -218,8 +224,10 @@ function generateRequestId(req) {
     // Generate new request ID using UUID v4
     const requestId = uuidv4();
     
-    // Store for future reference
-    req.requestId = requestId;
+    // Store for future reference (only if req is a proper object)
+    if (req && typeof req === 'object') {
+        req.requestId = requestId;
+    }
     
     return requestId;
 }
@@ -255,14 +263,14 @@ function formatErrorResponse(error, req) {
             ...error.details
         };
         
-        // Include request details for debugging
+        // Include request details for debugging (with safety checks)
         errorResponse.requestDetails = {
-            headers: req.headers,
-            query: req.query,
-            body: req.body,
-            params: req.params,
-            ip: req.ip || req.connection.remoteAddress,
-            userAgent: req.get('User-Agent')
+            headers: req.headers || {},
+            query: req.query || {},
+            body: req.body || {},
+            params: req.params || {},
+            ip: req.ip || (req.connection && req.connection.remoteAddress) || 'unknown',
+            userAgent: (req.get && req.get('User-Agent')) || 'unknown'
         };
         
         // Add process information
@@ -309,26 +317,26 @@ function logError(error, req, requestId) {
         logLevel = 'warn'; // Client errors (4xx)
     }
     
-    // Prepare error context for logging
+    // Prepare error context for logging with safety checks
     const errorContext = {
         requestId: requestId,
         statusCode: statusCode,
         errorName: error.name,
         errorMessage: error.message,
-        path: req.originalUrl || req.url,
-        method: req.method,
-        ip: req.ip || req.connection.remoteAddress,
-        userAgent: req.get('User-Agent'),
+        path: (req && (req.originalUrl || req.url)) || 'unknown',
+        method: (req && req.method) || 'unknown',
+        ip: (req && req.ip) || (req && req.connection && req.connection.remoteAddress) || 'unknown',
+        userAgent: (req && req.get && req.get('User-Agent')) || 'unknown',
         timestamp: new Date().toISOString()
     };
     
     // Include additional context in development
     if (config.isDevelopment) {
         errorContext.stack = error.stack;
-        errorContext.requestHeaders = req.headers;
-        errorContext.requestBody = req.body;
-        errorContext.requestQuery = req.query;
-        errorContext.requestParams = req.params;
+        errorContext.requestHeaders = (req && req.headers) || {};
+        errorContext.requestBody = (req && req.body) || {};
+        errorContext.requestQuery = (req && req.query) || {};
+        errorContext.requestParams = (req && req.params) || {};
     }
     
     // Include error details if available
@@ -455,20 +463,51 @@ function errorHandler(err, req, res, next) {
         return next(err);
     }
     
-    // Send formatted error response
-    res.status(statusCode).json(errorResponse);
-    
-    // Info logging for successful error handling
-    logger.info('Error response sent successfully', {
-        requestId: requestId,
-        statusCode: statusCode,
-        path: req.originalUrl || req.url,
-        method: req.method
-    });
-    
-    // Clean up global request context
-    if (global.currentRequest && global.currentRequest.traceId === requestId) {
-        delete global.currentRequest.traceId;
+    // Send formatted error response with error handling
+    try {
+        res.status(statusCode).json(errorResponse);
+        
+        // Info logging for successful error handling
+        logger.info('Error response sent successfully', {
+            requestId: requestId,
+            statusCode: statusCode,
+            path: req.originalUrl || req.url,
+            method: req.method
+        });
+    } catch (responseError) {
+        // Handle errors during response formatting
+        logger.error('Failed to send error response', {
+            requestId: requestId,
+            originalError: err.message,
+            responseError: responseError.message
+        });
+        
+        // Try to send a basic error response
+        try {
+            if (!res.headersSent) {
+                res.status(500).json({
+                    error: true,
+                    status: 500,
+                    message: 'Internal server error',
+                    requestId: requestId,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        } catch (finalError) {
+            // Last resort - delegate to Express default error handler
+            return next(err);
+        }
+    } finally {
+        // Clean up global request context
+        if (global.currentRequest) {
+            if (global.currentRequest.traceId === requestId) {
+                delete global.currentRequest.traceId;
+            }
+            // Clean up entire context if empty
+            if (Object.keys(global.currentRequest).length === 0) {
+                global.currentRequest = undefined;
+            }
+        }
     }
 }
 
