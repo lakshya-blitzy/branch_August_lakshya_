@@ -74,32 +74,6 @@
     "nock": "^13.3.3",
     "axios": "^1.5.0"
   },
-  "jest": {
-    "testEnvironment": "node",
-    "collectCoverageFrom": [
-      "**/*.js",
-      "!node_modules/**",
-      "!coverage/**",
-      "!jest.config.js",
-      "!*.config.js"
-    ],
-    "coverageDirectory": "coverage",
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html",
-      "json"
-    ],
-    "testMatch": [
-      "**/test/**/*.test.js",
-      "**/__tests__/**/*.js"
-    ],
-    "verbose": true,
-    "forceExit": true,
-    "clearMocks": true,
-    "resetMocks": true,
-    "restoreMocks": true
-  },
   "prettier": {
     "semi": true,
     "trailingComma": "es5",
