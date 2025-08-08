@@ -244,27 +244,28 @@ function formatErrorResponse(error, req) {
     const requestId = generateRequestId(req);
     const timestamp = new Date().toISOString();
     
-    // Base error response structure
+    // Base error response structure matching responseFormatter format
     const errorResponse = {
-        error: true,
-        status: statusCode,
-        message: error.message || 'An unexpected error occurred',
-        timestamp: timestamp,
-        requestId: requestId,
-        path: req.originalUrl || req.url || 'unknown',
-        method: req.method || 'unknown'
+        success: false,
+        error: {
+            message: error.message || 'An unexpected error occurred',
+            code: error.code || 'INTERNAL_ERROR',
+            details: error.details || null
+        },
+        statusCode: statusCode,
+        type: 'ERROR',
+        metadata: {
+            requestId: requestId,
+            timestamp: timestamp,
+            path: req.originalUrl || req.url || 'unknown',
+            method: req.method || 'unknown'
+        }
     };
     
     // Include additional details in development environment
     if (config.isDevelopment) {
-        errorResponse.details = {
-            name: error.name,
-            stack: error.stack,
-            ...error.details
-        };
-        
-        // Include request details for debugging (with safety checks)
-        errorResponse.requestDetails = {
+        errorResponse.error.stack = error.stack;
+        errorResponse.metadata.requestDetails = {
             headers: req.headers || {},
             query: req.query || {},
             body: req.body || {},
@@ -274,7 +275,7 @@ function formatErrorResponse(error, req) {
         };
         
         // Add process information
-        errorResponse.processInfo = {
+        errorResponse.metadata.processInfo = {
             pid: process.pid,
             environment: config.nodeEnv,
             timestamp: timestamp
@@ -283,18 +284,18 @@ function formatErrorResponse(error, req) {
     
     // Include error details for specific error types (even in production)
     if (error instanceof ValidationError && error.details) {
-        errorResponse.validationErrors = error.details;
+        errorResponse.error.details = { ...errorResponse.error.details, ...error.details };
     }
     
     // Include safe error context in production
     if (config.isProduction) {
         // Only include safe error details that don't expose sensitive information
         if (error.code) {
-            errorResponse.code = error.code;
+            errorResponse.error.code = error.code;
         }
         
         if (error.field) {
-            errorResponse.field = error.field;
+            errorResponse.error.field = error.field;
         }
     }
     
