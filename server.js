@@ -23,11 +23,6 @@
 
 // External imports - Core HTTP server framework and Node.js modules
 const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const compression = require('compression');
-const bodyParser = require('body-parser');
-const morgan = require('morgan');
 const http = require('http');
 const process = require('process');
 
@@ -53,7 +48,7 @@ const logger = require('./src/utils/logger.js');
 let serverInstance = null;
 let isShuttingDown = false;
 let connectionCount = 0;
-let connections = new Set();
+const connections = new Set();
 
 /**
  * Track active connections for graceful shutdown
