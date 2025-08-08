@@ -105,8 +105,7 @@ const schemas = {
             },
             price: {
                 type: 'number',
-                minimum: 0,
-                exclusiveMinimum: true
+                exclusiveMinimum: 0
             },
             inStock: {
                 type: 'boolean',
@@ -141,8 +140,7 @@ const schemas = {
             },
             price: {
                 type: 'number',
-                minimum: 0,
-                exclusiveMinimum: true
+                exclusiveMinimum: 0
             },
             inStock: {
                 type: 'boolean'
@@ -176,8 +174,7 @@ const schemas = {
             },
             price: {
                 type: 'number',
-                minimum: 0,
-                exclusiveMinimum: true
+                exclusiveMinimum: 0
             },
             inStock: {
                 type: 'boolean'
