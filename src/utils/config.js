@@ -359,13 +359,27 @@ const config = {
     rateLimit: getRateLimitConfig()
 };
 
-// Freeze configuration object to prevent accidental modifications
-Object.freeze(config);
-Object.freeze(config.validation);
-Object.freeze(config.bodyParser);
-Object.freeze(config.compression);
-Object.freeze(config.rateLimit);
-Object.freeze(config.rateLimit.endpointLimits);
+/**
+ * Deep freeze the configuration object to prevent accidental modifications
+ * @param {Object} obj - Object to deep freeze
+ * @returns {Object} Frozen object
+ */
+function deepFreeze(obj) {
+    // Retrieve the property names defined on obj
+    Object.getOwnPropertyNames(obj).forEach(function(name) {
+        const value = obj[name];
+        
+        // Freeze properties before freezing self
+        if (value && typeof value === 'object') {
+            deepFreeze(value);
+        }
+    });
+    
+    return Object.freeze(obj);
+}
+
+// Deep freeze configuration object to prevent accidental modifications
+deepFreeze(config);
 
 // Log configuration summary at startup
 console.log('[CONFIG] Configuration loaded successfully:');
