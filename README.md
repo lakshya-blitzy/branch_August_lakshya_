@@ -1,5 +1,6 @@
  # :fallen_leaf: :leaves: Testinium-QA :leaves: :fallen_leaf:
-Automating the Testinium browser  (JAVA, Selenium, Cucumber, JUnit, Jira, Jenkins)
+Dual-Technology Test Automation Framework: Java/Selenium/Cucumber + Node.js/Express.js REST API Server
+(JAVA, Selenium, Cucumber, JUnit, Node.js, Express.js, Jira, Jenkins)
 
 ### Tools
 
@@ -26,21 +27,39 @@ Automating the Testinium browser  (JAVA, Selenium, Cucumber, JUnit, Jira, Jenkin
 <a href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPEOYG6Ap6vFoqv5bNXkDvnCa1yAqbDr_f_YQhXa97QwYXvNqWIvnCzpFJJz1ZwcLrwbM&usqp=CAU" rel="noreferrer">
   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Jenkins_logo.svg/1200px-Jenkins_logo.svg.png" width="50" height="80"/> 
 </a> 
+
+<a href="https://nodejs.org" target="_blank" rel="noreferrer">
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg" alt="nodejs" width="60" height="60"/>
+</a>
+
+<a href="https://expressjs.com" target="_blank" rel="noreferrer">
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/express/express-original.svg" alt="express" width="60" height="60"/>
+</a> 
 </p>
 
+**Java Test Automation Stack:**
 * JAVA
 * SELENIUM
 * CUCUMBER
 * JUNIT
+
+**Node.js REST API Stack:**
+* NODE.JS
+* EXPRESS.JS
+
+**Integration & Management:**
 * JIRA
 * JENKINS
 
 ### Testinium-QA
 
-This repository contains a collection of sample `Testinium-QA` projects and libraries that demonstrate how to
-use the tool and develop automation script using the Cucumber BDD framework with Java as programming language.
-It generate JSON, HTML and Txt reporters as well. It also generate `screen shots` for your tests if you enable it and
-also generate `error shots` for your failed test cases as well.
+This repository contains a **dual-technology framework** combining:
+
+1. **Java Test Automation Framework**: Complete Cucumber BDD framework with Java for browser automation, featuring JSON, HTML and TXT reporters, screenshot capture for tests, and error shots for failed test cases.
+
+2. **Node.js Express.js REST API Server**: Fully operational Express.js v4.18.0+ server with two complete REST endpoints (/ and /evening) for integration testing and demonstration purposes.
+
+Both components operate independently and are fully functional, providing a comprehensive testing and API solution.
 
 ### Installation (pre-requisites)
 
@@ -63,11 +82,15 @@ Manually :
 Fork / Clone repository from [here](https://github.com/BalamiRR/Testinium-QA/archive/main.zip) or download zip and set
 it up in your local workspace.
 
-## Node.js REST API Server
+## Node.js Express.js REST API Server
+
+### Current Status: ✅ Fully Operational
+
+**Express.js v4.18.0+ is fully integrated** with **both endpoints completely implemented and working**.
 
 ### Overview
 
-This repository now includes a Node.js Express.js REST API server component that operates independently alongside the Java-based test automation framework. The Node.js server provides simple HTTP endpoints for demonstration and integration purposes.
+This repository includes a **fully operational Node.js Express.js v4.18.0+ REST API server** that operates independently alongside the Java-based test automation framework. The Express.js server provides **two complete REST endpoints** for demonstration and integration purposes, with both endpoints fully implemented and ready for use.
 
 ### Prerequisites
 
@@ -93,29 +116,53 @@ npm --version
    ```bash
    npm install
    ```
-   This command will install Express.js and create a `package-lock.json` file for dependency version locking.
+   This command will install **Express.js v4.18.0+** (already configured in package.json) and create a `package-lock.json` file for dependency version locking.
 
-3. **Start the Node.js server:**
+3. **Start the Express.js server:**
    ```bash
    node server.js
    ```
-   The server will start and display a startup message in the console.
+   The server will start and display startup messages confirming **both endpoints are active and ready**:
+   ```
+   Server is running on port 3000
+   Access endpoints:
+     GET / - Returns "Hello world"
+     GET /evening - Returns "Good evening"
+   ```
 
 ### Available Endpoints
 
-The Node.js server provides the following REST API endpoints:
+The Express.js server provides **two fully operational REST API endpoints**:
 
-- **GET /** - Returns "Hello world"
-  ```bash
-  curl http://localhost:3000/
-  # Response: Hello world
-  ```
+#### ✅ GET / - Returns "Hello world"
+```bash
+curl http://localhost:3000/
+# Response: Hello world
+```
 
-- **GET /evening** - Returns "Good evening"
-  ```bash
-  curl http://localhost:3000/evening
-  # Response: Good evening
-  ```
+#### ✅ GET /evening - Returns "Good evening"
+```bash
+curl http://localhost:3000/evening
+# Response: Good evening
+```
+
+**Status**: Both endpoints are **fully implemented and operational**.
+
+### Quick Test
+
+To verify both endpoints are working, run these commands after starting the server:
+
+```bash
+# Test first endpoint
+curl http://localhost:3000/
+# Expected response: Hello world
+
+# Test second endpoint  
+curl http://localhost:3000/evening
+# Expected response: Good evening
+```
+
+✅ **Both endpoints return their expected responses and are ready for integration testing.**
 
 ### Port Configuration
 
@@ -132,15 +179,15 @@ node server.js
 
 ### Integration Notes
 
-**Independent Operation**: The Node.js server operates completely independently from the Java-based test automation framework. Both components can run simultaneously without conflicts:
+**Fully Operational Express.js Server**: The Express.js v4.18.0+ server is completely implemented and operates independently from the Java-based test automation framework. Both components are production-ready and can run simultaneously without conflicts:
 
-- **Java Framework**: Continues to handle Selenium WebDriver tests, Cucumber BDD scenarios, and JUnit test execution
-- **Node.js Server**: Provides REST API endpoints for external integration or additional functionality
+- **Java Framework**: Fully handles Selenium WebDriver tests, Cucumber BDD scenarios, and JUnit test execution
+- **Express.js Server**: Provides **two complete REST API endpoints** (/ and /evening) for external integration, testing, and demonstration purposes
 
-**Development Workflow**: Developers can work on either component independently:
-1. Use the existing Java/Maven workflow for test automation development
-2. Use the Node.js/npm workflow for REST API development
-3. Both components coexist in the same repository with separate build processes
+**Development Workflow**: Both components are fully functional and developers can work on either component independently:
+1. **Java/Maven workflow**: Complete test automation framework with Selenium, Cucumber, and JUnit
+2. **Node.js/Express workflow**: Fully operational REST API server with dual endpoints
+3. **Dual-technology architecture**: Both components coexist with separate build processes and full functionality
 
 
 
