@@ -36,9 +36,11 @@ const apiRouter = require('./src/routes/api.js');
 const errorHandler = require('./src/middleware/errorHandler.js');
 const corsConfig = require('./src/middleware/cors.js');
 const securityConfig = require('./src/middleware/security.js');
+const headerValidation = require('./src/middleware/headerValidation.js');
 const compressionConfig = require('./src/middleware/compression.js');
 const bodyParserConfig = require('./src/middleware/bodyParser.js');
 const loggingConfig = require('./src/middleware/logging.js');
+const rateLimitConfig = require('./src/middleware/rateLimit.js');
 
 // Internal imports - Configuration and logging utilities
 const config = require('./src/utils/config.js');
@@ -104,19 +106,27 @@ function createApp() {
         logger.debug('Configuring security middleware');
         app.use(securityConfig());
         
-        // 2. CORS middleware - Enable cross-origin requests with security
+        // 2. Header validation middleware - Validate request headers for security threats
+        logger.debug('Configuring header validation middleware');
+        app.use(headerValidation);
+        
+        // 3. CORS middleware - Enable cross-origin requests with security
         logger.debug('Configuring CORS middleware');
         app.use(corsConfig());
         
-        // 3. Compression middleware - Optimize response payloads
+        // 4. Compression middleware - Optimize response payloads
         logger.debug('Configuring compression middleware');
         app.use(compressionConfig());
         
-        // 4. HTTP request logging middleware - Monitor all requests
+        // 5. HTTP request logging middleware - Monitor all requests
         logger.debug('Configuring logging middleware');
         app.use(loggingConfig());
         
-        // 5. Body parsing middleware - Parse request bodies
+        // 6. Rate limiting middleware - Prevent API abuse
+        logger.debug('Configuring rate limiting middleware');
+        app.use(rateLimitConfig);
+        
+        // 7. Body parsing middleware - Parse request bodies
         logger.debug('Configuring body parser middleware');
         const bodyParsers = bodyParserConfig(app);
         
@@ -133,11 +143,11 @@ function createApp() {
         app.use(bodyParsers.json);
         app.use(bodyParsers.urlencoded);
         
-        // 6. API routes - Main application endpoints
+        // 7. API routes - Main application endpoints
         logger.debug('Configuring API routes');
         app.use('/api', apiRouter);
         
-        // 7. Root health endpoint for load balancer health checks
+        // 8. Root health endpoint for load balancer health checks
         app.get('/health', (req, res) => {
             const healthData = {
                 status: 'healthy',
