@@ -80,10 +80,12 @@ function sanitizeLogData(data) {
             lowercaseKey.includes(sensitiveField)
         );
         
-        if (isSensitive) {
-            sanitized[key] = '[REDACTED]';
-        } else if (typeof value === 'object' && value !== null) {
+        if (typeof value === 'object' && value !== null) {
+            // Always recursively process objects/arrays, regardless of field name
             sanitized[key] = sanitizeLogData(value);
+        } else if (isSensitive) {
+            // Only redact primitive values when field name is sensitive
+            sanitized[key] = '[REDACTED]';
         } else {
             sanitized[key] = value;
         }
