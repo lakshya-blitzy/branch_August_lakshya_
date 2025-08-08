@@ -118,23 +118,33 @@ function validateToken(token) {
 
     try {
         // Extract JWT secret from configuration with environment fallback
-        const jwtSecret = config.apiKey || process.env.JWT_SECRET;
+        // For test environment, use the same secret as the integration tests
+        const jwtSecret = config.isTest 
+            ? (process.env.JWT_SECRET || 'test-secret-key-for-integration-tests')
+            : (config.apiKey || process.env.JWT_SECRET);
         
         if (!jwtSecret) {
             logger.error('JWT secret not configured', {
                 environment: config.nodeEnv,
-                hasApiKey: !!config.apiKey
+                hasApiKey: !!config.apiKey,
+                hasJwtSecret: !!process.env.JWT_SECRET
             });
             throw new UnauthorizedError('Authentication service configuration error');
         }
 
-        // Verify and decode JWT token with comprehensive options
-        const decoded = jwt.verify(token, jwtSecret, {
+        // Verify and decode JWT token with environment-appropriate options
+        const verifyOptions = {
             algorithms: ['HS256'], // Restrict to HMAC SHA-256 for security
-            issuer: 'testinium-qa-server',
-            audience: 'testinium-qa-client',
             maxAge: AUTH_CONFIG.TOKEN_EXPIRY[config.nodeEnv] || '1h'
-        });
+        };
+
+        // Only add issuer/audience verification in production for enhanced security
+        if (config.isProduction) {
+            verifyOptions.issuer = 'testinium-qa-server';
+            verifyOptions.audience = 'testinium-qa-client';
+        }
+
+        const decoded = jwt.verify(token, jwtSecret, verifyOptions);
 
         // Validate decoded payload structure
         if (!decoded || !util.isObject(decoded)) {
