@@ -31,3 +31,6 @@ coverage/
 
 # NYC (Istanbul) coverage output
 .nyc_output/
+
+# Jest cache directory
+.jest-cache/
