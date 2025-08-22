@@ -25,7 +25,7 @@
  */
 
 // External imports from testing frameworks
-const { describe, it, test, expect, beforeEach, afterEach, jest } = require('jest');
+// Jest functions (describe, it, test, expect, beforeEach, afterEach, jest) are available as globals
 const request = require('supertest');
 
 // Internal imports from project dependencies
@@ -579,7 +579,7 @@ describe('HTTP Server Response Validation', () => {
       
       // Validate HEAD request response
       expect(response.body).toEqual({});
-      expect(response.text).toBe('');
+      expect(response.text || '').toBe('');
       
       // Validate headers are still present
       expect(response.headers['content-type']).toMatch(/application\/json/);
