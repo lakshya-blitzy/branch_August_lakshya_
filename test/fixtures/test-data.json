@@ -1,0 +1,621 @@
+{
+  "valid": {
+    "simpleObject": {
+      "name": "test-user",
+      "value": 123,
+      "email": "test@example.com",
+      "isActive": true
+    },
+    "complexObject": {
+      "user": {
+        "id": 1001,
+        "profile": {
+          "firstName": "John",
+          "lastName": "Doe",
+          "age": 30,
+          "preferences": {
+            "theme": "dark",
+            "notifications": true,
+            "language": "en-US"
+          }
+        },
+        "permissions": ["read", "write", "delete"],
+        "metadata": {
+          "createdAt": "2024-01-15T10:30:00Z",
+          "lastLogin": "2024-01-20T14:45:30Z",
+          "loginCount": 42
+        }
+      }
+    },
+    "arrayData": {
+      "items": [
+        {"id": 1, "name": "Item One", "category": "electronics"},
+        {"id": 2, "name": "Item Two", "category": "books"},
+        {"id": 3, "name": "Item Three", "category": "clothing"}
+      ],
+      "total": 3,
+      "page": 1,
+      "limit": 10
+    },
+    "numericData": {
+      "integer": 42,
+      "float": 3.14159,
+      "negative": -100,
+      "zero": 0,
+      "large": 999999999
+    },
+    "stringData": {
+      "simple": "hello world",
+      "unicode": "🚀 Testing with unicode characters 中文 العربية",
+      "empty": "",
+      "multiline": "Line 1\nLine 2\nLine 3",
+      "special": "!@#$%^&*()_+-=[]{}|;':\",./<>?"
+    },
+    "booleanData": {
+      "true": true,
+      "false": false
+    },
+    "nullData": {
+      "nullValue": null,
+      "undefinedKey": null
+    },
+    "dateData": {
+      "isoDate": "2024-01-15T10:30:00.000Z",
+      "timestamp": 1705312200000,
+      "dateString": "2024-01-15"
+    }
+  },
+  "invalid": {
+    "malformedJson": "{\"name\": \"test\", \"value\": }",
+    "unclosedObject": "{\"name\": \"test\", \"value\": 123",
+    "unclosedArray": "[1, 2, 3",
+    "trailingComma": "{\"name\": \"test\",}",
+    "unquotedKeys": "{name: \"test\", value: 123}",
+    "singleQuotes": "{'name': 'test', 'value': 123}",
+    "invalidEscape": "{\"name\": \"test\\\\invalid\", \"value\": 123}",
+    "duplicateKeys": "{\"name\": \"test\", \"name\": \"duplicate\"}",
+    "invalidUnicode": "{\"name\": \"\\\\uXXXX\"}",
+    "functionCall": "{\"name\": function() { return 'test'; }}",
+    "undefinedValue": "{\"name\": undefined}",
+    "infinityValue": "{\"value\": Infinity}",
+    "nanValue": "{\"value\": NaN}",
+    "binaryData": "\\\\x00\\\\x01\\\\x02\\\\x03",
+    "xmlInJson": "<xml><name>test</name></xml>",
+    "htmlContent": "<html><body>Not JSON</body></html>",
+    "plainText": "This is just plain text, not JSON",
+    "emptyString": "",
+    "onlyWhitespace": "   \n\t   ",
+    "onlyComments": "// This is a comment\n/* Another comment */",
+    "sqlInjection": "'; DROP TABLE users; --",
+    "scriptInjection": "<script>alert('xss')</script>",
+    "veryLongString": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "deeplyNested": "{{{{{{{{{{\"deep\": true}}}}}}}}}}"
+  },
+  "large": {
+    "description": "Large payload testing data - generated strings of various sizes for boundary testing",
+    "sizes": {
+      "1KB": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam.",
+      "10KB": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "100KB": "LARGE_100KB_PAYLOAD_PLACEHOLDER",
+      "1MB": "LARGE_1MB_PAYLOAD_PLACEHOLDER", 
+      "2MB": "LARGE_2MB_PAYLOAD_PLACEHOLDER"
+    },
+    "largeArray": {
+      "description": "Array with 1000 items for testing array processing limits",
+      "data": [
+        {"id": 1, "name": "Item_1", "value": 1.1, "category": "test", "active": true},
+        {"id": 2, "name": "Item_2", "value": 2.2, "category": "test", "active": false},
+        {"id": 3, "name": "Item_3", "value": 3.3, "category": "test", "active": true},
+        {"id": 4, "name": "Item_4", "value": 4.4, "category": "test", "active": false},
+        {"id": 5, "name": "Item_5", "value": 5.5, "category": "test", "active": true}
+      ],
+      "note": "Array truncated for readability - would contain 1000 items in actual implementation"
+    },
+    "largeObject": {
+      "description": "Object with many properties for testing object processing",
+      "properties": {
+        "prop_1": "value_1", "prop_2": "value_2", "prop_3": "value_3", "prop_4": "value_4", "prop_5": "value_5",
+        "prop_6": "value_6", "prop_7": "value_7", "prop_8": "value_8", "prop_9": "value_9", "prop_10": "value_10",
+        "nested_1": {"sub_1": "sub_value_1", "sub_2": "sub_value_2"},
+        "nested_2": {"sub_3": "sub_value_3", "sub_4": "sub_value_4"},
+        "array_prop": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "boolean_props": {"flag_1": true, "flag_2": false, "flag_3": true}
+      },
+      "note": "Object truncated for readability - would contain 100+ properties in actual implementation"
+    },
+    "nestedStructure": {
+      "description": "Deeply nested structure for testing recursion limits",
+      "level": 1,
+      "data": {
+        "level": 2,
+        "data": {
+          "level": 3,
+          "data": {
+            "level": 4,
+            "data": {
+              "level": 5,
+              "data": {
+                "level": 6,
+                "data": {
+                  "level": 7,
+                  "data": {
+                    "level": 8,
+                    "data": {
+                      "level": 9,
+                      "data": {
+                        "level": 10,
+                        "data": "max_depth_reached",
+                        "note": "Structure truncated for readability - would contain 50+ levels in stress testing"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "binaryData": {
+      "description": "Base64 encoded binary data for testing file uploads",
+      "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      "mimeType": "image/png",
+      "filename": "test.png"
+    }
+  },
+  "empty": {
+    "emptyObject": {},
+    "emptyArray": [],
+    "emptyString": "",
+    "onlyWhitespace": "   \t\n   ",
+    "nullValue": null,
+    "falseValue": false,
+    "zeroValue": 0,
+    "undefinedValue": null
+  },
+  "expectedResponses": {
+    "success": {
+      "status": 200,
+      "message": "ok",
+      "data": null,
+      "timestamp": "2024-01-15T10:30:00.000Z",
+      "headers": {
+        "content-type": "application/json",
+        "x-powered-by": "testinium-qa",
+        "cache-control": "no-cache"
+      }
+    },
+    "created": {
+      "status": 201,
+      "message": "Created successfully",
+      "data": {
+        "id": 1001,
+        "created": true
+      },
+      "headers": {
+        "content-type": "application/json",
+        "location": "/data/1001"
+      }
+    },
+    "notFound": {
+      "status": 404,
+      "error": "Not Found",
+      "message": "The requested resource was not found",
+      "path": "/nonexistent",
+      "timestamp": "2024-01-15T10:30:00.000Z",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    "badRequest": {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "Invalid request format or malformed JSON",
+      "details": "Request body contains invalid JSON syntax",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    "methodNotAllowed": {
+      "status": 405,
+      "error": "Method Not Allowed",
+      "message": "HTTP method not supported for this endpoint",
+      "allowedMethods": ["GET", "POST"],
+      "headers": {
+        "content-type": "application/json",
+        "allow": "GET, POST"
+      }
+    },
+    "serverError": {
+      "status": 500,
+      "error": "Internal Server Error",
+      "message": "An unexpected error occurred while processing the request",
+      "timestamp": "2024-01-15T10:30:00.000Z",
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    "timeout": {
+      "status": 408,
+      "error": "Request Timeout",
+      "message": "Request processing exceeded maximum allowed time",
+      "timeout": 5000,
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    "payloadTooLarge": {
+      "status": 413,
+      "error": "Payload Too Large",
+      "message": "Request payload exceeds maximum allowed size",
+      "maxSize": 1048576,
+      "receivedSize": 2097152,
+      "headers": {
+        "content-type": "application/json"
+      }
+    },
+    "rateLimited": {
+      "status": 429,
+      "error": "Too Many Requests",
+      "message": "Rate limit exceeded for this endpoint",
+      "retryAfter": 60,
+      "headers": {
+        "content-type": "application/json",
+        "retry-after": "60"
+      }
+    }
+  },
+  "edgeCases": {
+    "concurrentRequests": {
+      "description": "Data for testing concurrent request handling",
+      "requestCount": 100,
+      "payloadSize": 1024,
+      "expectedResponseTime": 100
+    },
+    "specialCharacters": {
+      "urlEncoded": "%20%21%40%23%24%25%5E%26%2A%28%29",
+      "unicode": "🚀💻📊🎯🔍⚡️🌟💡🔒🌐",
+      "controlCharacters": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r",
+      "highUnicode": "😀😁😂😃",
+      "rtlText": "مرحبا بالعالم",
+      "cyrillicText": "Привет мир"
+    },
+    "boundaryValues": {
+      "maxInteger": 2147483647,
+      "minInteger": -2147483648,
+      "maxFloat": 1.7976931348623157e+308,
+      "minFloat": 5e-324,
+      "maxSafeInteger": 9007199254740991,
+      "minSafeInteger": -9007199254740991
+    },
+    "pathTraversal": {
+      "dotDotSlash": "../../../etc/passwd",
+      "windowsPath": "..\\..\\..\\windows\\system32\\config",
+      "absolutePath": "/etc/passwd",
+      "nullByte": "../../../etc/passwd\u0000.txt",
+      "encodedTraversal": "%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd"
+    },
+    "sqlInjectionPayloads": {
+      "basicInjection": "' OR '1'='1",
+      "unionSelect": "' UNION SELECT * FROM users --",
+      "dropTable": "'; DROP TABLE users; --",
+      "blindInjection": "' AND SUBSTRING(@@version,1,1)='5",
+      "timeBasedInjection": "'; WAITFOR DELAY '00:00:05' --"
+    },
+    "xssPayloads": {
+      "basicScript": "<script>alert('xss')</script>",
+      "eventHandler": "<img src=x onerror=alert('xss')>",
+      "javascriptProtocol": "javascript:alert('xss')",
+      "encodedScript": "&lt;script&gt;alert('xss')&lt;/script&gt;",
+      "svgPayload": "<svg onload=alert('xss')></svg>"
+    }
+  },
+  "performance": {
+    "description": "Performance testing data for load and stress testing",
+    "smallPayload": {
+      "size": 256,
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "mediumPayload": {
+      "size": 65536,
+      "data": "MEDIUM_65KB_PAYLOAD_PLACEHOLDER_FOR_TESTING_BOUNDARY_CONDITIONS"
+    },
+    "largePayload": {
+      "size": 1048576,
+      "data": "LARGE_1MB_PAYLOAD_PLACEHOLDER_FOR_STRESS_TESTING_SERVER_LIMITS"
+    },
+    "veryLargePayload": {
+      "size": 2097152,
+      "data": "VERY_LARGE_2MB_PAYLOAD_PLACEHOLDER_FOR_MAXIMUM_BOUNDARY_TESTING"
+    },
+    "concurrentTestData": {
+      "requestCount": 100,
+      "parallelConnections": 50,
+      "requestInterval": 10,
+      "expectedMaxResponseTime": 100
+    },
+    "timeoutTestData": {
+      "shortTimeout": 100,
+      "mediumTimeout": 1000,
+      "longTimeout": 5000,
+      "veryLongTimeout": 30000
+    }
+  },
+  "headers": {
+    "validHeaders": {
+      "contentType": "application/json",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+      "acceptLanguage": "en-US,en;q=0.9",
+      "acceptEncoding": "gzip, deflate, br",
+      "connection": "keep-alive",
+      "customHeader": "test-suite-execution"
+    },
+    "invalidHeaders": {
+      "emptyContentType": "",
+      "invalidContentType": "invalid/type",
+      "malformedAuth": "Bearer invalid-token-format",
+      "oversizedHeader": "OVERSIZED_HEADER_8KB_PLACEHOLDER_FOR_TESTING_HTTP_HEADER_SIZE_LIMITS_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "nonAsciiHeader": "测试头部",
+      "controlCharacters": "\u0000\u0001\u0002test\u0003",
+      "nullByte": "test\u0000header"
+    },
+    "securityHeaders": {
+      "xFrameOptions": "DENY",
+      "xContentTypeOptions": "nosniff",
+      "xXssProtection": "1; mode=block",
+      "strictTransportSecurity": "max-age=31536000; includeSubDomains",
+      "contentSecurityPolicy": "default-src 'self'; script-src 'self' 'unsafe-inline'"
+    }
+  },
+  "statusCodes": {
+    "informational": {
+      "100": "Continue",
+      "101": "Switching Protocols",
+      "102": "Processing"
+    },
+    "successful": {
+      "200": "OK",
+      "201": "Created",
+      "202": "Accepted",
+      "204": "No Content",
+      "206": "Partial Content"
+    },
+    "redirection": {
+      "301": "Moved Permanently",
+      "302": "Found",
+      "304": "Not Modified",
+      "307": "Temporary Redirect",
+      "308": "Permanent Redirect"
+    },
+    "clientError": {
+      "400": "Bad Request",
+      "401": "Unauthorized",
+      "403": "Forbidden",
+      "404": "Not Found",
+      "405": "Method Not Allowed",
+      "408": "Request Timeout",
+      "409": "Conflict",
+      "413": "Payload Too Large",
+      "415": "Unsupported Media Type",
+      "422": "Unprocessable Entity",
+      "429": "Too Many Requests"
+    },
+    "serverError": {
+      "500": "Internal Server Error",
+      "501": "Not Implemented",
+      "502": "Bad Gateway",
+      "503": "Service Unavailable",
+      "504": "Gateway Timeout",
+      "507": "Insufficient Storage"
+    }
+  },
+  "httpMethods": {
+    "supported": ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+    "unsupported": ["TRACE", "CONNECT", "CUSTOM", "INVALID"],
+    "testCases": {
+      "GET": {
+        "path": "/",
+        "expectedStatus": 200,
+        "requiresBody": false
+      },
+      "POST": {
+        "path": "/data",
+        "expectedStatus": 201,
+        "requiresBody": true,
+        "contentType": "application/json"
+      },
+      "PUT": {
+        "path": "/data/1",
+        "expectedStatus": 200,
+        "requiresBody": true,
+        "contentType": "application/json"
+      },
+      "DELETE": {
+        "path": "/data/1",
+        "expectedStatus": 204,
+        "requiresBody": false
+      },
+      "PATCH": {
+        "path": "/data/1",
+        "expectedStatus": 200,
+        "requiresBody": true,
+        "contentType": "application/json"
+      },
+      "HEAD": {
+        "path": "/",
+        "expectedStatus": 200,
+        "requiresBody": false,
+        "noResponseBody": true
+      },
+      "OPTIONS": {
+        "path": "/",
+        "expectedStatus": 200,
+        "requiresBody": false,
+        "corsHeaders": true
+      }
+    }
+  },
+  "contentTypes": {
+    "json": {
+      "header": "application/json",
+      "charset": "utf-8",
+      "sample": "{\"message\": \"hello world\"}"
+    },
+    "xml": {
+      "header": "application/xml",
+      "charset": "utf-8",
+      "sample": "<?xml version=\"1.0\"?><message>hello world</message>"
+    },
+    "html": {
+      "header": "text/html",
+      "charset": "utf-8",
+      "sample": "<html><body><h1>Hello World</h1></body></html>"
+    },
+    "plain": {
+      "header": "text/plain",
+      "charset": "utf-8",
+      "sample": "Hello World"
+    },
+    "formData": {
+      "header": "application/x-www-form-urlencoded",
+      "sample": "name=test&value=123&email=test%40example.com"
+    },
+    "multipart": {
+      "header": "multipart/form-data",
+      "boundary": "----WebKitFormBoundary7MA4YWxkTrZu0gW",
+      "sample": "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"field1\"\r\n\r\nvalue1\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--"
+    },
+    "binary": {
+      "header": "application/octet-stream",
+      "sample": "binary data here"
+    }
+  },
+  "responseValidation": {
+    "requiredFields": ["status", "message", "timestamp"],
+    "optionalFields": ["data", "error", "details", "headers"],
+    "headerValidation": {
+      "required": ["content-type"],
+      "optional": ["x-powered-by", "cache-control", "x-request-id"]
+    },
+    "statusCodeRanges": {
+      "informational": [100, 199],
+      "successful": [200, 299],
+      "redirection": [300, 399],
+      "clientError": [400, 499],
+      "serverError": [500, 599]
+    }
+  },
+  "testScenarios": {
+    "happyPath": {
+      "description": "Normal server operations with valid requests",
+      "scenarios": [
+        {
+          "name": "GET root endpoint",
+          "method": "GET",
+          "path": "/",
+          "expectedStatus": 200,
+          "expectedHeaders": {"content-type": "application/json"},
+          "maxResponseTime": 100
+        },
+        {
+          "name": "POST valid data",
+          "method": "POST",
+          "path": "/data",
+          "body": {"name": "test", "value": 123},
+          "expectedStatus": 201,
+          "expectedHeaders": {"content-type": "application/json"}
+        }
+      ]
+    },
+    "errorScenarios": {
+      "description": "4xx and 5xx status codes, malformed requests",
+      "scenarios": [
+        {
+          "name": "404 for invalid route",
+          "method": "GET",
+          "path": "/nonexistent",
+          "expectedStatus": 404,
+          "expectedError": "Not Found"
+        },
+        {
+          "name": "400 for malformed JSON",
+          "method": "POST", 
+          "path": "/data",
+          "body": "{invalid json}",
+          "expectedStatus": 400,
+          "expectedError": "Bad Request"
+        },
+        {
+          "name": "405 for unsupported method",
+          "method": "TRACE",
+          "path": "/",
+          "expectedStatus": 405,
+          "expectedError": "Method Not Allowed"
+        }
+      ]
+    },
+    "boundaryConditions": {
+      "description": "Large payloads, concurrent connections, timeout scenarios",
+      "scenarios": [
+        {
+          "name": "Large payload handling",
+          "method": "POST",
+          "path": "/data",
+          "bodySize": 2097152,
+          "expectedStatus": 413,
+          "expectedError": "Payload Too Large"
+        },
+        {
+          "name": "Concurrent connections test",
+          "method": "GET",
+          "path": "/",
+          "concurrentRequests": 100,
+          "expectedSuccessRate": 0.95
+        },
+        {
+          "name": "Request timeout handling",
+          "method": "POST",
+          "path": "/slow",
+          "timeout": 1000,
+          "expectedStatus": 408,
+          "expectedError": "Request Timeout"
+        }
+      ]
+    }
+  },
+  "mocks": {
+    "environment": {
+      "NODE_ENV": "test",
+      "PORT": "0",
+      "HOST": "127.0.0.1",
+      "LOG_LEVEL": "error",
+      "REQUEST_TIMEOUT": "5000",
+      "MAX_PAYLOAD_SIZE": "1048576"
+    },
+    "externalServices": {
+      "database": {
+        "host": "localhost",
+        "port": 5432,
+        "database": "test_db",
+        "username": "test_user",
+        "password": "test_pass"
+      },
+      "redis": {
+        "host": "localhost", 
+        "port": 6379,
+        "database": 0
+      },
+      "messageQueue": {
+        "host": "localhost",
+        "port": 5672,
+        "queue": "test_queue"
+      }
+    },
+    "fileSystem": {
+      "configPath": "/tmp/test-config.json",
+      "logPath": "/tmp/test.log",
+      "tempDir": "/tmp/testinium-qa"
+    }
+  }
+}

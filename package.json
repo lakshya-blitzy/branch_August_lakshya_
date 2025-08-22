@@ -1,0 +1,46 @@
+{
+  "name": "testinium-qa-js-testing",
+  "version": "1.0.0",
+  "description": "JavaScript testing infrastructure for Testinium-QA framework providing HTTP server testing capabilities alongside existing Java/Maven BDD framework",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20.9.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:verbose": "jest --verbose",
+    "coverage:report": "jest --coverage --coverageReporters=html"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.1.4",
+    "@types/jest": "^29.5.0",
+    "@types/supertest": "^6.0.0",
+    "sinon": "^17.0.0",
+    "@types/sinon": "^17.0.0"
+  },
+  "keywords": [
+    "testing",
+    "http",
+    "server",
+    "unit-tests",
+    "integration-tests",
+    "jest",
+    "supertest",
+    "bdd",
+    "automation"
+  ],
+  "author": "Testinium-QA Framework",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/testinium-qa/js-testing-framework"
+  },
+  "bugs": {
+    "url": "https://github.com/testinium-qa/js-testing-framework/issues"
+  },
+  "homepage": "https://github.com/testinium-qa/js-testing-framework#readme"
+}

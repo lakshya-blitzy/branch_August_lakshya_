@@ -22,3 +22,15 @@ configuration.properties
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# Node.js dependencies and build artifacts
+node_modules/
+
+# Test coverage reports
+coverage/
+
+# NYC (Istanbul) coverage output
+.nyc_output/
+
+# Jest cache directory
+.jest-cache/
