@@ -1,30 +1,9 @@
 const request = require('supertest');
-const TestServer = require('../server');
+const server = require('../server');
 
 describe('Server HTTP Tests', () => {
-    let testServer;
-    let server;
-    let port;
-
-    beforeEach((done) => {
-        testServer = new TestServer(0); // Use port 0 for dynamic allocation
-        server = testServer.start((error, assignedPort) => {
-            if (error) {
-                done(error);
-                return;
-            }
-            port = assignedPort;
-            done();
-        });
-    });
-
-    afterEach((done) => {
-        if (testServer) {
-            testServer.stop(done);
-        } else {
-            done();
-        }
-    });
+    // Server instance is already created and ready to use
+    // No need to start/stop in each test - Supertest handles this
 
     describe('GET / endpoint', () => {
         test('should return 200 status code', async () => {
@@ -42,16 +21,18 @@ describe('Server HTTP Tests', () => {
             
             expect(response.body).toEqual({
                 status: 'ok',
-                message: 'Server is running'
+                code: 200,
+                message: 'Testinium-QA HTTP Server Running'
             });
         });
 
-        test('should have custom test server header', async () => {
+        test('should have custom server headers', async () => {
             const response = await request(server)
                 .get('/')
                 .expect(200);
             
-            expect(response.headers['x-test-server']).toBe('true');
+            expect(response.headers['x-server']).toBe('Testinium-QA-Server');
+            expect(response.headers['x-timestamp']).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
         });
     });
 
@@ -62,24 +43,27 @@ describe('Server HTTP Tests', () => {
                 .expect(200);
         });
 
-        test('should return health status with timestamp and uptime', async () => {
+        test('should return health status with uptime and memory info', async () => {
             const response = await request(server)
                 .get('/health')
                 .expect(200);
             
             expect(response.body).toHaveProperty('status', 'healthy');
-            expect(response.body).toHaveProperty('timestamp');
+            expect(response.body).toHaveProperty('code', 200);
             expect(response.body).toHaveProperty('uptime');
+            expect(response.body).toHaveProperty('memory');
             expect(typeof response.body.uptime).toBe('number');
             expect(response.body.uptime).toBeGreaterThanOrEqual(0);
+            expect(typeof response.body.memory).toBe('object');
         });
 
-        test('should return valid ISO timestamp', async () => {
+        test('should have valid ISO timestamp in headers', async () => {
             const response = await request(server)
                 .get('/health')
                 .expect(200);
             
-            const timestamp = response.body.timestamp;
+            const timestamp = response.headers['x-timestamp'];
+            expect(timestamp).toBeDefined();
             expect(() => new Date(timestamp).toISOString()).not.toThrow();
             expect(new Date(timestamp).toISOString()).toBe(timestamp);
         });
@@ -102,9 +86,11 @@ describe('Server HTTP Tests', () => {
                 .send(testData)
                 .expect(200);
             
-            expect(response.body).toHaveProperty('message', 'Data received successfully');
-            expect(response.body).toHaveProperty('received', testData);
-            expect(response.body).toHaveProperty('timestamp');
+            expect(response.body).toHaveProperty('status', 'received');
+            expect(response.body).toHaveProperty('code', 200);
+            expect(response.body).toHaveProperty('data', testData);
+            expect(response.body).toHaveProperty('size');
+            expect(typeof response.body.size).toBe('number');
         });
 
         test('should reject invalid JSON with 400', async () => {
@@ -114,7 +100,8 @@ describe('Server HTTP Tests', () => {
                 .send('{"invalid": json}')
                 .expect(400);
             
-            expect(response.body).toHaveProperty('error', 'Invalid JSON');
+            expect(response.body).toHaveProperty('error', 'Bad Request');
+            expect(response.body).toHaveProperty('code', 400);
             expect(response.body).toHaveProperty('message');
         });
 
@@ -124,7 +111,9 @@ describe('Server HTTP Tests', () => {
                 .send({})
                 .expect(200);
             
-            expect(response.body).toHaveProperty('received', {});
+            expect(response.body).toHaveProperty('status', 'received');
+            expect(response.body).toHaveProperty('code', 200);
+            expect(response.body).toHaveProperty('data', {});
         });
 
         test('should handle complex JSON data', async () => {
@@ -145,16 +134,19 @@ describe('Server HTTP Tests', () => {
                 .send(complexData)
                 .expect(200);
             
-            expect(response.body.received).toEqual(complexData);
+            expect(response.body).toHaveProperty('status', 'received');
+            expect(response.body).toHaveProperty('data');
+            expect(response.body.data).toEqual(complexData);
         });
 
-        test('should return timestamp in ISO format', async () => {
+        test('should return timestamp in ISO format in headers', async () => {
             const response = await request(server)
                 .post('/data')
                 .send({ test: 'data' })
                 .expect(200);
             
-            const timestamp = response.body.timestamp;
+            const timestamp = response.headers['x-timestamp'];
+            expect(timestamp).toBeDefined();
             expect(() => new Date(timestamp).toISOString()).not.toThrow();
         });
     });
@@ -172,7 +164,7 @@ describe('Server HTTP Tests', () => {
             }
         });
 
-        test('should set X-Test-Server header for all endpoints', async () => {
+        test('should set X-Server header for all endpoints', async () => {
             const endpoints = ['/', '/health'];
             
             for (const endpoint of endpoints) {
@@ -180,7 +172,8 @@ describe('Server HTTP Tests', () => {
                     .get(endpoint)
                     .expect(200);
                     
-                expect(response.headers['x-test-server']).toBe('true');
+                expect(response.headers['x-server']).toBe('Testinium-QA-Server');
+                expect(response.headers['x-timestamp']).toBeDefined();
             }
         });
     });

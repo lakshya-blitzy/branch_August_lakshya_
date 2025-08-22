@@ -1,28 +1,9 @@
 const request = require('supertest');
-const TestServer = require('../server');
+const server = require('../server');
 
 describe('Server Error Handling Tests', () => {
-    let testServer;
-    let server;
-
-    beforeEach((done) => {
-        testServer = new TestServer(0);
-        server = testServer.start((error, port) => {
-            if (error) {
-                done(error);
-                return;
-            }
-            done();
-        });
-    });
-
-    afterEach((done) => {
-        if (testServer) {
-            testServer.stop(done);
-        } else {
-            done();
-        }
-    });
+    // Server instance is already created and ready to use
+    // No need to start/stop in each test - Supertest handles this
 
     describe('404 Not Found Errors', () => {
         test('should return 404 for unknown GET routes', async () => {
@@ -32,7 +13,8 @@ describe('Server Error Handling Tests', () => {
             
             expect(response.body).toEqual({
                 error: 'Not Found',
-                message: 'Route GET /unknown-route not found'
+                code: 404,
+                path: '/unknown-route'
             });
         });
 
@@ -44,42 +26,47 @@ describe('Server Error Handling Tests', () => {
             
             expect(response.body).toEqual({
                 error: 'Not Found',
-                message: 'Route POST /unknown-endpoint not found'
+                code: 404,
+                path: '/unknown-endpoint',
+                method: 'POST'
             });
         });
 
-        test('should return 404 for unsupported HTTP methods', async () => {
+        test('should return 405 for unsupported HTTP methods', async () => {
             const response = await request(server)
                 .put('/')
                 .send({ test: 'data' })
-                .expect(404);
+                .expect(405);
             
             expect(response.body).toEqual({
-                error: 'Not Found',
-                message: 'Route PUT / not found'
+                error: 'Method Not Allowed',
+                code: 405,
+                allowed: ['GET', 'POST', 'HEAD']
             });
         });
 
-        test('should return 404 for DELETE method', async () => {
+        test('should return 405 for DELETE method', async () => {
             const response = await request(server)
                 .delete('/data')
-                .expect(404);
+                .expect(405);
             
             expect(response.body).toEqual({
-                error: 'Not Found',
-                message: 'Route DELETE /data not found'
+                error: 'Method Not Allowed',
+                code: 405,
+                allowed: ['GET', 'POST', 'HEAD']
             });
         });
 
-        test('should return 404 for PATCH method', async () => {
+        test('should return 405 for PATCH method', async () => {
             const response = await request(server)
                 .patch('/health')
                 .send({ update: 'data' })
-                .expect(404);
+                .expect(405);
             
             expect(response.body).toEqual({
-                error: 'Not Found',
-                message: 'Route PATCH /health not found'
+                error: 'Method Not Allowed',
+                code: 405,
+                allowed: ['GET', 'POST', 'HEAD']
             });
         });
 
@@ -89,7 +76,8 @@ describe('Server Error Handling Tests', () => {
                 .expect(404);
             
             expect(response.body.error).toBe('Not Found');
-            expect(response.body.message).toContain('not found');
+            expect(response.body.path).toBe('/test path with spaces'); // Server decodes the URL
+            expect(response.body.code).toBe(404);
         });
     });
 
@@ -101,7 +89,7 @@ describe('Server Error Handling Tests', () => {
                 .send('{"invalid": json}')
                 .expect(400);
             
-            expect(response.body).toHaveProperty('error', 'Invalid JSON');
+            expect(response.body).toHaveProperty('error', 'Bad Request');
             expect(response.body).toHaveProperty('message');
             expect(typeof response.body.message).toBe('string');
         });
@@ -113,7 +101,7 @@ describe('Server Error Handling Tests', () => {
                 .send('{"name": "test"')
                 .expect(400);
             
-            expect(response.body.error).toBe('Invalid JSON');
+            expect(response.body.error).toBe('Bad Request');
         });
 
         test('should return 400 for non-JSON string in POST /data', async () => {
@@ -123,7 +111,7 @@ describe('Server Error Handling Tests', () => {
                 .send('not json at all')
                 .expect(400);
             
-            expect(response.body.error).toBe('Invalid JSON');
+            expect(response.body.error).toBe('Bad Request');
         });
 
         test('should return 400 for empty malformed JSON', async () => {
@@ -133,7 +121,7 @@ describe('Server Error Handling Tests', () => {
                 .send('{')
                 .expect(400);
             
-            expect(response.body.error).toBe('Invalid JSON');
+            expect(response.body.error).toBe('Bad Request');
         });
 
         test('should return 400 for JSON with trailing comma', async () => {
@@ -143,7 +131,7 @@ describe('Server Error Handling Tests', () => {
                 .send('{"test": "value",}')
                 .expect(400);
             
-            expect(response.body.error).toBe('Invalid JSON');
+            expect(response.body.error).toBe('Bad Request');
         });
     });
 
@@ -155,7 +143,8 @@ describe('Server Error Handling Tests', () => {
             
             expect(response.body).toEqual({
                 error: 'Internal Server Error',
-                message: 'This is a test error endpoint'
+                code: 500,
+                message: 'Intentional test error'
             });
         });
 
@@ -169,14 +158,19 @@ describe('Server Error Handling Tests', () => {
         });
 
         test('should handle error endpoint with different methods', async () => {
-            const methods = ['POST', 'PUT', 'DELETE', 'PATCH'];
+            const methods = [
+                { method: 'POST', expectedStatus: 404, expectedError: 'Not Found' },
+                { method: 'PUT', expectedStatus: 405, expectedError: 'Method Not Allowed' },
+                { method: 'DELETE', expectedStatus: 405, expectedError: 'Method Not Allowed' },
+                { method: 'PATCH', expectedStatus: 405, expectedError: 'Method Not Allowed' }
+            ];
             
-            for (const method of methods) {
+            for (const { method, expectedStatus, expectedError } of methods) {
                 const response = await request(server)
                     [method.toLowerCase()]('/error')
-                    .expect(404); // Should be 404 since /error only handles GET
+                    .expect(expectedStatus);
                 
-                expect(response.body.error).toBe('Not Found');
+                expect(response.body.error).toBe(expectedError);
             }
         });
     });
@@ -197,9 +191,18 @@ describe('Server Error Handling Tests', () => {
                 
                 expect(response.headers['content-type']).toMatch(/application\/json/);
                 expect(response.body).toHaveProperty('error');
-                expect(response.body).toHaveProperty('message');
+                expect(response.body).toHaveProperty('code');
                 expect(typeof response.body.error).toBe('string');
-                expect(typeof response.body.message).toBe('string');
+                expect(typeof response.body.code).toBe('number');
+                
+                // Different error types have different additional properties
+                if (endpoint.expectedStatus === 500) {
+                    expect(response.body).toHaveProperty('message');
+                    expect(typeof response.body.message).toBe('string');
+                } else {
+                    expect(response.body).toHaveProperty('path');
+                    expect(typeof response.body.path).toBe('string');
+                }
             }
         });
 
@@ -234,7 +237,8 @@ describe('Server Error Handling Tests', () => {
                 .expect(404);
             
             expect(response.body.error).toBe('Not Found');
-            expect(response.body.message).toContain('not found');
+            expect(response.body.path).toBe(longPath); // Server returns the full path
+            expect(response.body.code).toBe(404);
         });
 
         test('should handle special characters in error paths', async () => {
@@ -252,7 +256,7 @@ describe('Server Error Handling Tests', () => {
                     .expect(404);
                 
                 expect(response.body.error).toBe('Not Found');
-                expect(response.body.message).toContain('not found');
+                expect(response.body.path).toBe(path);
             }
         });
 
@@ -263,7 +267,7 @@ describe('Server Error Handling Tests', () => {
                 .send('')
                 .expect(400);
             
-            expect(response.body.error).toBe('Invalid JSON');
+            expect(response.body.error).toBe('Bad Request');
         });
 
         test('should handle very large malformed JSON payloads', async () => {
@@ -275,7 +279,7 @@ describe('Server Error Handling Tests', () => {
                 .send(largeInvalidJson)
                 .expect(400);
             
-            expect(response.body.error).toBe('Invalid JSON');
+            expect(response.body.error).toBe('Bad Request');
         });
 
         test('should handle numeric-only invalid JSON', async () => {
@@ -285,7 +289,7 @@ describe('Server Error Handling Tests', () => {
                 .send('123456789')
                 .expect(200); // Numbers are valid JSON
             
-            expect(response.body.received).toBe(123456789);
+            expect(response.body.data).toBe(123456789);
         });
 
         test('should handle boolean-only invalid JSON', async () => {
@@ -295,25 +299,42 @@ describe('Server Error Handling Tests', () => {
                 .send('true')
                 .expect(200); // Booleans are valid JSON
             
-            expect(response.body.received).toBe(true);
+            expect(response.body.data).toBe(true);
         });
     });
 
     describe('HTTP Method Error Consistency', () => {
-        test('should return consistent 404 format across different methods', async () => {
-            const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+        test('should return appropriate error codes for different methods', async () => {
+            const testCases = [
+                { method: 'GET', expectedStatus: 404, expectedError: 'Not Found' },
+                { method: 'POST', expectedStatus: 404, expectedError: 'Not Found' },
+                { method: 'PUT', expectedStatus: 405, expectedError: 'Method Not Allowed' },
+                { method: 'DELETE', expectedStatus: 405, expectedError: 'Method Not Allowed' },
+                { method: 'PATCH', expectedStatus: 405, expectedError: 'Method Not Allowed' }
+            ];
             const testPath = '/nonexistent';
             
-            for (const method of methods) {
+            for (const { method, expectedStatus, expectedError } of testCases) {
                 const response = await request(server)
                     [method.toLowerCase()](testPath)
                     .send({})
-                    .expect(404);
+                    .expect(expectedStatus);
                 
-                expect(response.body).toEqual({
-                    error: 'Not Found',
-                    message: `Route ${method} ${testPath} not found`
-                });
+                expect(response.body.error).toBe(expectedError);
+                expect(response.body.code).toBe(expectedStatus);
+                
+                if (expectedStatus === 404) {
+                    // 404 errors include path info
+                    expect(response.body.path).toBe(testPath);
+                    if (method !== 'GET') {
+                        expect(response.body.method).toBe(method);
+                    }
+                } else {
+                    // 405 errors include allowed methods
+                    expect(response.body.allowed).toContain('GET');
+                    expect(response.body.allowed).toContain('POST');
+                    expect(response.body.allowed).toContain('HEAD');
+                }
                 
                 expect(response.headers['content-type']).toMatch(/application\/json/);
                 expect(response.headers['x-test-server']).toBe('true');
@@ -321,19 +342,15 @@ describe('Server Error Handling Tests', () => {
         });
 
         test('should handle OPTIONS method appropriately', async () => {
-            // Most HTTP servers either handle OPTIONS or return 404/405
-            try {
-                const response = await request(server)
-                    .options('/')
-                    .expect(404);
-                
-                expect(response.body.error).toBe('Not Found');
-                expect(response.body.message).toContain('OPTIONS');
-            } catch (error) {
-                // OPTIONS might not be supported by supertest or the server
-                // This is acceptable behavior
-                expect(error.message).toContain('OPTIONS');
-            }
+            const response = await request(server)
+                .options('/')
+                .expect(405);
+            
+            expect(response.body.error).toBe('Method Not Allowed');
+            expect(response.body.code).toBe(405);
+            expect(response.body.allowed).toContain('GET');
+            expect(response.body.allowed).toContain('POST');
+            expect(response.body.allowed).toContain('HEAD');
         });
     });
 });

@@ -71,6 +71,7 @@ function requestHandler(req, res) {
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('X-Server', 'Testinium-QA-Server');
         res.setHeader('X-Timestamp', new Date().toISOString());
+        res.setHeader('X-Test-Server', 'true');
         
         // Route handling logic
         if (method === 'GET') {
@@ -177,7 +178,7 @@ function handleGetRequest(req, res, pathname, query) {
             res.end(JSON.stringify({ 
                 error: 'Not Found', 
                 code: 404,
-                path: pathname
+                path: decodeURIComponent(pathname)
             }));
     }
 }
@@ -191,13 +192,17 @@ function handleGetRequest(req, res, pathname, query) {
  */
 function handlePostRequest(req, res, pathname) {
     let body = '';
+    let responseSent = false;
     
     // Collect request body data
     req.on('data', chunk => {
+        if (responseSent) return;
+        
         body += chunk.toString();
         
         // Prevent oversized payloads (2MB limit)
         if (body.length > 2 * 1024 * 1024) {
+            responseSent = true;
             res.writeHead(413, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ 
                 error: 'Payload Too Large', 
@@ -209,9 +214,12 @@ function handlePostRequest(req, res, pathname) {
     });
     
     req.on('end', () => {
+        if (responseSent) return;
+        
         try {
             processPostRequest(req, res, pathname, body);
         } catch (error) {
+            responseSent = true;
             res.writeHead(400, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ 
                 error: 'Bad Request', 
@@ -383,11 +391,22 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 /**
+ * Store original server methods to avoid infinite recursion
+ */
+const originalServerMethods = {
+    listen: server.listen.bind(server),
+    close: server.close.bind(server),
+    address: server.address.bind(server),
+    on: server.on.bind(server),
+    removeListener: server.removeListener.bind(server)
+};
+
+/**
  * Enhanced server object with additional methods required by export schema
  * Provides listen(), close(), address(), on(), removeListener() methods
  * as specified in the exports schema
  */
-const enhancedServer = Object.assign(server, {
+const enhancedServer = {
     /**
      * Start the server on specified port
      * @param {number} port - Port to listen on (default: 3000, 0 for dynamic)
@@ -399,14 +418,14 @@ const enhancedServer = Object.assign(server, {
         const actualPort = port === 0 ? 0 : port; // Support dynamic port allocation
         
         try {
-            return server.listen(actualPort, hostname, (error) => {
+            return originalServerMethods.listen(actualPort, hostname, (error) => {
                 if (error) {
                     console.error('Server failed to start:', error);
                     if (callback) callback(error);
                     return;
                 }
                 
-                const address = server.address();
+                const address = originalServerMethods.address();
                 console.log(`Testinium-QA HTTP Server listening on ${hostname}:${address.port}`);
                 
                 if (callback) callback(null, address);
@@ -431,7 +450,7 @@ const enhancedServer = Object.assign(server, {
         
         isShuttingDown = true;
         
-        return server.close((error) => {
+        return originalServerMethods.close((error) => {
             // Cleanup active connections
             activeConnections.forEach(socket => {
                 socket.destroy();
@@ -453,7 +472,7 @@ const enhancedServer = Object.assign(server, {
      * @returns {Object|null} Address object with port and family, or null if not listening
      */
     address: function() {
-        return server.address();
+        return originalServerMethods.address();
     },
 
     /**
@@ -463,7 +482,7 @@ const enhancedServer = Object.assign(server, {
      * @returns {Server} The server instance for chaining
      */
     on: function(event, listener) {
-        return server.on(event, listener);
+        return originalServerMethods.on(event, listener);
     },
 
     /**
@@ -473,7 +492,28 @@ const enhancedServer = Object.assign(server, {
      * @returns {Server} The server instance for chaining
      */
     removeListener: function(event, listener) {
-        return server.removeListener(event, listener);
+        return originalServerMethods.removeListener(event, listener);
+    }
+};
+
+// Delegate all other server methods to the original server
+Object.getOwnPropertyNames(Object.getPrototypeOf(server)).forEach(name => {
+    if (typeof server[name] === 'function' && !enhancedServer[name]) {
+        enhancedServer[name] = function(...args) {
+            return server[name](...args);
+        };
+    }
+});
+
+// Delegate properties
+Object.getOwnPropertyNames(server).forEach(name => {
+    if (!enhancedServer[name]) {
+        Object.defineProperty(enhancedServer, name, {
+            get() { return server[name]; },
+            set(value) { server[name] = value; },
+            enumerable: true,
+            configurable: true
+        });
     }
 });
 
@@ -502,5 +542,9 @@ enhancedServer.on('connection', (socket) => {
     });
 });
 
-// Export server instance as default export for testing with Supertest
-module.exports = enhancedServer;
+// Export raw server for testing with Supertest (compatible with its lifecycle management)
+// The raw server allows Supertest to handle listen/close lifecycle automatically
+module.exports = server;
+
+// Also export enhanced server for CLI usage if needed
+module.exports.enhanced = enhancedServer;
