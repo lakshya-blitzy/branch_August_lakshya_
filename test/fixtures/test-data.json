@@ -1,0 +1,135 @@
+{
+  "validRequests": {
+    "simple": {
+      "name": "test",
+      "value": 123
+    },
+    "complex": {
+      "user": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "preferences": ["setting1", "setting2"],
+        "metadata": {
+          "created": "2023-01-01T00:00:00.000Z",
+          "active": true,
+          "role": "admin"
+        }
+      },
+      "permissions": ["read", "write", "delete"],
+      "settings": {
+        "theme": "dark",
+        "language": "en",
+        "notifications": true
+      }
+    },
+    "array": [
+      { "id": 1, "name": "Item 1" },
+      { "id": 2, "name": "Item 2" },
+      { "id": 3, "name": "Item 3" }
+    ],
+    "numerical": {
+      "integer": 42,
+      "float": 3.14159,
+      "negative": -100,
+      "zero": 0,
+      "scientific": 1.23e-4
+    },
+    "edge_cases": {
+      "empty_string": "",
+      "null_value": null,
+      "boolean_true": true,
+      "boolean_false": false,
+      "empty_object": {},
+      "empty_array": [],
+      "unicode": "Hello 世界 🌍",
+      "special_chars": "!@#$%^&*()_+-=[]{}|;:'\",.<>?/`~"
+    }
+  },
+  "invalidJSON": [
+    "{invalid: json}",
+    "{'single': 'quotes'}",
+    "{\"missing\": quote}",
+    "{\"trailing\": \"comma\",}",
+    "{'name': 'test'",
+    "}invalid start",
+    "{\"unclosed\": \"string",
+    "undefined",
+    "NaN",
+    "function() {}",
+    "{name: value}",
+    "[1,2,3,]"
+  ],
+  "expectedResponses": {
+    "health": {
+      "status": "healthy",
+      "timestamp": "2023-01-01T00:00:00.000Z",
+      "uptime": 0
+    },
+    "root": {
+      "status": "ok",
+      "message": "Server is running"
+    },
+    "notFound": {
+      "error": "Not Found",
+      "message": "Route GET /unknown not found"
+    },
+    "serverError": {
+      "error": "Internal Server Error",
+      "message": "This is a test error endpoint"
+    },
+    "badRequest": {
+      "error": "Invalid JSON",
+      "message": "Unexpected token i in JSON at position 1"
+    }
+  },
+  "testScenarios": [
+    {
+      "name": "Basic GET request",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBodyKeys": ["status", "message"]
+    },
+    {
+      "name": "Health check request",
+      "method": "GET", 
+      "path": "/health",
+      "expectedStatus": 200,
+      "expectedBodyKeys": ["status", "timestamp", "uptime"]
+    },
+    {
+      "name": "Valid POST data",
+      "method": "POST",
+      "path": "/data",
+      "body": { "test": "data" },
+      "expectedStatus": 200,
+      "expectedBodyKeys": ["message", "received", "timestamp"]
+    },
+    {
+      "name": "Error endpoint",
+      "method": "GET",
+      "path": "/error",
+      "expectedStatus": 500,
+      "expectedBodyKeys": ["error", "message"]
+    },
+    {
+      "name": "Unknown endpoint",
+      "method": "GET",
+      "path": "/unknown",
+      "expectedStatus": 404,
+      "expectedBodyKeys": ["error", "message"]
+    }
+  ],
+  "performanceTargets": {
+    "maxResponseTime": 100,
+    "maxMemoryUsage": 50,
+    "minThroughput": 100
+  },
+  "serverConfig": {
+    "defaultPort": 0,
+    "maxConnections": 1000,
+    "timeout": 30000,
+    "keepAliveTimeout": 5000
+  }
+}
