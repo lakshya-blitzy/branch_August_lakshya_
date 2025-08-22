@@ -32,8 +32,7 @@ module.exports = {
   // Test Paths to Include
   // Defines specific directories to search for test files
   roots: [
-    '<rootDir>/test',
-    '<rootDir>/__tests__'
+    '<rootDir>/test'
   ],
 
   // Test File Extensions
@@ -95,10 +94,10 @@ module.exports = {
   },
 
   // Test Setup Configuration
-  // Files to run before executing tests
-  setupFilesAfterEnv: [
-    '<rootDir>/test/setup/test-setup.js'
-  ],
+  // Files to run before executing tests (disabled until setup file is created)
+  // setupFilesAfterEnv: [
+  //   '<rootDir>/test/setup/test-setup.js'
+  // ],
 
   // Clear Mocks Configuration
   // Automatically clear mock calls and instances between tests
@@ -117,17 +116,9 @@ module.exports = {
   verbose: true,
 
   // Test Results Processor
-  // Generates JUnit XML reports for CI/CD integration
+  // Default reporter only (jest-junit not installed)
   reporters: [
-    'default',
-    ['jest-junit', {
-      outputDirectory: '.',
-      outputName: 'junit.xml',
-      classNameTemplate: '{classname}',
-      titleTemplate: '{title}',
-      ancestorSeparator: ' › ',
-      usePathForSuiteName: true
-    }]
+    'default'
   ],
 
   // Error Handling Configuration
@@ -141,16 +132,16 @@ module.exports = {
 
   // Dependency Management
   // Maps module names to file paths for cleaner imports
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^@test/(.*)$': '<rootDir>/test/$1'
   },
 
   // Transform Configuration
-  // Handles file transformations (currently identity for JS files)
-  transform: {
-    '^.+\\.js$': 'babel-jest'
-  },
+  // Default Node.js transformation (babel-jest not needed for basic JS)
+  // transform: {
+  //   '^.+\\.js$': 'babel-jest'
+  // },
 
   // Transform Ignore Patterns
   // Node modules to transform (default: ignore all)
@@ -235,9 +226,9 @@ module.exports = {
   },
 
   // Watch Plugins Configuration
-  // Enhances watch mode functionality during development
-  watchPlugins: [
-    'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname'
-  ]
+  // Default watch functionality (typeahead plugins not installed)
+  // watchPlugins: [
+  //   'jest-watch-typeahead/filename',
+  //   'jest-watch-typeahead/testname'
+  // ]
 };
