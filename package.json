@@ -22,31 +22,6 @@
     "sinon": "^17.0.0",
     "@types/sinon": "^17.0.0"
   },
-  "jest": {
-    "testEnvironment": "node",
-    "coverageDirectory": "coverage",
-    "collectCoverageFrom": [
-      "server.js",
-      "!node_modules/**",
-      "!coverage/**"
-    ],
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html"
-    ],
-    "testMatch": [
-      "test/**/*.test.js"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 85,
-        "functions": 95,
-        "lines": 90,
-        "statements": 90
-      }
-    }
-  },
   "keywords": [
     "testing",
     "http",
