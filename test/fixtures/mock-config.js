@@ -385,6 +385,9 @@ const services = {
  * @returns {object} Merged configuration object
  */
 function overrideConfig(overrides = {}) {
+  // Ensure overrides is a valid object to prevent null/undefined access errors
+  const safeOverrides = overrides || {};
+  
   // Deep clone the base configuration to prevent mutations
   const baseConfig = {
     server: { ...server },
@@ -398,31 +401,31 @@ function overrideConfig(overrides = {}) {
   // Apply overrides using object spread for shallow merge
   // For deep merging, each section is handled individually
   const mergedConfig = {
-    server: { ...baseConfig.server, ...(overrides.server || {}) },
+    server: { ...baseConfig.server, ...(safeOverrides.server || {}) },
     timeout: { 
       ...baseConfig.timeout, 
-      ...(overrides.timeout || {}),
-      http: { ...baseConfig.timeout.http, ...(overrides.timeout?.http || {}) },
-      test: { ...baseConfig.timeout.test, ...(overrides.timeout?.test || {}) },
-      server: { ...baseConfig.timeout.server, ...(overrides.timeout?.server || {}) },
-      external: { ...baseConfig.timeout.external, ...(overrides.timeout?.external || {}) }
+      ...(safeOverrides.timeout || {}),
+      http: { ...baseConfig.timeout.http, ...(safeOverrides.timeout?.http || {}) },
+      test: { ...baseConfig.timeout.test, ...(safeOverrides.timeout?.test || {}) },
+      server: { ...baseConfig.timeout.server, ...(safeOverrides.timeout?.server || {}) },
+      external: { ...baseConfig.timeout.external, ...(safeOverrides.timeout?.external || {}) }
     },
     env: {
       ...baseConfig.env,
-      ...(overrides.env || {}),
-      base: { ...baseConfig.env.base, ...(overrides.env?.base || {}) },
-      development: { ...baseConfig.env.development, ...(overrides.env?.development || {}) },
-      production: { ...baseConfig.env.production, ...(overrides.env?.production || {}) },
-      ci: { ...baseConfig.env.ci, ...(overrides.env?.ci || {}) }
+      ...(safeOverrides.env || {}),
+      base: { ...baseConfig.env.base, ...(safeOverrides.env?.base || {}) },
+      development: { ...baseConfig.env.development, ...(safeOverrides.env?.development || {}) },
+      production: { ...baseConfig.env.production, ...(safeOverrides.env?.production || {}) },
+      ci: { ...baseConfig.env.ci, ...(safeOverrides.env?.ci || {}) }
     },
-    ports: { ...baseConfig.ports, ...(overrides.ports || {}) },
-    paths: { ...baseConfig.paths, ...(overrides.paths || {}) },
+    ports: { ...baseConfig.ports, ...(safeOverrides.ports || {}) },
+    paths: { ...baseConfig.paths, ...(safeOverrides.paths || {}) },
     services: { 
       ...baseConfig.services, 
-      ...(overrides.services || {}),
-      api: { ...baseConfig.services.api, ...(overrides.services?.api || {}) },
-      database: { ...baseConfig.services.database, ...(overrides.services?.database || {}) },
-      external: { ...baseConfig.services.external, ...(overrides.services?.external || {}) }
+      ...(safeOverrides.services || {}),
+      api: { ...baseConfig.services.api, ...(safeOverrides.services?.api || {}) },
+      database: { ...baseConfig.services.database, ...(safeOverrides.services?.database || {}) },
+      external: { ...baseConfig.services.external, ...(safeOverrides.services?.external || {}) }
     }
   };
   
