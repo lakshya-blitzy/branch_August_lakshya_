@@ -154,6 +154,9 @@ public class ServerManager implements AutoCloseable {
             // Create ProcessBuilder for Node.js execution
             ProcessBuilder processBuilder = new ProcessBuilder("node", SERVER_SCRIPT_PATH);
             
+            // Set working directory to project root (where server.js is located)
+            processBuilder.directory(new java.io.File(System.getProperty("user.dir")));
+            
             // Set PORT environment variable for server configuration
             Map<String, String> environment = processBuilder.environment();
             environment.put("PORT", String.valueOf(port));
