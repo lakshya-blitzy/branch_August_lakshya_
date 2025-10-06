@@ -121,9 +121,9 @@ public class HeaderValidationTest {
             contentType,
             containsString("charset=utf-8"));
 
-        // Verify it's either HTML or TEXT content type
-        response.then().contentType(anyOf(equalTo(ContentType.HTML.toString()), 
-                                          equalTo(ContentType.TEXT.toString())));
+        // Verify it's HTML content type (Express res.send() sets text/html for strings)
+        // Same as root endpoint since both use res.send() with string values
+        response.then().contentType(ContentType.HTML);
     }
 
     /**
