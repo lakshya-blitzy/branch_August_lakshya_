@@ -25,6 +25,8 @@
                     <testFailureIgnore>true</testFailureIgnore>
                     <includes>
                         <include>**/CukesRunner*.java</include>
+                        <!-- Include HTTP integration tests for Express server validation -->
+                        <include>**/*Test.java</include>
                     </includes>
                 </configuration>
             </plugin>
