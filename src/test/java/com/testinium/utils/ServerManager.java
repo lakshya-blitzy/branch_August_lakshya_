@@ -139,8 +139,16 @@ public class ServerManager implements AutoCloseable {
      * @throws IllegalArgumentException if port is not in valid range (1-65535)
      */
     public void startServer(int port) throws ServerStartupException {
-        if (currentState == ServerState.RUNNING || currentState == ServerState.STARTING) {
-            throw new IllegalStateException("Server is already " + currentState);
+        // Check if process is actually alive before throwing exception
+        // This allows restart after crash scenarios
+        if (serverProcess != null && serverProcess.isAlive()) {
+            if (currentState == ServerState.RUNNING || currentState == ServerState.STARTING) {
+                throw new IllegalStateException("Server is already " + currentState);
+            }
+        } else {
+            // Process is dead or never started, update state to STOPPED
+            currentState = ServerState.STOPPED;
+            serverProcess = null;
         }
 
         if (port < 1 || port > 65535) {
@@ -176,6 +184,15 @@ public class ServerManager implements AutoCloseable {
             
             // Start thread to consume process output to prevent buffer deadlock
             startOutputConsumer();
+            
+            // Small delay to let Node.js process initialize and potentially fail fast
+            // (e.g., if port is already in use, Node.js will crash within ~50-200ms)
+            // Increased to 400ms to ensure port conflict errors are detected reliably
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
             
         } catch (IOException e) {
             currentState = ServerState.ERROR;
@@ -277,6 +294,10 @@ public class ServerManager implements AutoCloseable {
     public boolean isServerRunning() {
         // Check if process is alive
         if (serverProcess == null || !serverProcess.isAlive()) {
+            // Update state if process died unexpectedly
+            if (currentState == ServerState.RUNNING || currentState == ServerState.STARTING) {
+                currentState = ServerState.STOPPED;
+            }
             return false;
         }
 
@@ -336,6 +357,16 @@ public class ServerManager implements AutoCloseable {
         int backoffMs = INITIAL_BACKOFF_MS;
         
         for (int attempt = 0; attempt < MAX_HEALTH_CHECK_RETRIES; attempt++) {
+            // Check if process has terminated unexpectedly (MUST check BEFORE health check)
+            // This prevents false positives where health check succeeds by connecting to
+            // a different server instance on the same port
+            if (!serverProcess.isAlive()) {
+                currentState = ServerState.ERROR;
+                int exitCode = serverProcess.exitValue();
+                throw new ServerStartupException(
+                    "Server process terminated unexpectedly with exit code: " + exitCode);
+            }
+            
             // Check if server is responsive
             if (isServerRunning()) {
                 currentState = ServerState.RUNNING;
@@ -352,14 +383,6 @@ public class ServerManager implements AutoCloseable {
                 throw new ServerStartupException(
                     "Server failed to become ready within " + 
                     TestConstants.SERVER_STARTUP_TIMEOUT_MS + "ms timeout");
-            }
-            
-            // Check if process has terminated unexpectedly
-            if (!serverProcess.isAlive()) {
-                currentState = ServerState.ERROR;
-                int exitCode = serverProcess.exitValue();
-                throw new ServerStartupException(
-                    "Server process terminated unexpectedly with exit code: " + exitCode);
             }
             
             // Wait before next retry with exponential backoff
@@ -418,81 +441,40 @@ public class ServerManager implements AutoCloseable {
     public void close() throws ServerStartupException {
         stopServer();
     }
-}
 
-/**
- * ServerState represents the lifecycle states of the Node.js Express server process.
- * 
- * <p>State Transitions:
- * <pre>
- * STOPPED -> STARTING -> RUNNING -> STOPPED
- *              |            |
- *              v            v
- *            ERROR        ERROR
- * </pre>
- * 
- * @author Testinium QA Team
- * @version 1.0
- * @since 1.0
- */
-enum ServerState {
     /**
-     * Server startup has been initiated but server is not yet responsive.
-     */
-    STARTING,
-    
-    /**
-     * Server is running and responsive to HTTP requests.
-     */
-    RUNNING,
-    
-    /**
-     * Server is not running (initial state or after shutdown).
-     */
-    STOPPED,
-    
-    /**
-     * Server encountered an error during startup, operation, or shutdown.
-     */
-    ERROR
-}
-
-/**
- * ServerStartupException is thrown when server lifecycle operations fail.
- * 
- * <p>Common scenarios include:
- * <ul>
- *   <li>Node.js executable not found in system PATH</li>
- *   <li>server.js file not found in project root</li>
- *   <li>Port already in use by another process</li>
- *   <li>Server process terminated unexpectedly</li>
- *   <li>Server failed to become ready within timeout</li>
- *   <li>Shutdown operation timed out or failed</li>
- * </ul>
- * 
- * @author Testinium QA Team
- * @version 1.0
- * @since 1.0
- */
-class ServerStartupException extends Exception {
-    
-    /**
-     * Constructs a new ServerStartupException with the specified detail message.
+     * Forcefully kills all Node.js server processes.
+     * This is a utility method for test cleanup to ensure no lingering processes.
      * 
-     * @param message the detail message explaining the failure
-     */
-    public ServerStartupException(String message) {
-        super(message);
-    }
-    
-    /**
-     * Constructs a new ServerStartupException with the specified detail message and cause.
+     * <p>This method uses pkill to terminate all Node.js processes running server.js:
+     * <ul>
+     *   <li>Uses 'pkill -9 -f' to find and kill processes by name pattern</li>
+     *   <li>Matches processes running "node server.js"</li>
+     *   <li>Works on Unix-like systems (Linux, macOS)</li>
+     *   <li>More reliable than port-based cleanup (doesn't require lsof)</li>
+     * </ul>
      * 
-     * @param message the detail message explaining the failure
-     * @param cause the underlying cause of the failure
+     * @param ports variable number of port numbers (for documentation, not used in implementation)
      */
-    public ServerStartupException(String message, Throwable cause) {
-        super(message, cause);
+    public static void killAllNodeProcessesOnPorts(int... ports) {
+        try {
+            // Use pkill to kill all node processes running server.js
+            ProcessBuilder pb = new ProcessBuilder(
+                "sh", "-c",
+                "pkill -9 -f 'node server.js' 2>/dev/null || true"
+            );
+            Process cleanup = pb.start();
+            cleanup.waitFor(2, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            // Ignore errors - best effort cleanup
+            System.err.println("[ServerManager] Warning: Could not kill Node.js processes: " + e.getMessage());
+        }
+        
+        // Give OS time to release ports and clean up processes
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
-

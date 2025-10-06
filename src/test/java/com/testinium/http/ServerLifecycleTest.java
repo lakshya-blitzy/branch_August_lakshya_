@@ -6,7 +6,11 @@ import com.testinium.utils.TestConstants;
 import io.restassured.RestAssured;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +44,16 @@ import static org.junit.Assert.*;
  *   <li>Timeout measurements to validate performance requirements</li>
  * </ul>
  * 
+ * <p><strong>Test Execution Strategy:</strong>
+ * <p>ServerLifecycleTest manages its own server instances and should be run separately from
+ * functional tests that require a pre-started background server. Two execution modes:
+ * <ul>
+ *   <li><strong>Isolated execution:</strong> {@code mvn test -Dtest=ServerLifecycleTest}
+ *       <br>Runs 17 lifecycle tests independently without background server</li>
+ *   <li><strong>Full suite execution:</strong> Functional tests run first with background server,
+ *       then ServerLifecycleTest runs with its own managed servers</li>
+ * </ul>
+ * 
  * <p>Requirement Traceability:
  * <ul>
  *   <li>Section 0.4.2: Programmatic server startup and shutdown testing</li>
@@ -56,6 +70,32 @@ import static org.junit.Assert.*;
 public class ServerLifecycleTest {
 
     /**
+     * Class-level lock to ensure tests run serially.
+     * ServerLifecycleTest requires exclusive control of ports 3000 and 8080,
+     * so tests cannot run in parallel even when Maven Surefire parallel execution is enabled.
+     */
+    private static final Object SERVER_LOCK = new Object();
+
+    /**
+     * TestRule that acquires the SERVER_LOCK before each test and releases it after.
+     * This ensures serial execution even when Maven Surefire parallel execution is enabled.
+     */
+    @Rule
+    public TestRule serialExecutionRule = new TestRule() {
+        @Override
+        public Statement apply(Statement base, Description description) {
+            return new Statement() {
+                @Override
+                public void evaluate() throws Throwable {
+                    synchronized (SERVER_LOCK) {
+                        base.evaluate();
+                    }
+                }
+            };
+        }
+    };
+
+    /**
      * ServerManager instance for controlling the Node.js Express server process.
      * Provides startServer(), stopServer(), isServerRunning(), and state management capabilities.
      */
@@ -68,8 +108,11 @@ public class ServerLifecycleTest {
      * <ul>
      *   <li>Initializes a fresh ServerManager instance for test isolation</li>
      *   <li>Configures RestAssured with base settings for HTTP validation</li>
-     *   <li>Ensures no server is running before test execution begins</li>
      * </ul>
+     * 
+     * <p>Note: Serial execution is enforced by the serialExecutionRule to prevent port conflicts.
+     * ServerLifecycleTest manages its own server instances and does not interfere with
+     * background servers that may be running for other test classes.
      * 
      * @throws ServerStartupException if cleanup of pre-existing server processes fails
      */
@@ -80,9 +123,6 @@ public class ServerLifecycleTest {
         
         // Configure RestAssured base settings for HTTP validation
         RestAssured.baseURI = TestConstants.BASE_URL;
-        
-        // Ensure clean state - stop any potentially running servers
-        serverManager.stopServer();
     }
 
     /**
@@ -90,18 +130,19 @@ public class ServerLifecycleTest {
      * 
      * <p>This method ensures proper cleanup:
      * <ul>
-     *   <li>Stops any running server processes using serverManager.stopServer()</li>
-     *   <li>Releases ports and cleans up system resources</li>
-     *   <li>Ensures clean state for subsequent test execution</li>
+     *   <li>Stops server instance managed by this test's ServerManager</li>
+     *   <li>Releases ports and cleans up system resources for this specific instance</li>
+     *   <li>Ensures clean state for subsequent ServerLifecycleTest methods</li>
      * </ul>
      * 
-     * <p>Critical for test isolation - prevents port conflicts between tests.
+     * <p>Note: This only stops servers started by this ServerManager instance.
+     * It does not kill background servers that may be running for other test classes.
      * 
      * @throws ServerStartupException if server shutdown fails
      */
     @After
     public void tearDown() throws ServerStartupException {
-        // Stop server and release resources
+        // Stop server managed by this ServerManager instance
         if (serverManager != null) {
             serverManager.stopServer();
         }
@@ -402,20 +443,19 @@ public class ServerLifecycleTest {
         
         // Start a background thread making requests
         Thread requestThread = new Thread(() -> {
-            try {
-                for (int i = 0; i < 5; i++) {
-                    try {
-                        given()
-                            .when()
-                                .get(TestConstants.ROOT_ENDPOINT);
-                        Thread.sleep(100);
-                    } catch (Exception e) {
-                        // Expected after server stops
-                        break;
-                    }
+            for (int i = 0; i < 5; i++) {
+                try {
+                    given()
+                        .when()
+                            .get(TestConstants.ROOT_ENDPOINT);
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                } catch (Exception e) {
+                    // Expected after server stops
+                    break;
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
             }
         });
         
