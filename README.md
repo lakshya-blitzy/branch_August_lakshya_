@@ -1,5 +1,5 @@
  # :fallen_leaf: :leaves: Testinium-QA :leaves: :fallen_leaf:
-Automating the Testinium browser  (JAVA, Selenium, Cucumber, JUnit, Jira, Jenkins)
+Dual-Stack Test Automation Framework (JAVA, Selenium, Cucumber, JUnit, Node.js, Express.js, Jest, Jira, Jenkins)
 
 ### Tools
 
@@ -26,6 +26,18 @@ Automating the Testinium browser  (JAVA, Selenium, Cucumber, JUnit, Jira, Jenkin
 <a href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPEOYG6Ap6vFoqv5bNXkDvnCa1yAqbDr_f_YQhXa97QwYXvNqWIvnCzpFJJz1ZwcLrwbM&usqp=CAU" rel="noreferrer">
   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Jenkins_logo.svg/1200px-Jenkins_logo.svg.png" width="50" height="80"/> 
 </a> 
+
+<a href="https://nodejs.org" target="_blank" rel="noreferrer"> 
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg" alt="nodejs" width="60" height="60"/> 
+</a> 
+
+<a href="https://expressjs.com" target="_blank" rel="noreferrer"> 
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/express/express-original.svg" alt="express" width="60" height="60"/> 
+</a> 
+
+<a href="https://jestjs.io" target="_blank" rel="noreferrer"> 
+  <img src="https://www.vectorlogo.zone/logos/jestjsio/jestjsio-icon.svg" alt="jest" width="60" height="60"/> 
+</a> 
 </p>
 
 * JAVA
@@ -34,16 +46,29 @@ Automating the Testinium browser  (JAVA, Selenium, Cucumber, JUnit, Jira, Jenkin
 * JUNIT
 * JIRA
 * JENKINS
+* NODE.JS
+* EXPRESS.JS
+* JEST
 
 ### Testinium-QA
 
-This repository contains a collection of sample `Testinium-QA` projects and libraries that demonstrate how to
-use the tool and develop automation script using the Cucumber BDD framework with Java as programming language.
-It generate JSON, HTML and Txt reporters as well. It also generate `screen shots` for your tests if you enable it and
-also generate `error shots` for your failed test cases as well.
+This repository contains a comprehensive dual-stack test automation framework that combines:
+
+**Java-based Browser Automation:**
+- Selenium WebDriver tests using Cucumber BDD framework
+- JUnit test execution with JSON, HTML and TXT reporters
+- Automated screenshot capture for test cases and error scenarios
+
+**Node.js HTTP Server Component:**
+- Express.js server for API testing and integration validation
+- Jest-based unit testing with comprehensive coverage reporting
+- RESTful endpoints for test data management and service mocking
+
+This dual-language architecture enables both browser automation testing and server-side API testing within a unified framework, supporting complex end-to-end testing scenarios.
 
 ### Installation (pre-requisites)
 
+#### Java Stack Requirements:
 1. JDK 1.8+ 
 2. Maven 
 3. IntelliJ
@@ -51,6 +76,14 @@ also generate `error shots` for your failed test cases as well.
     - Maven
     - Cucumber
 5. Browser driver (make sure you have your desired browser driver and class path is set)
+
+#### Node.js Stack Requirements:
+1. **Node.js 18.0.0+** (for modern JavaScript features and native fetch API)
+2. **npm 8.0.0+** (for workspace support and enhanced dependency management)
+3. Recommended IDE extensions:
+    - JavaScript/TypeScript support
+    - Jest testing framework integration
+    - ESLint and Prettier for code formatting
 
 ### Framework set up
 
@@ -63,7 +96,109 @@ Manually :
 Fork / Clone repository from [here](https://github.com/BalamiRR/Testinium-QA/archive/main.zip) or download zip and set
 it up in your local workspace.
 
+## Dual-Stack Architecture
 
+This framework implements a **dual-language architecture** that combines Java-based browser automation with Node.js server-side testing:
+
+### Architecture Overview:
+```
+┌─────────────────────────────────────────────────┐
+│                Testinium-QA                     │
+├─────────────────────┬───────────────────────────┤
+│     Java Stack      │       Node.js Stack       │
+│                     │                           │
+│ ┌─────────────────┐ │ ┌───────────────────────┐ │
+│ │ Selenium Tests  │ │ │   HTTP Server         │ │
+│ │ Cucumber BDD    │ │ │   Express.js          │ │
+│ │ JUnit Runner    │ │ │   Jest Tests          │ │
+│ └─────────────────┘ │ └───────────────────────┘ │
+│                     │                           │
+│ ┌─────────────────┐ │ ┌───────────────────────┐ │
+│ │ Maven Build     │ │ │   npm Scripts         │ │
+│ │ Java 8+         │ │ │   Node.js 18+         │ │
+│ └─────────────────┘ │ └───────────────────────┘ │
+└─────────────────────┴───────────────────────────┘
+```
+
+### Integration Points:
+- **Port Isolation**: Java tests run on different ports than Node.js server (3000 dev, 3001 test)
+- **Parallel Execution**: Both Maven and npm test suites can run simultaneously
+- **Shared Resources**: Common test data and configuration files
+- **CI/CD Integration**: Jenkins executes both Java and Node.js test phases
+
+## Node.js Server Setup
+
+### Initial Setup:
+```bash
+# Install Node.js dependencies
+npm install
+
+# Verify installation
+node --version  # Should be 18.0.0+
+npm --version   # Should be 8.0.0+
+```
+
+### Development Commands:
+
+#### Production Server:
+```bash
+# Start production server (port 3000)
+npm start
+```
+
+#### Development Server:
+```bash
+# Start development server with hot reload (port 3000)
+npm run dev
+```
+
+#### Testing:
+```bash
+# Run Jest test suite with coverage
+npm test
+
+# Run tests in watch mode during development
+npm run test:watch
+
+# Generate detailed coverage report
+npm run test:coverage
+```
+
+#### Code Quality:
+```bash
+# Lint JavaScript code
+npm run lint
+
+# Format code with Prettier
+npm run format
+```
+
+### Port Configuration:
+- **Development Server**: `http://localhost:3000`
+- **Test Environment**: `http://localhost:3001`
+- **Production**: Configurable via `PORT` environment variable
+
+### API Endpoints:
+
+#### Health Check:
+```http
+GET /health
+Response: { "status": "ok", "timestamp": "2024-01-01T00:00:00.000Z" }
+```
+
+#### Test Data Management:
+```http
+GET /api/test-data          # Retrieve test fixtures
+POST /api/test-data         # Create test data
+PUT /api/test-data/:id      # Update test data
+DELETE /api/test-data/:id   # Delete test data
+```
+
+#### Service Mocking:
+```http
+GET /api/mock/:service      # Mock external service responses
+POST /api/mock/reset        # Reset all mocks to default state
+```
 
 ### Using canned test in the project:
 
@@ -149,12 +284,99 @@ Feature: Testinium app login feature
 ```
 
 
+### CI/CD Pipeline Integration
+
+#### Jenkins Dual-Stack Execution:
+The CI/CD pipeline executes both Java and Node.js test phases in parallel:
+
+```groovy
+// Jenkins Pipeline Stages
+stage('Java Tests') {
+    steps {
+        sh 'mvn clean test'
+        publishHTML([
+            allowMissing: false,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'target/cucumber-reports',
+            reportFiles: 'index.html',
+            reportName: 'Cucumber Report'
+        ])
+    }
+}
+
+stage('Node.js Tests') {
+    steps {
+        sh 'npm install'
+        sh 'npm test'
+        publishHTML([
+            allowMissing: false,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'coverage/lcov-report',
+            reportFiles: 'index.html',
+            reportName: 'Jest Coverage Report'
+        ])
+    }
+}
+```
+
+#### Test Reports:
+- **Java Stack**: Cucumber HTML reports, Maven Surefire reports
+- **Node.js Stack**: Jest coverage reports, test results JSON
+- **Integrated Dashboard**: Combined test metrics and coverage analysis
+
+### Jest Test Framework
+
+#### Server Testing Examples:
+```javascript
+// server.test.js - HTTP endpoint testing
+describe('Server API Endpoints', () => {
+  test('GET /health returns server status', async () => {
+    const response = await request(app)
+      .get('/health')
+      .expect(200)
+      .expect('Content-Type', /json/);
+    
+    expect(response.body).toHaveProperty('status', 'ok');
+    expect(response.body).toHaveProperty('timestamp');
+  });
+
+  test('POST /api/test-data creates new test record', async () => {
+    const testData = { name: 'Test User', email: 'test@example.com' };
+    const response = await request(app)
+      .post('/api/test-data')
+      .send(testData)
+      .expect(201);
+    
+    expect(response.body).toMatchObject(testData);
+    expect(response.body).toHaveProperty('id');
+  });
+});
+```
+
+#### Coverage Requirements:
+- **Minimum Coverage**: 90% code coverage for all server modules
+- **Test Categories**: Unit tests, integration tests, error handling tests
+- **Performance Tests**: Response time validation (<100ms for all endpoints)
+
 ### Jenkins Cucumber Reports
 ![alt text](./image/Jenkins-Cucumber-Reports.png)
 
-##### HTML Report:
+##### Java HTML Report:
 
 To generate HTML report use  `mvn test -Dcucumber.options="–plugin html:target/cucumber-reports.html"`
+
+##### Node.js Jest Report:
+
+To generate Jest coverage report use:
+```bash
+# Generate HTML coverage report
+npm run test:coverage
+
+# Coverage report available at: coverage/lcov-report/index.html
+# JSON coverage data: coverage/coverage-final.json
+```
 
 ##### Txt Report:
 
@@ -163,9 +385,52 @@ To generate a Txt report Use `mvn test -Dcucumber.options="–plugin rerun:targe
 ### Jira Test Execution
 
   ![alt text](./image/Jira-Test-Exectuion.png)
-  
 
-  
+## Troubleshooting
+
+### Common Issues:
+
+#### Node.js Setup Issues:
+```bash
+# Check Node.js version
+node --version  # Must be 18.0.0+
+
+# Clear npm cache if installation fails
+npm cache clean --force
+npm install
+
+# Port conflicts
+# If port 3000 is in use, set custom port:
+PORT=3030 npm start
+```
+
+#### Java/Node.js Integration Issues:
+```bash
+# Ensure both stacks use different ports
+# Java tests: Configure to avoid 3000-3001 range
+# Node.js: Uses 3000 (dev) and 3001 (test)
+
+# CI/CD Pipeline Issues:
+# Verify both Node.js and Java are available in CI environment
+# Check Jenkins has access to both mvn and npm commands
+```
+
+#### Test Execution Issues:
+```bash
+# Java tests
+mvn clean test -Dtest=CukesRunner
+
+# Node.js tests  
+npm test -- --verbose
+
+# Run specific test file
+npm test -- server.test.js
+```
+
+### Performance Optimization:
+- **Java**: Use parallel test execution: `mvn test -Dparallel=methods`
+- **Node.js**: Use Jest parallel workers: `npm test -- --maxWorkers=4`
+- **CI/CD**: Cache Maven dependencies and node_modules between builds
 
 ### THE END
 

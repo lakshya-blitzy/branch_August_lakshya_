@@ -1,0 +1,46 @@
+{
+  "check-coverage": true,
+  "reporter": [
+    "lcov",
+    "text",
+    "html",
+    "json"
+  ],
+  "report-dir": "coverage",
+  "temp-dir": ".nyc_output",
+  "include": [
+    "server.js",
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "test/**",
+    "tests/**",
+    "**/*.test.js",
+    "**/*.spec.js",
+    "node_modules/**",
+    "coverage/**",
+    ".nyc_output/**",
+    "jest.config.js",
+    ".nycrc.json"
+  ],
+  "extension": [
+    ".js"
+  ],
+  "cache": true,
+  "all": true,
+  "source-map": true,
+  "instrument": true,
+  "produce-source-map": true,
+  "lines": 100,
+  "statements": 100,
+  "functions": 100,
+  "branches": 100,
+  "watermarks": {
+    "lines": [80, 95],
+    "functions": [80, 95],
+    "branches": [80, 95],
+    "statements": [80, 95]
+  },
+  "skip-full": false,
+  "skip-empty": false
+}
